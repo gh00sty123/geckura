@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local debug scripts & database files
+/check_accounts.ts
+/debug_ix.ts
+/debug_tx.ts
+/fox_e2e.ts
+/inspect_vault.ts
+/show_atas.ts
+/show_prize_item.ts
+/test_ata.ts
+/test_ata_raw.ts
+/test_native_ata.ts
+/frontend.log
+/src/lib/leaderboard_db.json

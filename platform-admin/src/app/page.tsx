@@ -114,12 +114,12 @@ export default function HomePage() {
     const liveBox = boxes.find(b => boxToPack(b).name === openingBoxName);
     if (!liveBox) { toast.error("Box data not ready."); return; }
     try {
-      await openBoxNow(liveBox);
+      await openBoxNow(liveBox, wallet);
       claimReward();
       toast.success("Reward claimed!");
       refetch();
     } catch (e: any) { toast.error(e?.message || "Claim failed"); }
-  }, [boxes, openingBoxName, openBoxNow, claimReward, refetch]);
+  }, [boxes, openingBoxName, openBoxNow, claimReward, refetch, wallet]);
 
   /* Simple Play → immediately call on-chain openBox */
   const handlePlayFromGrid = useCallback(async (packItem: PackItem) => {
@@ -133,11 +133,11 @@ export default function HomePage() {
     // Low-price: direct open
     try {
       toast.loading("Opening box…", { id: `open-${liveBox.boxId}` });
-      await openBoxNow(liveBox);
+      await openBoxNow(liveBox, wallet);
       toast.success("Opened!", { id: `open-${liveBox.boxId}` });
       refetch();
     } catch (e: any) { toast.error(e?.message || "Open failed", { id: `open-${liveBox.boxId}` }); }
-  }, [boxes, openBox, openBoxNow, refetch]);
+  }, [boxes, openBox, openBoxNow, refetch, wallet]);
 
   const totalSold = boxes.reduce((a, b) => a + (b.sold || 0), 0);
   const activeBoxes = boxes.filter(b => b.status === 0).length;

@@ -24,7 +24,7 @@ export function useProgram(connection: Connection | null, wallet: any): Program 
 
 export const PLATFORM_SEED = Buffer.from("platform");
 export const PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z"
+  process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"
 );
 
 export async function platformPDA(): Promise<[PublicKey, number]> {

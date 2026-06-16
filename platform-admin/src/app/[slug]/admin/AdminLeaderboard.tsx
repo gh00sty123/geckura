@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { BorshAccountsCoder, BorshCoder, EventParser } from "@coral-xyz/anchor";
 
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z");
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 interface ParsedEvent {
@@ -208,9 +208,37 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
 
       if (newEvents.length > 0) {
         setProgressMsg(`Uploading ${newEvents.length} events to database...`);
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+
+        if (wallet.signMessage && wallet.publicKey) {
+          try {
+            const timestamp = Math.floor(Date.now() / 1000);
+            const messageStr = `Sync leaderboard for ${slug} at ${timestamp}`;
+            const messageBytes = new TextEncoder().encode(messageStr);
+            const signatureBytes = await wallet.signMessage(messageBytes);
+            const signatureB64 = Buffer.from(signatureBytes).toString("base64");
+            headers["X-Leaderboard-Signature"] = signatureB64;
+            headers["X-Leaderboard-Signer"] = wallet.publicKey.toBase58();
+            headers["X-Leaderboard-Timestamp"] = timestamp.toString();
+          } catch (signErr: any) {
+            console.error("Signing failed:", signErr);
+            toast.error("You must sign the message to authorize syncing historical data.");
+            setLoading(false);
+            setProgressMsg("");
+            return;
+          }
+        } else {
+          toast.error("Wallet does not support message signing. Unable to sync.");
+          setLoading(false);
+          setProgressMsg("");
+          return;
+        }
+
         const syncRes = await fetch("/api/leaderboard", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify(newEvents)
         });
         if (syncRes.ok) {

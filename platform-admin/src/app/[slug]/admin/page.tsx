@@ -348,7 +348,7 @@ function Inner({ slug }: { slug: string }) {
       setWalletSol(wSol / 1e9);
 
       // 2. Fetch Vault SOL Balance
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z");
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
       const [projPk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
       const [vaultPk] = PublicKey.findProgramAddressSync([Buffer.from("vault"), projPk.toBuffer()], pgId);
       
@@ -386,7 +386,7 @@ function Inner({ slug }: { slug: string }) {
     if (!connected || !publicKey) { setSlugLoaded(false); setSlugBoxes([]); return; }
     try {
       const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z");
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
       const [pk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
 
       const acc = await retryWithBackoff(() => conn.getAccountInfo(pk), "getAccountInfo(project)");
@@ -679,7 +679,7 @@ function Inner({ slug }: { slug: string }) {
 
   /* ── Render ──────────────────────────────────────────────────────────────── */
   /* Derive project PDA once here so both header and modals share it */
-  const pgId  = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z");
+  const pgId  = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
   const projPda = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId)[0].toBase58();
 
   return (
@@ -1445,7 +1445,7 @@ function CreateBoxModal({
       /* ---- derive next box ID ---- */
       setStep("Resolving box ID…");
       const conn    = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
-      const pgId    = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z");
+      const pgId    = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
       const [projPk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
       const allBoxes = await retryWithBackoff(() => conn.getProgramAccounts(pgId), "getProgramAccounts");
       const projectBoxes: number[] = [];
@@ -1795,7 +1795,7 @@ function PrizeItemManager({
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
 
   const prizePda = useMemo(() => {
-    const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z");
+    const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
     const boxPk = new PublicKey(box.pubkey);
     return PublicKey.findProgramAddressSync(
       [Buffer.from("prize"), boxPk.toBuffer(), Buffer.from([0])],
@@ -2005,7 +2005,7 @@ function VaultManager({
   rentClaimMode?: number;
 }) {
   const wallet = useWallet();
-  const pgId   = useMemo(() => new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z"), []);
+  const pgId   = useMemo(() => new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"), []);
   const conn   = useMemo(() => new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed"), []);
   const projPk = useMemo(() => PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId)[0], [slug, pgId]);
   const vaultPk = useMemo(
@@ -2075,7 +2075,7 @@ function VaultManager({
     setActionErr("");
     setTxLoading(true);
     try {
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z");
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
       const [platform] = PublicKey.findProgramAddressSync([Buffer.from("platform")], pgId);
       const [project]  = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
       const [vault]    = PublicKey.findProgramAddressSync([Buffer.from("vault"), project.toBuffer()], pgId);

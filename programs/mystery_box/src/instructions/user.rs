@@ -2,12 +2,13 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::sysvar::SysvarId;
 use anchor_lang::system_program;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use sha2::{Digest, Sha256};
 
 use crate::errors::MysteryBoxError;
 use crate::state::{
     BoxConfig, BoxOpenEvent, BoxReceipt, BoxStatus, PlatformConfig, PrizeType,
-    PrizeVault, Project, BOX_SEED, PLATFORM_SEED, PROJECT_SEED, RECEIPT_SEED,
-    VAULT_SEED,
+    PrizeVault, Project, BOX_SEED, MAX_BOXES_PER_TX, PLATFORM_SEED, PROJECT_SEED,
+    RECEIPT_SEED, VAULT_SEED,
 };
 
 #[derive(Accounts)]
@@ -150,6 +151,7 @@ pub fn buy_box(
         receipt.bump = ctx.bumps.receipt;
     }
 
+    require!(quantity > 0 && quantity <= MAX_BOXES_PER_TX, MysteryBoxError::BoxSoldOut);
     require!(!platform.is_paused, MysteryBoxError::PlatformPaused);
     require!(project.is_active, MysteryBoxError::ProjectInactive);
     require!(
@@ -168,7 +170,9 @@ pub fn buy_box(
         MysteryBoxError::BoxAlreadyEnded
     );
 
-    let remaining = box_config.supply.saturating_sub(box_config.sold);
+    let remaining = box_config.supply
+        .checked_sub(box_config.sold)
+        .ok_or(MysteryBoxError::MathOverflow)?;
     require!(remaining >= quantity as u32, MysteryBoxError::BoxSoldOut);
 
     let total_price = box_config
@@ -205,8 +209,12 @@ pub fn buy_box(
         system_program::transfer(cpi_tenant, tenant_amount)?;
     }
 
-    box_config.sold = box_config.sold.saturating_add(quantity as u32);
-    receipt.purchased = receipt.purchased.saturating_add(quantity as u32);
+    box_config.sold = box_config.sold
+        .checked_add(quantity as u32)
+        .ok_or(MysteryBoxError::MathOverflow)?;
+    receipt.purchased = receipt.purchased
+        .checked_add(quantity as u32)
+        .ok_or(MysteryBoxError::MathOverflow)?;
 
     if box_config.sold >= box_config.supply {
         box_config.status = BoxStatus::Ended;
@@ -280,11 +288,10 @@ pub fn reveal_open(
     hash_input[96..104].copy_from_slice(&receipt.nonce.to_le_bytes());
     hash_input[104..112].copy_from_slice(&receipt.request_slot.to_le_bytes());
 
-    let mut random_u64: u64 = 14695981039346656037;
-    for byte in hash_input.iter() {
-        random_u64 ^= *byte as u64;
-        random_u64 = random_u64.wrapping_mul(1099511628211);
-    }
+    let mut hasher = Sha256::new();
+    hasher.update(&hash_input);
+    let hash_result = hasher.finalize();
+    let random_u64 = u64::from_le_bytes(hash_result[0..8].try_into().unwrap());
 
     let mut is_winner = false;
     let mut won_prize: Option<crate::state::PrizeItem> = None;
@@ -364,9 +371,13 @@ pub fn reveal_open(
 
         let idx = prize.index as usize;
         if idx < 20 {
-            box_config.claimed_prizes[idx] = box_config.claimed_prizes[idx].saturating_add(1);
+            box_config.claimed_prizes[idx] = box_config.claimed_prizes[idx]
+                .checked_add(1)
+                .ok_or(MysteryBoxError::MathOverflow)?;
         }
-        box_config.total_claimed = box_config.total_claimed.saturating_add(1);
+        box_config.total_claimed = box_config.total_claimed
+            .checked_add(1)
+            .ok_or(MysteryBoxError::MathOverflow)?;
 
         match prize.prize_type {
             PrizeType::Sol => {
@@ -437,9 +448,15 @@ pub fn reveal_open(
         }
     }
 
-    box_config.total_opened = box_config.total_opened.saturating_add(1);
-    receipt.pending_opens = receipt.pending_opens.saturating_sub(1);
-    receipt.total_opened = receipt.total_opened.saturating_add(1);
+    box_config.total_opened = box_config.total_opened
+        .checked_add(1)
+        .ok_or(MysteryBoxError::MathOverflow)?;
+    receipt.pending_opens = receipt.pending_opens
+        .checked_sub(1)
+        .ok_or(MysteryBoxError::MathOverflow)?;
+    receipt.total_opened = receipt.total_opened
+        .checked_add(1)
+        .ok_or(MysteryBoxError::MathOverflow)?;
     
     if box_config.sold >= box_config.supply {
         box_config.status = BoxStatus::Ended;

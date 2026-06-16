@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { retryWithBackoff, fetchProjects, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, boxPDA } from "@/lib/program-ix";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletContextState } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import toast from "react-hot-toast";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
@@ -149,9 +149,9 @@ export interface AppUIState {
   openBox: (boxName: string) => void;
   closeBoxPanel: () => void;
   claimReward: () => void;
-  buyBoxNow: (box: LiveBox) => Promise<void>;
-  openBoxNow:   (box: LiveBox) => Promise<void>;
-  refreshBalance: () => Promise<void>;
+  buyBoxNow: (box: LiveBox, wallet: WalletContextState) => Promise<void>;
+  openBoxNow:   (box: LiveBox, wallet: WalletContextState) => Promise<void>;
+  refreshBalance: (wallet: WalletContextState) => Promise<void>;
   addNotification: (notification: Omit<Notification, "id" | "read">) => void;
   markNotificationRead: (id: string) => void;
   clearAllNotifications: () => void;
@@ -179,7 +179,7 @@ function getGeckuraProjectPk(projects: AppUIState["allProjects"]): string {
     projects.find(p => p.slug === GECKURA_DEFAULT_SLUG)?.pubkey
     || PublicKey.findProgramAddressSync(
       [Buffer.from("project"), Buffer.from(GECKURA_DEFAULT_SLUG)],
-      new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z"),
+      new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"),
     )[0].toBase58()
   );
 }
@@ -206,7 +206,7 @@ export const useAppStore = create<AppUIState>((set, get) => ({
     const conn = makeConn();
     try {
       const allPkgs = await retryWithBackoff(
-        () => conn.getProgramAccounts(new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z")),
+        () => conn.getProgramAccounts(new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4")),
         "getProgramAccounts(frontend)",
       );
       const projects = await fetchProjects();
@@ -270,14 +270,12 @@ export const useAppStore = create<AppUIState>((set, get) => ({
   claimReward: ()       => set({ isOpening: false, openingBoxName: "", openingReward: null }),
 
   /* ── Buy a mystery box ── */
-  buyBoxNow: async (box: LiveBox) => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const wallet = useWallet();
+  buyBoxNow: async (box: LiveBox, wallet: WalletContextState) => {
     if (!wallet.publicKey) { toast.error("Connect wallet first"); return; }
     toast.loading("Purchasing box…", { id: "buy-box" });
     try {
       const conn = makeConn();
-      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z");
+      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
       const boxConfigPk = new PublicKey(box.pubkey);
       const receiptPk = PublicKey.findProgramAddressSync(
         [Buffer.from("receipt"), wallet.publicKey.toBuffer(), boxConfigPk.toBuffer()],
@@ -339,14 +337,12 @@ export const useAppStore = create<AppUIState>((set, get) => ({
   },
 
   /* ── Open a mystery box ── */
-  openBoxNow: async (box: LiveBox) => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const wallet = useWallet();
+  openBoxNow: async (box: LiveBox, wallet: WalletContextState) => {
     if (!wallet.publicKey) { toast.error("Connect wallet first"); return; }
     toast.loading("Opening box…", { id: "open-box" });
     try {
       const conn = makeConn();
-      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z");
+      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
       const boxConfigPk = new PublicKey(box.pubkey);
       const receiptPk  = PublicKey.findProgramAddressSync(
         [Buffer.from("receipt"), wallet.publicKey.toBuffer(), boxConfigPk.toBuffer()],
@@ -482,9 +478,7 @@ export const useAppStore = create<AppUIState>((set, get) => ({
   },
 
   /* ── Refresh wallet balance ── */
-  refreshBalance: async () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const wallet = useWallet();
+  refreshBalance: async (wallet: WalletContextState) => {
     if (!wallet.publicKey) return;
     try {
       const conn = makeConn();

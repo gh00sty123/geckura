@@ -15,7 +15,7 @@ import { resolveIpfsUrl } from "@/lib/helpers";
 import { BorshAccountsCoder, BorshCoder, BorshEventCoder, EventParser } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
 
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z");
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
 const RPC  = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 const EXPLORER_BASE = "https://explorer.solana.com/tx";
 const CLUSTER_PARAM = RPC.includes("devnet") ? "?cluster=devnet" : RPC.includes("mainnet") ? "" : "?cluster=devnet";

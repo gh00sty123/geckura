@@ -7,7 +7,7 @@ import IDL from "@/lib/idl.json";
 
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 export const PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z"
+  process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"
 );
 export { RPC_URL };
 
@@ -130,7 +130,6 @@ function _encodeArgs(name: string, args: any[]): { data: Buffer; accounts: any[]
     encodeBorsh(w, args[i], ixArg.type, typeMap);
   }
   const buf = Buffer.from(w.toArray());
-  console.debug(`[encodeArgs:${name}] data(${buf.length}B): ${buf.toString("hex")}`);
   return { data: buf, accounts: ixDef.accounts };
 }
 
@@ -266,6 +265,13 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
     });
     const supply = raw.readUInt32LE(offset); offset += 4;
     const sold = raw.readUInt32LE(offset); offset += 4;
+    const totalOpened = raw.readUInt32LE(offset); offset += 4;
+    const totalClaimed = raw.readUInt32LE(offset); offset += 4;
+    const claimedPrizes = Array.from({ length: 20 }, () => {
+      const val = raw.readUInt32LE(offset);
+      offset += 4;
+      return val;
+    });
     const startTime = readI64(raw, offset); offset = startTime.offset;
     const endTime = readI64(raw, offset); offset = endTime.offset;
     const status = raw[offset]; offset += 1;
@@ -277,6 +283,9 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
       acceptedPrices,
       supply,
       sold,
+      totalOpened,
+      totalClaimed,
+      claimedPrizes,
       startTime: startTime.value,
       endTime: endTime.value,
       status,
@@ -379,8 +388,8 @@ export function ixCreateBox(
   slug: string, boxId: number, priceLamports: number, mints: PublicKey[], prices: number[],
   supply: number, startTime: number, endTime: number,
 ): TransactionInstruction {
-  while (mints.length < 5) mints.push(PublicKey.default);
-  while (prices.length < 5) prices.push(0);
+  while (mints.length < 3) mints.push(PublicKey.default);
+  while (prices.length < 3) prices.push(0);
   return buildIx("create_box", {
     platform: { pubkey: platform, isSigner: false, isWritable: false },
     project: { pubkey: project, isSigner: false, isWritable: false },

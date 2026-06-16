@@ -127,7 +127,7 @@ export const createPrizeItemTx = async (
   );
   const prizeItemPda = PublicKey.findProgramAddressSync(
     [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([params.prizeIndex])],
-    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z")
+    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4")
   )[0];
 
   const ix = buildIx("create_prize_item", {
@@ -254,7 +254,7 @@ export const depositPrizeTx = async (
   );
   const prizeItemPda = PublicKey.findProgramAddressSync(
     [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([params.prizeIndex])],
-    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z")
+    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4")
   )[0];
   const [vaultPda] = await vaultPDA(projectPda);
   const vaultAta = PublicKey.findProgramAddressSync(
@@ -304,7 +304,7 @@ export const withdrawPrizeTx = async (
   );
   const prizeItemPda = PublicKey.findProgramAddressSync(
     [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([params.prizeIndex])],
-    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z")
+    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4")
   )[0];
   const [vaultPda] = await vaultPDA(projectPda);
   const vaultAta = PublicKey.findProgramAddressSync(
@@ -383,18 +383,24 @@ export const closeBoxTx = async (
   params: {
     slug: string;
     boxId: number;
+    rentDestination?: PublicKey;
   }
 ) => {
+  const [platformPda] = await platformPDA();
   const [projectPda] = await projectPDA(params.slug);
   const [boxConfigPda] = await boxPDA(
     projectPda,
     params.boxId
   );
 
+  const rentDest = params.rentDestination || wallet.publicKey!;
+
   const ix = buildIx("close_box", {
+    platform: { pubkey: platformPda, isSigner: false, isWritable: false },
     project: { pubkey: projectPda, isSigner: false, isWritable: false },
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
-    tenant: { pubkey: wallet.publicKey!,  isSigner: true, isWritable: false },
+    signer: { pubkey: wallet.publicKey!, isSigner: true, isWritable: false },
+    rent_destination: { pubkey: rentDest, isSigner: false, isWritable: true },
   }, [
     params.slug,
     params.boxId

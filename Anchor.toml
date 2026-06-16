@@ -4,7 +4,9 @@ version = "0.1.0"
 anchor_version = "1.0.1"
 
 [provider]
-cluster = "https://devnet.helius-rpc.com/?api-key=884d745d-5bb6-416d-97b5-61faeaa4ed5f"
+# IMPORTANT: Set your RPC URL here. Never commit API keys to git.
+# Override with: anchor --provider.cluster <URL>
+cluster = "https://api.devnet.solana.com"
 wallet = "~/.config/solana/id.json"
 
 [hooks]

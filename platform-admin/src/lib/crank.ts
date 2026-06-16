@@ -114,7 +114,7 @@ async function getSlotHash(connection: Connection, targetSlot: number): Promise<
 
 async function runCrank() {
   const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
-  console.log(`Connecting to connection: ${rpcUrl}`);
+  console.log(`Connecting to Solana cluster...`);
   const connection = new Connection(rpcUrl, "confirmed");
   const keeper = getKeeperKeypair();
   console.log(`Keeper Wallet Address: ${keeper.publicKey.toBase58()}`);
