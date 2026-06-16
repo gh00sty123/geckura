@@ -1,0 +1,12 @@
+node_modules
+.pnpm-store
+.turbo
+.next
+dist
+target
+.DS_Store
+.env
+.env.local
+.env.*.local
+Anchor.lock
+Cargo.lock

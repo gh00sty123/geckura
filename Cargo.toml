@@ -1,0 +1,22 @@
+[workspace]
+members = [
+    "programs/mystery_box"
+]
+resolver = "2"
+
+[profile.release]
+overflow-checks = false
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+repository = "https://example.com/mystery-box"
+
+[workspace.dependencies]
+anchor-lang = "1.0.1"
+anchor-spl = { version = "1.0.1", default-features = false, features = ["token", "associated_token", "token_2022"] }

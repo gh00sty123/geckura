@@ -1,0 +1,168 @@
+use anchor_lang::prelude::*;
+
+use crate::errors::MysteryBoxError;
+use crate::state::{PlatformConfig, Project, PROJECT_SEED, PLATFORM_SEED};
+
+#[derive(Accounts)]
+#[instruction(treasury: Pubkey)]
+pub struct InitializePlatform<'info> {
+    #[account(
+        init,
+        payer = super_admin,
+        space = PlatformConfig::SPACE,
+        seeds = [PLATFORM_SEED],
+        bump
+    )]
+    pub platform: Account<'info, PlatformConfig>,
+    #[account(mut)]
+    pub super_admin: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(slug: String)]
+pub struct CreateProject<'info> {
+    #[account(
+        seeds = [PLATFORM_SEED],
+        bump = platform.bump
+    )]
+    pub platform: Account<'info, PlatformConfig>,
+    #[account(
+        init,
+        payer = super_admin,
+        space = Project::SPACE,
+        seeds = [PROJECT_SEED, slug.as_bytes()],
+        bump
+    )]
+    pub project: Account<'info, Project>,
+    #[account(mut)]
+    pub super_admin: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(slug: String)]
+pub struct UpdateProjectFees<'info> {
+    #[account(
+        seeds = [PLATFORM_SEED],
+        bump = platform.bump
+    )]
+    pub platform: Account<'info, PlatformConfig>,
+    #[account(
+        mut,
+        seeds = [PROJECT_SEED, slug.as_bytes()],
+        bump = project.bump
+    )]
+    pub project: Account<'info, Project>,
+    pub super_admin: Signer<'info>,
+}
+
+#[derive(Accounts)]
+#[instruction(slug: String)]
+pub struct CloseProject<'info> {
+    #[account(
+        seeds = [PLATFORM_SEED],
+        bump = platform.bump
+    )]
+    pub platform: Account<'info, PlatformConfig>,
+    #[account(
+        mut,
+        seeds = [PROJECT_SEED, slug.as_bytes()],
+        bump = project.bump,
+        close = super_admin
+    )]
+    pub project: Account<'info, Project>,
+    pub super_admin: Signer<'info>,
+}
+
+pub fn initialize_platform(ctx: Context<InitializePlatform>, treasury: Pubkey) -> Result<()> {
+    let expected_admin = Pubkey::new_from_array([
+        210, 172, 147, 168, 119, 174, 233, 213, 111, 85, 134, 60, 125, 169, 167, 199, 89, 23, 27, 90, 222, 177, 107, 214, 165, 79, 126, 86, 30, 255, 32, 6
+    ]);
+    require_keys_eq!(
+        ctx.accounts.super_admin.key(),
+        expected_admin,
+        MysteryBoxError::Unauthorized
+    );
+    let platform = &mut ctx.accounts.platform;
+    platform.authority = ctx.accounts.super_admin.key();
+    platform.treasury = treasury;
+    platform.is_paused = false;
+    platform.bump = ctx.bumps.platform;
+    Ok(())
+}
+
+pub fn create_project(
+    ctx: Context<CreateProject>,
+    slug: String,
+    authority: Pubkey,
+    fee_wallet: Pubkey,
+    fee_lamports: u64,
+    rent_claim_mode: u8,
+) -> Result<()> {
+    require_keys_eq!(
+        ctx.accounts.super_admin.key(),
+        ctx.accounts.platform.authority,
+        MysteryBoxError::Unauthorized
+    );
+    require!(
+        !ctx.accounts.platform.is_paused,
+        MysteryBoxError::PlatformPaused
+    );
+
+    validate_slug(&slug)?;
+
+    let project = &mut ctx.accounts.project;
+    project.slug = slug.clone();
+    project.authority = authority;
+    project.fee_wallet = fee_wallet;
+    project.fee_lamports = fee_lamports;
+    project.is_active = true;
+    project.bump = ctx.bumps.project;
+    project.rent_claim_mode = rent_claim_mode;
+    project.reserved = [0; 63];
+
+    Ok(())
+}
+
+pub fn update_project_fees(
+    ctx: Context<UpdateProjectFees>,
+    _slug: String,
+    new_fee_lamports: u64,
+    new_fee_wallet: Pubkey,
+) -> Result<()> {
+    require_keys_eq!(
+        ctx.accounts.super_admin.key(),
+        ctx.accounts.platform.authority,
+        MysteryBoxError::Unauthorized
+    );
+
+    let project = &mut ctx.accounts.project;
+    project.fee_lamports = new_fee_lamports;
+    project.fee_wallet = new_fee_wallet;
+
+    Ok(())
+}
+
+pub fn close_project(ctx: Context<CloseProject>, _slug: String) -> Result<()> {
+     require_keys_eq!(
+         ctx.accounts.super_admin.key(),
+         ctx.accounts.platform.authority,
+         MysteryBoxError::Unauthorized
+     );
+     // Account closure is handled by the `close = super_admin` constraint
+
+     Ok(())
+ }
+
+fn validate_slug(slug: &str) -> Result<()> {
+    require!(!slug.is_empty(), MysteryBoxError::InvalidSlug);
+    require!(slug.len() <= 30, MysteryBoxError::InvalidSlug);
+    for &b in slug.as_bytes() {
+        require!(
+            b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-',
+            MysteryBoxError::InvalidSlug
+        );
+    }
+    Ok(())
+}

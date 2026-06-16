@@ -1,0 +1,10 @@
+
+> platform-admin@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by an unknown process, using available port 3001 instead.
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://10.255.255.254:3001
+✓ Ready in 1555ms
+[?25h

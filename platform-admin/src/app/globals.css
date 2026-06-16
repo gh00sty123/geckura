@@ -1,0 +1,222 @@
+@import "tailwindcss";
+
+:root {
+  /* Core palette */
+  --black-900: #0a0a0a;
+  --black-800: #111111;
+  --black-700: #1a1a1a;
+  --black-600: #222222;
+  --black-500: #2a2a2a;
+  --gray-400: #6b6b6b;
+  --gray-300: #888888;
+  --gray-200: #b0b0b0;
+  --gray-100: #d8d8d8;
+  --white: #ffffff;
+
+  /* Emerald / neon green */
+  --green-400: #34d399;
+  --green-500: #22c55e;
+  --green-600: #16a34a;
+  --green-700: #15803d;
+  --neon: #39ff14;
+  --neon-dim: #1a7a0a;
+
+  /* Rarity */
+  --rarity-common: #9ca3af;
+  --rarity-rare: #3b82f6;
+  --rarity-epic: #a855f7;
+  --rarity-legendary: #f59e0b;
+  --rarity-mythic: #ef4444;
+}
+
+@theme inline {
+  --color-black-900: var(--black-900);
+  --color-black-800: var(--black-800);
+  --color-black-700: var(--black-700);
+  --color-black-600: var(--black-600);
+  --color-black-500: var(--black-500);
+  --color-gray-400: var(--gray-400);
+  --color-gray-300: var(--gray-300);
+  --color-gray-200: var(--gray-200);
+  --color-gray-100: var(--gray-100);
+  --color-neon: var(--neon);
+  --color-neon-dim: var(--neon-dim);
+  --color-rarity-common: var(--rarity-common);
+  --color-rarity-rare: var(--rarity-rare);
+  --color-rarity-epic: var(--rarity-epic);
+  --color-rarity-legendary: var(--rarity-legendary);
+  --color-rarity-mythic: var(--rarity-mythic);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-600) var(--black-900);
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--black-900);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--green-600);
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--neon);
+}
+
+body {
+  background: var(--black-900);
+  color: var(--gray-100);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ── Glass panel ─────────────────────────────────── */
+@utility glass-panel {
+  background: rgba(17, 17, 17, 0.72);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(57, 255, 20, 0.08);
+}
+
+@utility glass-panel-lg {
+  background: rgba(17, 17, 17, 0.82);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(57, 255, 20, 0.12);
+}
+
+/* ── Neon glow helpers ────────────────────────────── */
+@utility neon-glow {
+  box-shadow:
+    0 0 8px rgba(57, 255, 20, 0.25),
+    0 0 24px rgba(57, 255, 20, 0.1),
+    inset 0 1px 0 rgba(57, 255, 20, 0.15);
+}
+
+@utility neon-glow-lg {
+  box-shadow:
+    0 0 12px rgba(57, 255, 20, 0.35),
+    0 0 40px rgba(57, 255, 20, 0.18),
+    0 0 80px rgba(57, 255, 20, 0.06),
+    inset 0 1px 0 rgba(57, 255, 20, 0.2);
+}
+
+@utility neon-text {
+  color: var(--neon);
+  text-shadow: 0 0 10px rgba(57, 255, 20, 0.6);
+}
+
+/* ── Animated gradient background ────────────────── */
+@keyframes gradient-shift {
+  0%   { background-position:   0%  50%; }
+  50%  { background-position: 100%  50%; }
+  100% { background-position:   0%  50%; }
+}
+
+@utility gradient-bg {
+  background: linear-gradient(-45deg, #0a0a0a, #0a140a, #0a0a0a, #07160a);
+  background-size: 400% 400%;
+  animation: gradient-shift 18s ease infinite;
+}
+
+/* ── Floating card hover ─────────────────────────── */
+@utility card-hover {
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.card-hover:hover {
+  transform: translateY(-5px) scale(1.015);
+}
+
+/* ── Skeleton shimmer ────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400% 0; }
+  100% { background-position:  400% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--black-700)  0%,
+    var(--black-600)  40%,
+    var(--black-700)  80%,
+    var(--black-700) 100%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── Rarity border animations ────────────────────── */
+@keyframes legendary-glow {
+  0%, 100% { border-color: var(--rarity-legendary); box-shadow: 0 0 16px rgba(245, 158, 11, 0.5); }
+  50% { border-color: #ffdd88; box-shadow: 0 0 30px rgba(245, 158, 11, 0.9), 0 0 60px rgba(245, 158, 11, 0.3); }
+}
+
+@keyframes epic-glow {
+  0%, 100% { border-color: var(--rarity-epic); box-shadow: 0 0 12px rgba(168, 85, 247, 0.4); }
+  50% { border-color: #c084fc; box-shadow: 0 0 24px rgba(168, 85, 247, 0.7); }
+}
+
+@keyframes rare-glow {
+  0%, 100% { border-color: var(--rarity-rare); box-shadow: 0 0 10px rgba(59, 130, 246, 0.35); }
+  50% { border-color: #60a5fa; box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
+}
+
+.rarity-legendary { animation: legendary-glow 2s ease-in-out infinite; }
+.rarity-epic       { animation: epic-glow       2.4s ease-in-out infinite; }
+.rarity-rare       { animation: rare-glow         2s ease-in-out infinite; }
+
+/* ── Pulse ───────────────────────────────────────── */
+@keyframes pulse-neon {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.pulse-neon { animation: pulse-neon 2.2s ease-in-out infinite; }
+
+/* ── Float ───────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(1deg); }
+  75% { transform: translateY(6px)  rotate(-1deg); }
+}
+
+.float-anim { animation: float 6s ease-in-out infinite; }
+
+/* ── Ticker scroll ───────────────────────────────── */
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker-anim {
+  animation: ticker-scroll 30s linear infinite;
+}
+
+/* ── Confetti ────────────────────────────────────── */
+@keyframes confetti-fall {
+  0%   { transform: translateY(-60px) rotate(0deg);   opacity: 1; }
+  100% { transform: translateY(480px) rotate(720deg); opacity: 0; }
+}
+
+/* ── Spin ────────────────────────────────────────── */
+@keyframes reward-spin {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(720deg); }
+}
+
+/* ── Countdown flip ──────────────────────────────── */
+@keyframes countdown-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.08); }
+}
