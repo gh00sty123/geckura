@@ -1,1 +1,3 @@
-# mystery-box
+# Geckura Mystery Box Platform
+
+Deployment configuration updated.
