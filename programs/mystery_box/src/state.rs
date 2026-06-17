@@ -66,8 +66,9 @@ pub struct Project {
     pub bump: u8,
     // 0 = project authority claims ATA rent, 1 = platform treasury claims ATA rent
     pub rent_claim_mode: u8,
+    pub fee_wallet_2: Pubkey,
     // Reserved padding for future schema fields
-    pub reserved: [u8; 63],
+    pub reserved: [u8; 31],
 }
 
 impl Project {
@@ -79,7 +80,8 @@ impl Project {
         + BOOL_SIZE
         + U8_SIZE
         + U8_SIZE // rent_claim_mode
-        + 63; // reserved padding
+        + PUBKEY_SIZE
+        + 31; // reserved padding
     pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE;
 }
 

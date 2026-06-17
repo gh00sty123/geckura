@@ -289,11 +289,14 @@ export const useAppStore = create<AppUIState>((set, get) => ({
         "getAccountInfo(project_fee_wallet)"
       );
       let feeWalletPk: PublicKey  = PGID;
+      let feeWallet2Pk: PublicKey = PGID;
       let tenantPk: PublicKey     = PGID;
       if (projectAcc) {
         const proj: any = new (BorshAccountsCoder as any)(IDL, PGID).decode("Project", projectAcc.data);
         const feeWalletVal = proj?.feeWallet ?? proj?.fee_wallet;
         feeWalletPk = feeWalletVal ? new PublicKey(feeWalletVal) : new PublicKey("11111111111111111111111111111111");
+        const feeWallet2Val = proj?.feeWallet2 ?? proj?.fee_wallet_2;
+        feeWallet2Pk = feeWallet2Val ? new PublicKey(feeWallet2Val) : new PublicKey("11111111111111111111111111111111");
         const tenantVal = proj?.authority;
         tenantPk = tenantVal ? new PublicKey(tenantVal) : PGID;
       }
@@ -313,6 +316,7 @@ export const useAppStore = create<AppUIState>((set, get) => ({
         receipt:       { pubkey: receiptPk,                  isSigner: false, isWritable: true  },
         user:          { pubkey: wallet.publicKey,           isSigner: true,  isWritable: false },
         fee_wallet:    { pubkey: feeWalletPk,                isSigner: false, isWritable: true  },
+        fee_wallet_2:  { pubkey: feeWallet2Pk,               isSigner: false, isWritable: true  },
         tenant_wallet: { pubkey: tenantPk,                   isSigner: false, isWritable: true  },
         system_program: { pubkey: SystemProgram.programId,   isSigner: false, isWritable: false },
       }, [slug, box.boxId, 1]);

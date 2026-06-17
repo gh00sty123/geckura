@@ -26,11 +26,12 @@ pub mod mystery_box {
         slug: String,
         authority: Pubkey,
         fee_wallet: Pubkey,
+        fee_wallet_2: Pubkey,
         fee_lamports: u64,
         rent_claim_mode: u8,
     ) -> Result<()> {
         instructions::platform::create_project(
-            ctx, slug, authority, fee_wallet, fee_lamports, rent_claim_mode,
+            ctx, slug, authority, fee_wallet, fee_wallet_2, fee_lamports, rent_claim_mode,
         )
     }
 
@@ -39,8 +40,9 @@ pub mod mystery_box {
         slug: String,
         new_fee_lamports: u64,
         new_fee_wallet: Pubkey,
+        new_fee_wallet_2: Pubkey,
     ) -> Result<()> {
-        instructions::platform::update_project_fees(ctx, slug, new_fee_lamports, new_fee_wallet)
+        instructions::platform::update_project_fees(ctx, slug, new_fee_lamports, new_fee_wallet, new_fee_wallet_2)
     }
 
     pub fn close_project(ctx: Context<CloseProject>, slug: String) -> Result<()> {

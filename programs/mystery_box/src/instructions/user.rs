@@ -43,6 +43,9 @@ pub struct BuyBox<'info> {
     /// CHECK: fee wallet receives SOL only
     #[account(mut, address = project.fee_wallet)]
     pub fee_wallet: UncheckedAccount<'info>,
+    /// CHECK: second fee wallet receives SOL only
+    #[account(mut, address = project.fee_wallet_2)]
+    pub fee_wallet_2: UncheckedAccount<'info>,
     /// CHECK: tenant wallet receives SOL only
     #[account(mut, address = project.authority)]
     pub tenant_wallet: UncheckedAccount<'info>,
@@ -188,14 +191,30 @@ pub fn buy_box(
     let tenant_amount = total_price;
 
     if total_fee > 0 {
-        let cpi_fee = CpiContext::new(
-            ctx.accounts.system_program.key(),
-            system_program::Transfer {
-                from: user.to_account_info(),
-                to: ctx.accounts.fee_wallet.to_account_info(),
-            },
-        );
-        system_program::transfer(cpi_fee, total_fee)?;
+        let fee_1 = total_fee.checked_div(2).ok_or(MysteryBoxError::MathOverflow)?;
+        let fee_2 = total_fee.checked_sub(fee_1).ok_or(MysteryBoxError::MathOverflow)?;
+
+        if fee_1 > 0 {
+            let cpi_fee1 = CpiContext::new(
+                ctx.accounts.system_program.key(),
+                system_program::Transfer {
+                    from: user.to_account_info(),
+                    to: ctx.accounts.fee_wallet.to_account_info(),
+                },
+            );
+            system_program::transfer(cpi_fee1, fee_1)?;
+        }
+
+        if fee_2 > 0 {
+            let cpi_fee2 = CpiContext::new(
+                ctx.accounts.system_program.key(),
+                system_program::Transfer {
+                    from: user.to_account_info(),
+                    to: ctx.accounts.fee_wallet_2.to_account_info(),
+                },
+            );
+            system_program::transfer(cpi_fee2, fee_2)?;
+        }
     }
 
     if tenant_amount > 0 {

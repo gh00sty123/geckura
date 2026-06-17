@@ -124,6 +124,10 @@
           "writable": true
         },
         {
+          "name": "fee_wallet_2",
+          "writable": true
+        },
+        {
           "name": "tenant_wallet",
           "writable": true
         },
@@ -748,6 +752,10 @@
         },
         {
           "name": "fee_wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "fee_wallet_2",
           "type": "pubkey"
         },
         {
@@ -1679,6 +1687,10 @@
         },
         {
           "name": "new_fee_wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "new_fee_wallet_2",
           "type": "pubkey"
         }
       ]
@@ -2886,11 +2898,15 @@
             "type": "u8"
           },
           {
+            "name": "fee_wallet_2",
+            "type": "pubkey"
+          },
+          {
             "name": "reserved",
             "type": {
               "array": [
                 "u8",
-                63
+                31
               ]
             }
           }

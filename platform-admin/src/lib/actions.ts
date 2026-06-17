@@ -17,6 +17,7 @@ export const createProjectTx = async (
     slug: string;
     authority: PublicKey;
     feeWallet: PublicKey;
+    feeWallet2: PublicKey;
     feeLamports: number;
     solRankingPoints: number;
     tokenRankingPoints: number;
@@ -35,6 +36,7 @@ export const createProjectTx = async (
     params.slug,
     params.authority,
     params.feeWallet,
+    params.feeWallet2,
     params.feeLamports,
     params.rentClaimMode,
   ]);
@@ -46,6 +48,7 @@ export const updateProjectFeesTx = async (
   wallet: WalletState,
   slug: string,
   feeWallet: PublicKey,
+  feeWallet2: PublicKey,
   feeLamports: number
 ) => {
   const [platformPda] = await platformPDA();
@@ -55,7 +58,7 @@ export const updateProjectFeesTx = async (
     platform: { pubkey: platformPda, isSigner: false, isWritable: true },
     project: { pubkey: projectPda, isSigner: false, isWritable: true },
     super_admin: { pubkey: wallet.publicKey!, isSigner: true, isWritable: false },
-  }, [slug, feeLamports, feeWallet]);
+  }, [slug, feeLamports, feeWallet, feeWallet2]);
 
   await sendIx(ix, wallet);
 };

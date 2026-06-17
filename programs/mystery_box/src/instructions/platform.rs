@@ -97,6 +97,7 @@ pub fn create_project(
     slug: String,
     authority: Pubkey,
     fee_wallet: Pubkey,
+    fee_wallet_2: Pubkey,
     fee_lamports: u64,
     rent_claim_mode: u8,
 ) -> Result<()> {
@@ -116,11 +117,12 @@ pub fn create_project(
     project.slug = slug.clone();
     project.authority = authority;
     project.fee_wallet = fee_wallet;
+    project.fee_wallet_2 = fee_wallet_2;
     project.fee_lamports = fee_lamports;
     project.is_active = true;
     project.bump = ctx.bumps.project;
     project.rent_claim_mode = rent_claim_mode;
-    project.reserved = [0; 63];
+    project.reserved = [0; 31];
 
     Ok(())
 }
@@ -130,6 +132,7 @@ pub fn update_project_fees(
     _slug: String,
     new_fee_lamports: u64,
     new_fee_wallet: Pubkey,
+    new_fee_wallet_2: Pubkey,
 ) -> Result<()> {
     require_keys_eq!(
         ctx.accounts.super_admin.key(),
@@ -140,6 +143,7 @@ pub fn update_project_fees(
     let project = &mut ctx.accounts.project;
     project.fee_lamports = new_fee_lamports;
     project.fee_wallet = new_fee_wallet;
+    project.fee_wallet_2 = new_fee_wallet_2;
 
     Ok(())
 }
