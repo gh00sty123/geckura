@@ -997,15 +997,53 @@ export default function ProjectView({ slug }: { slug: string }) {
 
         {/* Content */}
         <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-12 pb-7 sm:pt-16 sm:pb-10">
-          <div className="flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center text-center space-y-6">
+            {/* Logo */}
+            {logoUri ? (
+              <motion.img
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                src={logoUri}
+                alt={title}
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-2 border-white/[0.1] shadow-2xl bg-black/40"
+              />
+            ) : (
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-[#39ff14]/10 border border-[#39ff14]/25 flex items-center justify-center text-4xl shadow-inner bg-black/40"
+              >
+                🦎
+              </motion.div>
+            )}
+
+            {/* Title & Slug */}
+            <div className="space-y-2">
+              <motion.h1
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="text-4xl sm:text-5xl font-black text-white tracking-tight uppercase"
+                style={{ textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}
+              >
+                {title}
+              </motion.h1>
+              <p className="text-xs text-[#39ff14] font-mono tracking-widest uppercase">
+                /{slug}
+              </p>
+            </div>
+
+            {/* Description */}
             {desc && (
               <motion.p
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="text-2xl sm:text-3xl font-semibold text-white max-w-3xl leading-snug text-center"
-                style={{ textShadow: "0 2px 8px rgba(0,0,0,0.85)" }}
-              >{desc}</motion.p>
+                transition={{ delay: 0.1, duration: 0.5 }}
+                className="text-base sm:text-lg text-gray-300 max-w-2xl leading-relaxed text-center"
+                style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}
+              >
+                {desc}
+              </motion.p>
             )}
           </div>
         </div>

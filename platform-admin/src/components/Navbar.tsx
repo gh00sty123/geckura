@@ -266,10 +266,10 @@ export default function Navbar({
                     Projects
                   </a>
                   <a
-                    href="#projects-directory"
+                    href="#pricing"
                     onClick={(e) => {
                       e.preventDefault();
-                      document.getElementById("projects-directory")?.scrollIntoView({ behavior: "smooth" });
+                      document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
                     }}
                     className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-gray-400 cursor-pointer"
                   >

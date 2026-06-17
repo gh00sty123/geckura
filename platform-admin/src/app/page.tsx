@@ -202,6 +202,159 @@ export default function HomePage() {
             })}
           </div>
         )}
+
+        {/* ── PRICING SECTION ── */}
+        <div id="pricing" className="space-y-8 pt-12 border-t border-white/[0.06]">
+          <div className="space-y-4 text-center">
+            <div className="flex items-center justify-center gap-2.5">
+              <div className="h-2 w-2 rounded-full bg-[#39ff14] animate-pulse" />
+              <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#39ff14]">
+                Pricing Plans
+              </h2>
+            </div>
+            <h3 className="text-3xl md:text-4xl font-black text-white">
+              Choose the Plan for Your Project
+            </h3>
+            <p className="text-sm text-gray-400 max-w-xl mx-auto leading-relaxed">
+              Launch your custom mystery box drops with rates tailored to your scale. Upgrade anytime as your project expands.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto pt-4">
+            {/* Basic / Free Plan */}
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="relative flex flex-col justify-between glass-panel rounded-3xl p-8 border border-white/[0.06] hover:border-white/[0.15] transition-all bg-black/20"
+            >
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-lg font-bold text-white">Basic</h4>
+                  <p className="text-xs text-gray-500 mt-1">For new projects starting out</p>
+                </div>
+                <div className="flex items-baseline gap-1 text-white">
+                  <span className="text-4xl font-black">Free</span>
+                </div>
+                <hr className="border-white/[0.06]" />
+                <ul className="space-y-3.5 text-xs text-gray-400">
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>Standard Platform Fee: <strong>Higher (5%)</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>Unlimited Mystery Packs</span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>Standard Odds System</span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>Public Directory Listing</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="pt-8">
+                <Link href="/admin/new">
+                  <button className="w-full py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer">
+                    Get Started Free
+                  </button>
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* Pro Plan */}
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="relative flex flex-col justify-between glass-panel rounded-3xl p-8 border border-[#39ff14]/30 hover:border-[#39ff14]/60 shadow-[0_0_30px_rgba(57,255,20,0.04)] bg-gradient-to-b from-[#39ff14]/5 to-transparent"
+            >
+              <div className="absolute top-4 right-4">
+                <span className="text-[9px] px-2.5 py-1 rounded-full bg-[#39ff14]/10 text-[#39ff14] border border-[#39ff14]/20 font-bold uppercase tracking-wider">
+                  Popular
+                </span>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-lg font-bold text-[#39ff14]">Pro</h4>
+                  <p className="text-xs text-gray-400 mt-1 font-medium">For growing projects & launches</p>
+                </div>
+                <div className="flex items-baseline gap-1 text-white">
+                  <span className="text-4xl font-black">1 SOL</span>
+                  <span className="text-xs text-gray-500 font-medium">/ lifetime</span>
+                </div>
+                <hr className="border-[#39ff14]/10" />
+                <ul className="space-y-3.5 text-xs text-gray-300">
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✦</span>
+                    <span>Reduced Platform Fee: <strong>Lower (2%)</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>Custom Branding & Theme Colors</span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>Priority Directory Placement</span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>Advanced Launch Analytics</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="pt-8">
+                <Link href="/admin/new">
+                  <button className="w-full py-3 rounded-xl bg-[#39ff14] hover:shadow-[0_0_20px_rgba(57,255,20,0.4)] text-black font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer">
+                    Upgrade to Pro
+                  </button>
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* Enterprise Plan */}
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="relative flex flex-col justify-between glass-panel rounded-3xl p-8 border border-white/[0.06] hover:border-white/[0.15] transition-all bg-black/20"
+            >
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-lg font-bold text-white">Enterprise</h4>
+                  <p className="text-xs text-gray-500 mt-1">For high-volume drops & teams</p>
+                </div>
+                <div className="flex items-baseline gap-1 text-white">
+                  <span className="text-4xl font-black">4 SOL</span>
+                  <span className="text-xs text-gray-500 font-medium">/ lifetime</span>
+                </div>
+                <hr className="border-white/[0.06]" />
+                <ul className="space-y-3.5 text-xs text-gray-400">
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>Platform Fee Split: <strong>50% Revenue Share</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>Dedicated Creator Support</span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>API Access & Webhook Integrations</span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span>Custom domain (optional)</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="pt-8">
+                <Link href="/admin/new">
+                  <button className="w-full py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer">
+                    Select Enterprise
+                  </button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </div>
       </div>
 
       {/* ── Footer ── */}
