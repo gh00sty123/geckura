@@ -10,3 +10,5 @@ target
 .env.*.local
 Anchor.lock
 Cargo.lock
+.vercel
+.env*
