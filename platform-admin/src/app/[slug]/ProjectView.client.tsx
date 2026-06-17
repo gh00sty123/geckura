@@ -61,6 +61,25 @@ function shortenSig(sig: string): string {
   return sig.slice(0, 8) + "…" + sig.slice(-6);
 }
 
+function Ticker({ items }: { items: string[] }) {
+  const doubled = [...items, ...items];
+  return (
+    <div className="overflow-hidden">
+      <div className="ticker-anim flex gap-10 whitespace-nowrap text-xs text-gray-400">
+        {doubled.map((t, i) => (
+          <span key={i} className="flex items-center gap-2">
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#39ff14] opacity-70" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#39ff14]" />
+            </span>
+            {t}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function parseSolanaError(err: any): string {
   const msg = err?.message || "";
   
@@ -460,6 +479,78 @@ export default function ProjectView({ slug }: { slug: string }) {
   const [vaultAssets, setVaultAssets] = useState<AssetInfo[]>([]);
   const [tokenMetaMap, setTokenMetaMap] = useState<Record<string, { symbol: string; name: string; decimals: number; image: string; isNFT?: boolean }>>({});
   const [prizeItems, setPrizeItems] = useState<Record<string, any[]>>({});
+  const [liveWins, setLiveWins] = useState<string[]>([]);
+
+  useEffect(() => {
+    const conn = new Connection(RPC, "confirmed");
+    const eventCoder = new BorshEventCoder(IDL as any);
+
+    const subscriptionId = conn.onLogs(
+      PGID,
+      (logsInfo, ctx) => {
+        const logs = logsInfo.logs;
+        for (const log of logs) {
+          if (log.includes("Program data:")) {
+            try {
+              const dataIndex = log.indexOf("Program data:") + 13;
+              const eventLog = log.slice(dataIndex).trim();
+              const ev = eventCoder.decode(eventLog);
+              if (ev && ev.name === "BoxOpenEvent") {
+                const data: any = ev.data;
+                const userPubkey = data.user?.toBase58?.() || String(data.user);
+                const userShort = userPubkey.slice(0, 4) + "…" + userPubkey.slice(-4);
+                
+                const amountWon = data.amountWon?.toNumber?.() ?? data.amountWon ?? 0;
+                const won = data.won ?? false;
+                
+                let winMessage = "";
+                if (won) {
+                  const mint = data.tokenMint?.toBase58?.() || String(data.tokenMint);
+                  const details = resolveTokenDetails(mint, tokenMetaMap);
+                  const isNFT = details.isNFT || details.symbol === "NFT" || details.decimals === 0;
+                  
+                  if (details.symbol === "SOL") {
+                    winMessage = `${userShort} won ${formatSol(amountWon)} SOL!`;
+                  } else if (isNFT) {
+                    winMessage = `${userShort} won a rare NFT!`;
+                  } else {
+                    const parsedAmount = amountWon / Math.pow(10, details.decimals);
+                    winMessage = `${userShort} won ${parsedAmount.toLocaleString()} ${details.symbol}!`;
+                  }
+                } else {
+                  winMessage = `${userShort} opened a box (no prize)`;
+                }
+
+                if (winMessage) {
+                  setLiveWins(prev => [winMessage, ...prev].slice(0, 10));
+                }
+              }
+            } catch (err) {
+              console.debug("Failed to parse live log event:", err);
+            }
+          }
+        }
+      },
+      "confirmed"
+    );
+
+    return () => {
+      conn.removeOnLogsListener(subscriptionId).catch(console.error);
+    };
+  }, [tokenMetaMap]);
+
+  const fallbackWins = useMemo(() => [
+    "0xWizard won a Mythic Diamond Ape",
+    "GeckoGuru won a Legendary Geckura #0842",
+    "NeonFiona won an Epic Toxic Reptile",
+    "LunaStack won a Rare Neon Claw",
+    "ByteBaron won a Mythic Sacred Hex",
+    "MoonKid won a Legendary Plasma Spine",
+  ], []);
+
+  const winsToDisplay = useMemo(() => {
+    return [...liveWins, ...fallbackWins];
+  }, [liveWins, fallbackWins]);
 
   useEffect(() => {
     if (allBoxes.length === 0) return;
@@ -883,6 +974,11 @@ export default function ProjectView({ slug }: { slug: string }) {
         backgroundAttachment: 'fixed, fixed',
       } : {}}
     >
+      {/* ─── LIVE WINNINGS TICKER ─── */}
+      <div className="w-full bg-black/40 border-b border-white/[0.06] backdrop-blur-md relative z-40 overflow-hidden py-3">
+        <Ticker items={winsToDisplay} />
+      </div>
+
       <div className="flex-grow">
         <div className="relative overflow-hidden">
 
