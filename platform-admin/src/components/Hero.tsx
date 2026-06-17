@@ -130,7 +130,7 @@ export default function Hero({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex flex-wrap items-center gap-4"
+            className="flex flex-wrap items-center gap-4 animate-pulse-slow"
           >
             <motion.button
               onClick={() => onOpenPack("Gecko Genesis")}
@@ -156,37 +156,6 @@ export default function Hero({
               <FiBox className="text-[#39ff14]" />
               Browse All Packs
             </motion.button>
-          </motion.div>
-
-          {/* Ticker */}
-          <div className="pt-2">
-            <Ticker items={wins} />
-          </div>
-
-          {/* Stat pills */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, delay: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="grid grid-cols-3 gap-3"
-          >
-            <StatCard
-              icon={LuSparkles}
-              label="Today's Jackpot"
-              value={<><sup className="text-sm">$</sup><CountUp end={jackpot} decimals={2} duration={1.5} separator="," /></>}
-              sub="+$0.84/s"
-            />
-            <StatCard
-              icon={FiShoppingBag}
-              label="Packs Opened Today"
-              value={<CountUp end={1247} duration={1.2} separator="," />}
-            />
-            <StatCard
-              icon={FiStar}
-              label="Top Rarity Today"
-              value="Mythic"
-              sub="3 legendary drops"
-            />
           </motion.div>
         </div>
 
