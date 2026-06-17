@@ -255,7 +255,7 @@ export default function HomePage() {
                 </ul>
               </div>
               <div className="pt-8">
-                <Link href="/admin/new">
+                <Link href="/admin/new?package=free">
                   <button className="w-full py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer">
                     Get Started Free
                   </button>
@@ -303,7 +303,7 @@ export default function HomePage() {
                 </ul>
               </div>
               <div className="pt-8">
-                <Link href="/admin/new">
+                <Link href="/admin/new?package=pro">
                   <button className="w-full py-3 rounded-xl bg-[#39ff14] hover:shadow-[0_0_20px_rgba(57,255,20,0.4)] text-black font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer">
                     Upgrade to Pro
                   </button>
@@ -346,7 +346,7 @@ export default function HomePage() {
                 </ul>
               </div>
               <div className="pt-8">
-                <Link href="/admin/new">
+                <Link href="/admin/new?package=enterprise">
                   <button className="w-full py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer">
                     Select Enterprise
                   </button>
