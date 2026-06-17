@@ -53,7 +53,6 @@ export default function NewProjectPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!wallet.publicKey) return;
 
     setSubmitting(true);
     setError(null);
@@ -150,14 +149,6 @@ Theme Color Accent: ${themeColor}
       }
     }
   };
-
-  if (!wallet.connected) {
-    return (
-      <div className="flex flex-col items-center justify-center h-96 gap-4 text-center">
-        <p className="text-gray-500">Connect your wallet to configure your project.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-2xl mx-auto pb-12">
