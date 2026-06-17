@@ -125,38 +125,7 @@ export default function Hero({
             </p>
           </motion.div>
 
-          {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, delay: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex flex-wrap items-center gap-4 animate-pulse-slow"
-          >
-            <motion.button
-              onClick={() => onOpenPack("Gecko Genesis")}
-              className="group relative flex items-center gap-3 rounded-2xl bg-gradient-to-r from-[#39ff14] to-emerald-500 px-8 py-4 text-black font-extrabold text-lg shadow-[0_0_32px_rgba(57,255,20,0.5)]"
-              whileHover={{ scale: 1.055, boxShadow: "0 0 64px rgba(57,255,20,0.7)" }}
-              whileTap={{ scale: 0.96 }}
-            >
-              <svg className="w-6 h-6" viewBox="0 0 28 28" fill="none">
-                <rect x="2"  y="2"  width="24" height="24" rx="6"
-                  fill="black" stroke="#39ff14" strokeWidth="1.5" />
-                <text x="14" y="19" textAnchor="middle" fontSize="13"
-                  fill="#39ff14" fontFamily="sans-serif" fontWeight="bold">?</text>
-              </svg>
-              Open Mystery Pack
-              <FiChevronRight className="text-xl transition-transform group-hover:translate-x-1.5" />
-            </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              className="flex items-center gap-2 rounded-2xl bg-white/[0.04] border border-white/[0.1] px-6 py-4 text-sm font-semibold text-white hover:bg-white/[0.08] transition-all"
-            >
-              <FiBox className="text-[#39ff14]" />
-              Browse All Packs
-            </motion.button>
-          </motion.div>
         </div>
 
         {/* Right column — featured pack */}

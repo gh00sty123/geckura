@@ -253,22 +253,49 @@ export default function Navbar({
           {/* ── Navigation Links (CENTERED!) ── */}
           {!isAdminPage ? (
             <div className="flex items-center gap-6">
-              <Link
-                href={slug === "geckurabox" ? "/" : `/${slug}`}
-                className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
-                  pathname === `/${slug}` || pathname === "/" ? "text-theme-glow" : "text-gray-400"
-                }`}
-              >
-                Packs
-              </Link>
-              <Link
-                href={`/${slug}/leaderboard`}
-                className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
-                  pathname?.includes("/leaderboard") ? "text-theme-glow" : "text-gray-400"
-                }`}
-              >
-                Leaderboard
-              </Link>
+              {pathname === "/" ? (
+                <>
+                  <a
+                    href="#projects-directory"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById("projects-directory")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-gray-400 cursor-pointer"
+                  >
+                    Projects
+                  </a>
+                  <a
+                    href="#projects-directory"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById("projects-directory")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-gray-400 cursor-pointer"
+                  >
+                    Pricing
+                  </a>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={slug === "geckurabox" ? "/" : `/${slug}`}
+                    className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
+                      pathname === `/${slug}` || pathname === "/" ? "text-theme-glow" : "text-gray-400"
+                    }`}
+                  >
+                    Packs
+                  </Link>
+                  <Link
+                    href={`/${slug}/leaderboard`}
+                    className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
+                      pathname?.includes("/leaderboard") ? "text-theme-glow" : "text-gray-400"
+                    }`}
+                  >
+                    Leaderboard
+                  </Link>
+                </>
+              )}
             </div>
           ) : (
             pathname !== "/admin" && (
