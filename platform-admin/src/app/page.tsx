@@ -238,7 +238,7 @@ export default function HomePage() {
                 <ul className="space-y-3.5 text-xs text-gray-400">
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✓</span>
-                    <span>Platform Fee: <strong>0.003 SOL</strong> / box open</span>
+                    <span>Platform Fee: <strong>0.0035 SOL</strong> / box open</span>
                   </li>
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✓</span>
@@ -286,7 +286,7 @@ export default function HomePage() {
                 <ul className="space-y-3.5 text-xs text-gray-300">
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✦</span>
-                    <span>Platform Fee: <strong>0.002 SOL</strong> / box open</span>
+                    <span>Platform Fee: <strong>0.0025 SOL</strong> / box open</span>
                   </li>
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✓</span>

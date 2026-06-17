@@ -21,7 +21,11 @@ export default function NewProjectPage() {
   const [bgUri, setBgUri] = useState("");
   const [themeColor, setThemeColor] = useState("#39ff14");
   const [adminWallet, setAdminWallet] = useState("");
-  const [feeWallet, setFeeWallet] = useState("");
+  const PRIMARY_FEE_WALLET = "FBPFAtDxCwPEKb5kUp779TdFQU3hyPmfjT2LwtrkKscq";
+  const SECONDARY_FEE_WALLET = "9xQeQCtdv4URZ9wTnv2N31A3S6d85s1D4x9gZtLrtg52";
+
+  const [feeWalletType, setFeeWalletType] = useState("primary");
+  const [feeWallet, setFeeWallet] = useState(PRIMARY_FEE_WALLET);
   const [feeLamports, setFeeLamports] = useState("0");
   const [solRankingPoints, setSolRankingPoints] = useState("2");
   const [tokenRankingPoints, setTokenRankingPoints] = useState("1");
@@ -304,26 +308,49 @@ Theme Color Accent: ${themeColor}
 
             <div className="space-y-4">
               <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-xs text-gray-500 uppercase">Platform Fee Wallet (where fees are sent)</label>
-                  {wallet.publicKey && (
-                    <button
-                      type="button"
-                      onClick={() => setFeeWallet(wallet.publicKey!.toBase58())}
-                      className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition cursor-pointer"
-                    >
-                      Use Connected Wallet
-                    </button>
-                  )}
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={feeWallet}
-                  onChange={(e) => setFeeWallet(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 font-mono"
-                  placeholder="Enter Solana wallet address"
-                />
+                <label className="block text-xs text-gray-500 uppercase mb-1.5 font-bold">Platform Fee Wallet Selection</label>
+                <select
+                  value={feeWalletType}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFeeWalletType(val);
+                    if (val === "primary") {
+                      setFeeWallet(PRIMARY_FEE_WALLET);
+                    } else if (val === "secondary") {
+                      setFeeWallet(SECONDARY_FEE_WALLET);
+                    }
+                  }}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white cursor-pointer mb-3.5"
+                >
+                  <option value="primary">Primary Fee Wallet (FBPFAtDx...Kscq)</option>
+                  <option value="secondary">Secondary Fee Wallet (9xQeQC...tg52)</option>
+                  <option value="custom">Custom Wallet Address</option>
+                </select>
+
+                {feeWalletType === "custom" && (
+                  <div className="space-y-1.5 animate-fadeIn">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-xs text-gray-500 uppercase">Custom Platform Fee Wallet</label>
+                      {wallet.publicKey && (
+                        <button
+                          type="button"
+                          onClick={() => setFeeWallet(wallet.publicKey!.toBase58())}
+                          className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition cursor-pointer"
+                        >
+                          Use Connected Wallet
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={feeWallet}
+                      onChange={(e) => setFeeWallet(e.target.value)}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 font-mono"
+                      placeholder="Enter Solana wallet address"
+                    />
+                  </div>
+                )}
               </div>
 
               <div>
