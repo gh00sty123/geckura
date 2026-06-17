@@ -238,7 +238,7 @@ export default function HomePage() {
                 <ul className="space-y-3.5 text-xs text-gray-400">
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✓</span>
-                    <span>Standard Platform Fee: <strong>Higher (5%)</strong></span>
+                    <span>Platform Fee: <strong>0.003 SOL</strong> / box open</span>
                   </li>
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✓</span>
@@ -286,7 +286,11 @@ export default function HomePage() {
                 <ul className="space-y-3.5 text-xs text-gray-300">
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✦</span>
-                    <span>Reduced Platform Fee: <strong>Lower (2%)</strong></span>
+                    <span>Platform Fee: <strong>0.002 SOL</strong> / box open</span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span><strong>Live Draw Discord Bot</strong> Integration</span>
                   </li>
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✓</span>
@@ -295,10 +299,6 @@ export default function HomePage() {
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✓</span>
                     <span>Priority Directory Placement</span>
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <span className="text-[#39ff14] text-sm">✓</span>
-                    <span>Advanced Launch Analytics</span>
                   </li>
                 </ul>
               </div>
@@ -329,7 +329,11 @@ export default function HomePage() {
                 <ul className="space-y-3.5 text-xs text-gray-400">
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✓</span>
-                    <span>Platform Fee Split: <strong>50% Revenue Share</strong></span>
+                    <span>Platform Fee: <strong>Custom (50% Split)</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="text-[#39ff14] text-sm">✓</span>
+                    <span><strong>Live Draw Discord Bot</strong> Integration</span>
                   </li>
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✓</span>
@@ -338,10 +342,6 @@ export default function HomePage() {
                   <li className="flex items-center gap-2.5">
                     <span className="text-[#39ff14] text-sm">✓</span>
                     <span>API Access & Webhook Integrations</span>
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <span className="text-[#39ff14] text-sm">✓</span>
-                    <span>Custom domain (optional)</span>
                   </li>
                 </ul>
               </div>
