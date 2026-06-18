@@ -24,7 +24,7 @@ export default function DailyRewards() {
     <div className="glass-panel rounded-2xl p-5 space-y-4">
       <div className="flex items-center gap-2">
         <FiGift className="text-[#1cac64] text-lg" />
-        <h3 className="text-sm font-bold text-white">Daily Reward</h3>
+        <h3 className="text-sm font-bold text-[#0f2618]">Daily Reward</h3>
       </div>
 
       <div className="grid grid-cols-7 gap-1.5">
@@ -36,8 +36,8 @@ export default function DailyRewards() {
               key={i}
               className={`aspect-square rounded-xl flex items-center justify-center text-xs font-bold
                 ${done    ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/30"
-                  : active ? "bg-white/[0.06] border border-[#1cac64]/40 text-[#1cac64]/90"
-                  : "bg-white/[0.04] border border-white/[0.08] text-gray-600"
+                  : active ? "bg-[#1cac64]/6 border border-[#1cac64]/40 text-[#1cac64]/90"
+                  : "bg-[#1cac64]/5 border border-[#1cac64]/12 text-[#4a7d5e]"
                 }`}
             >
               {done ? "✦" : i + 1}
@@ -48,8 +48,8 @@ export default function DailyRewards() {
 
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-gray-500">Claimed today</p>
-          <p className="text-sm font-bold text-white">
+          <p className="text-xs text-[#3d6b4e]">Claimed today</p>
+          <p className="text-sm font-bold text-[#0f2618]">
             {claimed ? "✦ 50 GEK claimed" : "Unclaimed"}
           </p>
         </div>

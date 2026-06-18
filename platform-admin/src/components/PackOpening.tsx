@@ -126,8 +126,8 @@ export default function PackOpening({
           {/* ── Close ── */}
           <button
             onClick={resetAndClose}
-            className="absolute top-5 right-5 h-10 w-10 rounded-full bg-white/[0.06] border border-white/[0.1]
-              flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/[0.12]
+            className="absolute top-5 right-5 h-10 w-10 rounded-full bg-[#1cac64]/6 border border-white/[0.1]
+              flex items-center justify-center text-[#1a3a2a] hover:text-[#0f2618] hover:bg-white/[0.12]
               transition-all z-20 cursor-pointer"
           >
             <FiX />
@@ -140,7 +140,7 @@ export default function PackOpening({
             <div className="text-center mb-8">
               <p className="text-xs uppercase tracking-[0.2em] text-[#1cac64]/50 mb-1">Opening</p>
               <h2
-                className="text-2xl font-bold text-white neon-text"
+                className="text-2xl font-bold text-[#0f2618] neon-text"
                 style={{ textShadow: "0 0 24px rgba(28,172,100,.7)" }}
               >
                 {packName}
@@ -155,7 +155,7 @@ export default function PackOpening({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45 }}
               >
-                <div className="relative h-48 w-40 rounded-2xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-center overflow-hidden">
+                <div className="relative h-48 w-40 rounded-2xl bg-[#1cac64]/3 border border-[#1cac64]/12 flex items-center justify-center overflow-hidden">
                   {branding.logoUrl ? (
                     <img src={branding.logoUrl} alt="Project Logo" className="w-24 h-24 object-contain rounded-2xl" />
                   ) : (
@@ -221,7 +221,7 @@ export default function PackOpening({
                   ))}
                   <span className="relative font-black text-6xl z-10">?</span>
                 </div>
-                <p className="text-sm text-gray-400 pulse-neon">Drawing your reward…</p>
+                <p className="text-sm text-[#2d5a3f] pulse-neon">Drawing your reward…</p>
               </div>
             )}
 
@@ -276,7 +276,7 @@ export default function PackOpening({
                   >
                     {win.rarity.toUpperCase()}
                   </p>
-                  <p className="text-base font-bold text-white">{win.name}</p>
+                  <p className="text-base font-bold text-[#0f2618]">{win.name}</p>
                 </div>
 
                 <motion.button
@@ -308,13 +308,13 @@ export default function PackOpening({
                     ⚡ JACKPOT MYTHIC ⚡
                   </motion.p>
                 )}
-                <p className="text-gray-400 text-sm">Reward eligible to claim.</p>
+                <p className="text-[#2d5a3f] text-sm">Reward eligible to claim.</p>
                 <motion.button
                   onClick={resetAndClose}
                   whileHover={{ scale: 1.06 }}
                   whileTap={{ scale: 0.96 }}
-                  className="rounded-2xl bg-white/[0.07] border border-white/[0.12] px-10 py-4
-                    text-white font-semibold hover:bg-white/[0.12] transition-all cursor-pointer"
+                  className="rounded-2xl bg-[#1cac64]/8 border border-white/[0.12] px-10 py-4
+                    text-[#0f2618] font-semibold hover:bg-white/[0.12] transition-all cursor-pointer"
                 >
                   Done
                 </motion.button>

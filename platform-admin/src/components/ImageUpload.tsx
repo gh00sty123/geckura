@@ -58,10 +58,10 @@ export function ImageUpload({ label, value, onChange, className = "" }: ImageUpl
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <label className="block text-xs text-gray-500 uppercase">{label}</label>
+      <label className="block text-xs text-[#3d6b4e] uppercase">{label}</label>
       
       {value ? (
-        <div className="relative rounded-lg overflow-hidden border border-gray-700 bg-gray-900 group">
+        <div className="relative rounded-lg overflow-hidden border border-gray-700 bg-[#d9f5cc] group">
           <img src={value} alt="Uploaded" className="w-full h-32 object-cover" />
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
             <button
@@ -87,9 +87,9 @@ export function ImageUpload({ label, value, onChange, className = "" }: ImageUpl
           {isUploading ? (
             <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
           ) : (
-            <FiUploadCloud className="w-8 h-8 text-gray-500" />
+            <FiUploadCloud className="w-8 h-8 text-[#3d6b4e]" />
           )}
-          <div className="text-sm text-gray-400 text-center">
+          <div className="text-sm text-[#2d5a3f] text-center">
             {isUploading ? (
               <span>Uploading...</span>
             ) : (
@@ -111,13 +111,13 @@ export function ImageUpload({ label, value, onChange, className = "" }: ImageUpl
       
       {/* Fallback to manual URL input just in case */}
       <div className="flex gap-2 items-center mt-2">
-        <FiImage className="text-gray-500 w-4 h-4 shrink-0" />
+        <FiImage className="text-[#3d6b4e] w-4 h-4 shrink-0" />
         <input
           type="url"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Or paste an image URL..."
-          className="w-full bg-transparent border-none text-xs text-gray-400 focus:outline-none focus:text-white"
+          className="w-full bg-transparent border-none text-xs text-[#2d5a3f] focus:outline-none focus:text-[#0f2618]"
         />
       </div>
     </div>

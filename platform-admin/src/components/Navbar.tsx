@@ -65,7 +65,7 @@ export default function Navbar({
       case "daily_reward":
         return <FiGift className="text-theme" />;
       default:
-        return <FiBell className="text-gray-400" />;
+        return <FiBell className="text-[#2d5a3f]" />;
     }
   };
 
@@ -297,19 +297,19 @@ export default function Navbar({
                   <>
                     <button
                       onClick={() => window.dispatchEvent(new CustomEvent('open-project-branding'))}
-                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 hover-theme-glow transition-all"
+                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#2d5a3f] hover-theme-glow transition-all"
                     >
                       Branding
                     </button>
                     <button
                       onClick={() => window.dispatchEvent(new CustomEvent('open-vault-manager'))}
-                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 hover-theme-glow transition-all"
+                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#2d5a3f] hover-theme-glow transition-all"
                     >
                       Vault Manager
                     </button>
                     <button
                       onClick={() => window.dispatchEvent(new CustomEvent('open-create-box'))}
-                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 hover-theme-glow transition-all"
+                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#2d5a3f] hover-theme-glow transition-all"
                     >
                       Create Box
                     </button>
@@ -318,7 +318,7 @@ export default function Navbar({
                   <Link
                     href={`/${slug}/admin`}
                     className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
-                      pathname?.endsWith("/admin") ? "text-theme-glow" : "text-gray-400"
+                      pathname?.endsWith("/admin") ? "text-theme-glow" : "text-[#2d5a3f]"
                     }`}
                   >
                     Back to Admin
@@ -327,7 +327,7 @@ export default function Navbar({
                 <Link
                   href={`/${slug}/admin/leaderboard`}
                   className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
-                    pathname?.includes("/admin/leaderboard") ? "text-theme-glow" : "text-gray-400"
+                    pathname?.includes("/admin/leaderboard") ? "text-theme-glow" : "text-[#2d5a3f]"
                   }`}
                 >
                   Leaderboard
@@ -349,7 +349,7 @@ export default function Navbar({
             <div className="relative" ref={profileRef}>
               <motion.button
                 onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-2xl bg-white/50 border border-[#1cac64]/15
+                className="flex items-center gap-2 px-2 py-1.5 rounded-2xl bg-[#1cac64]/80 border border-[#1cac64]/15
                   hover:bg-white/70 hover-theme-border transition-all cursor-pointer"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
@@ -368,7 +368,7 @@ export default function Navbar({
                   )}
                 </div>
 
-                <FiChevronDown className={`text-xs text-gray-500 transition-transform duration-200 ml-0.5 ${profileOpen ? "rotate-180" : ""}`} />
+                <FiChevronDown className={`text-xs text-[#3d6b4e] transition-transform duration-200 ml-0.5 ${profileOpen ? "rotate-180" : ""}`} />
               </motion.button>
 
               {/* ── Profile Dropdown ── */}

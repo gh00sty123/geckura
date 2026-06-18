@@ -19,7 +19,7 @@ export default function StatsDashboard({ stats }: { stats: UserStats }) {
     <section aria-label="Statistics" className="space-y-5">
       <div className="flex items-center gap-2">
         <LuSparkles className="text-[#1cac64]" />
-        <h2 className="text-xl font-bold text-white">Your Statistics</h2>
+        <h2 className="text-xl font-bold text-[#0f2618]">Your Statistics</h2>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
@@ -36,12 +36,12 @@ export default function StatsDashboard({ stats }: { stats: UserStats }) {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: i * 0.07, ease: "easeOut" }}
-              className="glass-panel rounded-2xl p-5 group hover:bg-white/[0.04] transition-colors cursor-default"
+              className="glass-panel rounded-2xl p-5 group hover:bg-[#1cac64]/5 transition-colors cursor-default"
             >
               <div className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${stat.bg} mb-3`}>
                 <Icon className={`text-base ${stat.color}`} />
               </div>
-              <p className="text-[10px] uppercase tracking-[0.14em] text-gray-500 font-medium">{stat.label}</p>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#3d6b4e] font-medium">{stat.label}</p>
               <p className={`text-xl font-black tabular-nums mt-0.5 ${stat.color}`}>
                 {shouldCount
                   ? typeof stat.value === "number"

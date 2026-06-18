@@ -24,7 +24,7 @@ export default function Leaderboard({ data }: { data: LeaderEntry[] }) {
       {/* Header */}
       <div className="flex items-center gap-2 px-5 pt-5 pb-3">
         <FiAward className="text-amber-400 text-base" />
-        <h3 className="text-sm font-bold text-white">Leaderboard</h3>
+        <h3 className="text-sm font-bold text-[#0f2618]">Leaderboard</h3>
       </div>
 
       {/* Rankings */}
@@ -32,8 +32,8 @@ export default function Leaderboard({ data }: { data: LeaderEntry[] }) {
         {data.map((entry, i) => {
           const rankColor =
             i === 0 ? "text-amber-400" :
-            i === 1 ? "text-gray-300" :
-            i === 2 ? "text-amber-600" : "text-gray-500";
+            i === 1 ? "text-[#1a3a2a]" :
+            i === 2 ? "text-amber-600" : "text-[#3d6b4e]";
           const highlight = highlighted === i;
 
           return (
@@ -56,8 +56,8 @@ export default function Leaderboard({ data }: { data: LeaderEntry[] }) {
                 className="h-7 w-7 rounded-full bg-[#1a1a1a] shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-gray-200 truncate">{entry.username}</p>
-                <div className="flex items-center gap-1 text-[10px] text-gray-500">
+                <p className="text-xs font-semibold text-[#1a3a2a] truncate">{entry.username}</p>
+                <div className="flex items-center gap-1 text-[10px] text-[#3d6b4e]">
                   <FiTrendingUp className="text-[#1cac64]" /> +2.4%
                 </div>
               </div>

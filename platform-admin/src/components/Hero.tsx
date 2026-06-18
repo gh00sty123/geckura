@@ -16,7 +16,7 @@ function Ticker({ items }: { items: string[] }) {
   const doubled = [...items, ...items];
   return (
     <div className="overflow-hidden">
-      <div className="ticker-anim flex gap-10 whitespace-nowrap text-sm text-gray-400">
+      <div className="ticker-anim flex gap-10 whitespace-nowrap text-sm text-[#2d5a3f]">
         {doubled.map((t, i) => (
           <span key={i} className="flex items-center gap-2">
             <FiStar className="text-[#1cac64] text-xs" />
@@ -43,7 +43,7 @@ function StatCard({ icon: Icon, label, value, sub }: {
         <Icon className="text-[#1cac64] text-lg" />
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] uppercase tracking-wider text-gray-500">{label}</p>
+        <p className="text-[11px] uppercase tracking-wider text-[#3d6b4e]">{label}</p>
         <p className="text-lg font-bold text-[#1a3a2a] leading-tight">{value}</p>
         {sub && <p className="text-[11px] text-[#1cac64]/60">{sub}</p>}
       </div>
@@ -229,7 +229,7 @@ function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
           <p className="text-[9px] uppercase tracking-[0.18em] text-[#1cac64]/60 mb-0.5">
             Featured · Limited Drop
           </p>
-          <p className="text-sm font-bold text-white">{pack.name}</p>
+          <p className="text-sm font-bold text-[#0f2618]">{pack.name}</p>
           <div className="flex items-center justify-between mt-2">
             <span className="text-base font-extrabold text-[#1cac64]">{pack.price} SOL</span>
             <span className="text-[10px] text-[#6b9b7a]">+{pack.supplyLeft.toLocaleString()} left</span>
@@ -239,7 +239,7 @@ function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
-            className="mt-3 w-full rounded-xl bg-[#1cac64] text-white font-bold text-xs py-2.5 hover:shadow-[0_0_20px_rgba(28,172,100,0.4)] transition-shadow"
+            className="mt-3 w-full rounded-xl bg-[#1cac64] text-[#0f2618] font-bold text-xs py-2.5 hover:shadow-[0_0_20px_rgba(28,172,100,0.4)] transition-shadow"
             onClick={(e) => { e.stopPropagation(); onOpen(pack.name); }}
           >
             ✦ Open Pack

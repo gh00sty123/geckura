@@ -33,7 +33,7 @@ export default function BigWinsCarousel({ wins }: { wins: BigWin[] }) {
     <section aria-label="Big Wins" className="space-y-5">
       <div className="flex items-center gap-2">
         <FiAward className="text-[#1cac64] text-lg" />
-        <h2 className="text-xl font-bold text-white">Recent Big Wins</h2>
+        <h2 className="text-xl font-bold text-[#0f2618]">Recent Big Wins</h2>
       </div>
 
       {/* Carousel track */}
@@ -67,15 +67,15 @@ export default function BigWinsCarousel({ wins }: { wins: BigWin[] }) {
 
             {/* Info */}
             <div className="flex flex-col gap-3 p-6 lg:p-8">
-              <p className="text-[11px] text-gray-500 uppercase tracking-wider">User</p>
-              <p className="text-lg font-bold text-white">{win.username}</p>
+              <p className="text-[11px] text-[#3d6b4e] uppercase tracking-wider">User</p>
+              <p className="text-lg font-bold text-[#0f2618]">{win.username}</p>
 
               <div>
-                <p className="text-[11px] text-gray-500 uppercase tracking-wider mb-1">Reward pulled</p>
+                <p className="text-[11px] text-[#3d6b4e] uppercase tracking-wider mb-1">Reward pulled</p>
                 <p className="text-base font-semibold" style={{ color: rc }}>{win.reward}</p>
               </div>
 
-              <p className="text-[11px] text-gray-600">{new Date(win.timestamp).toLocaleString()}</p>
+              <p className="text-[11px] text-[#4a7d5e]">{new Date(win.timestamp).toLocaleString()}</p>
             </div>
 
             {/* Holographic edge glow */}

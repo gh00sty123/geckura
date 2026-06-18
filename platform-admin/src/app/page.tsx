@@ -141,7 +141,7 @@ export default function HomePage() {
                           <img
                             src={logoUrl}
                             alt={proj.name}
-                            className="w-12 h-12 rounded-2xl object-cover border border-white/[0.08] bg-black/40"
+                            className="w-12 h-12 rounded-2xl object-cover border border-[#1cac64]/12 bg-[#ebfde3]/60"
                           />
                         ) : (
                           <div className="w-12 h-12 rounded-2xl bg-[#1cac64]/10 border border-[#1cac64]/25 flex items-center justify-center text-lg shadow-inner">
@@ -190,7 +190,7 @@ export default function HomePage() {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full py-3 rounded-xl bg-[#1cac64]/5 hover:bg-[#1cac64] hover:text-white border border-[#1cac64]/15 hover:border-transparent text-[#1a3a2a] font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
+                        className="w-full py-3 rounded-xl bg-[#1cac64]/5 hover:bg-[#1cac64] hover:text-[#0f2618] border border-[#1cac64]/15 hover:border-transparent text-[#1a3a2a] font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
                       >
                         Explore Project
                         <FiExternalLink className="text-sm" />
@@ -204,7 +204,7 @@ export default function HomePage() {
         )}
 
         {/* ── PRICING SECTION ── */}
-        <div id="pricing" className="space-y-8 pt-12 border-t border-white/[0.06]">
+        <div id="pricing" className="space-y-8 pt-12 border-t border-[#1cac64]/10">
           <div className="space-y-4 text-center">
             <div className="flex items-center justify-center gap-2.5">
               <div className="h-2 w-2 rounded-full bg-[#1cac64] animate-pulse" />
@@ -304,7 +304,7 @@ export default function HomePage() {
               </div>
               <div className="pt-8">
                 <Link href="/admin/new?package=pro">
-                  <button className="w-full py-3 rounded-xl bg-[#1cac64] hover:shadow-[0_0_20px_rgba(28,172,100,0.3)] text-white font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer">
+                  <button className="w-full py-3 rounded-xl bg-[#1cac64] hover:shadow-[0_0_20px_rgba(28,172,100,0.3)] text-[#0f2618] font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer">
                     Upgrade to Pro
                   </button>
                 </Link>

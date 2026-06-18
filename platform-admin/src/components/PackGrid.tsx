@@ -38,8 +38,8 @@ export default function PackGrid({
       {/* Section head */}
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Mystery Packs</h2>
-          <p className="mt-1 text-xs text-gray-500">
+          <h2 className="text-2xl font-bold text-[#0f2618]">Mystery Packs</h2>
+          <p className="mt-1 text-xs text-[#3d6b4e]">
             {filtered.length} pack{filtered.length !== 1 ? "s" : ""} available · scroll to see more
           </p>
         </div>
@@ -56,7 +56,7 @@ export default function PackGrid({
               className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all
                 ${active
                   ? "bg-[#1cac64] text-[#0a0a0a] shadow-[0_0_18px_rgba(28,172,100,0.35)]"
-                  : "bg-white/[0.04] border border-white/[0.08] text-gray-400 hover:bg-white/[0.07] hover:text-gray-200"
+                  : "bg-[#1cac64]/5 border border-[#1cac64]/12 text-[#2d5a3f] hover:bg-[#1cac64]/8 hover:text-[#1a3a2a]"
                 }`}
             >
               {cat.icon}
@@ -82,7 +82,7 @@ export default function PackGrid({
       </motion.div>
 
       {filtered.length === 0 && (
-        <div className="py-16 text-center text-gray-500 text-sm">
+        <div className="py-16 text-center text-[#3d6b4e] text-sm">
           No packs in this category yet.
         </div>
       )}

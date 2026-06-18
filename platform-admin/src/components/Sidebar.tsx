@@ -9,20 +9,20 @@ export function Sidebar() {
   const isActive = (path: string) => pathname === path || pathname?.startsWith(path + "/");
 
   return (
-    <aside className="w-56 shrink-0 border-r border-gray-800 min-h-screen flex flex-col">
-      <div className="p-4 border-b border-gray-800">
+    <aside className="w-56 shrink-0 border-r border-[#1cac64]/20 min-h-screen flex flex-col">
+      <div className="p-4 border-b border-[#1cac64]/20">
         <h1 className="text-lg font-bold text-purple-400">MysteryBox</h1>
-        <p className="text-xs text-gray-500 mt-0.5">Platform Admin</p>
+        <p className="text-xs text-[#3d6b4e] mt-0.5">Platform Admin</p>
       </div>
       <nav className="flex-1 p-3 space-y-1">
-        <Link href="/admin" className={`block px-3 py-2 rounded text-sm ${isActive("/admin") && !isActive("/admin/projects") ? "bg-gray-800 text-white" : "text-gray-400 hover:bg-gray-800/50"}`}>
+        <Link href="/admin" className={`block px-3 py-2 rounded text-sm ${isActive("/admin") && !isActive("/admin/projects") ? "bg-[#c8edba] text-[#0f2618]" : "text-[#2d5a3f] hover:bg-[#c8edba]/50"}`}>
           Platform Overview
         </Link>
-        <Link href="/admin/projects" className={`block px-3 py-2 rounded text-sm ${isActive("/admin/projects") ? "bg-gray-800 text-white" : "text-gray-400 hover:bg-gray-800/50"}`}>
+        <Link href="/admin/projects" className={`block px-3 py-2 rounded text-sm ${isActive("/admin/projects") ? "bg-[#c8edba] text-[#0f2618]" : "text-[#2d5a3f] hover:bg-[#c8edba]/50"}`}>
           Projects
         </Link>
       </nav>
-      <div className="p-3 border-t border-gray-800 text-xs text-gray-600">
+      <div className="p-3 border-t border-[#1cac64]/20 text-xs text-[#4a7d5e]">
         Devnet · Bs4JjQ...
       </div>
     </aside>

@@ -40,7 +40,7 @@ export default function Notifications() {
       case "daily_reward":
         return <FiGift className="text-[#1cac64]" />;
       default:
-        return <FiBell className="text-gray-400" />;
+        return <FiBell className="text-[#2d5a3f]" />;
     }
   };
 
@@ -98,7 +98,7 @@ export default function Notifications() {
       {/* Bell button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-xl hover:bg-white/[0.06] transition-colors text-gray-400 hover:text-white"
+        className="relative p-2 rounded-xl hover:bg-[#1cac64]/6 transition-colors text-[#2d5a3f] hover:text-[#0f2618]"
       >
         <FiBell className="text-xl" />
         {unreadCount > 0 && (
@@ -113,13 +113,13 @@ export default function Notifications() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 top-full mt-2 w-80 max-h-[450px] overflow-hidden bg-[#111] rounded-2xl border border-white/[0.08] shadow-2xl z-50"
+            className="absolute right-0 top-full mt-2 w-80 max-h-[450px] overflow-hidden bg-[#111] rounded-2xl border border-[#1cac64]/12 shadow-2xl z-50"
           >
             {/* Header */}
-            <div className="p-4 border-b border-white/[0.06] flex items-center justify-between">
+            <div className="p-4 border-b border-[#1cac64]/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FiBell className="text-[#1cac64]" />
-                <h3 className="text-sm font-bold text-white">Notifications</h3>
+                <h3 className="text-sm font-bold text-[#0f2618]">Notifications</h3>
                 {unreadCount > 0 && (
                   <span className="px-2 py-0.5 rounded-full bg-[#1cac64]/10 text-[#1cac64] text-[10px] font-bold">
                     {unreadCount} new
@@ -129,7 +129,7 @@ export default function Notifications() {
               {notifications.length > 0 && (
                 <button
                   onClick={clearAll}
-                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                  className="text-xs text-[#3d6b4e] hover:text-[#1a3a2a] transition-colors"
                 >
                   Clear all
                 </button>
@@ -140,15 +140,15 @@ export default function Notifications() {
             <div className="overflow-y-auto max-h-[380px]">
               {notifications.length === 0 ? (
                 <div className="p-8 text-center">
-                  <FiBell className="text-3xl text-gray-600 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No notifications yet</p>
+                  <FiBell className="text-3xl text-[#4a7d5e] mx-auto mb-2" />
+                  <p className="text-[#3d6b4e] text-sm">No notifications yet</p>
                 </div>
               ) : (
                 notifications.map((notification) => (
                   <div
                     key={notification.id}
                     onClick={() => markAsRead(notification.id)}
-                    className={`p-4 border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors cursor-pointer ${
+                    className={`p-4 border-b border-[#1cac64]/8 hover:bg-[#1cac64]/3 transition-colors cursor-pointer ${
                       !notification.read ? "bg-white/[0.01]" : ""
                     }`}
                   >
@@ -157,10 +157,10 @@ export default function Notifications() {
                         {getNotificationIcon(notification.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white font-medium">
+                        <p className="text-sm text-[#0f2618] font-medium">
                           {notification.message}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-[#3d6b4e] mt-1">
                           {formatTimeAgo(notification.timestamp)}
                         </p>
                       </div>

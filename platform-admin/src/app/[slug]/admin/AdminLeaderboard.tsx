@@ -310,43 +310,43 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
   };
 
   return (
-    <div id="admin-leaderboard" className="bg-white/[0.02] border border-white/[0.05] p-6 rounded-3xl mt-6 backdrop-blur-sm">
+    <div id="admin-leaderboard" className="bg-[#1cac64]/3 border border-white/[0.05] p-6 rounded-3xl mt-6 backdrop-blur-sm">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div className="space-y-3">
-          <h2 className="text-xl font-black text-white flex items-center gap-2">
+          <h2 className="text-xl font-black text-[#0f2618] flex items-center gap-2">
             <FiUsers className="text-indigo-400" /> User Leaderboard Snapshot
           </h2>
-          <p className="text-sm text-gray-400 mt-1 font-medium leading-relaxed">
+          <p className="text-sm text-[#2d5a3f] mt-1 font-medium leading-relaxed">
             Pre-select timeframe to load quickly: Load <span className="text-[#1cac64] font-bold">{activeTab === "weekly" ? "weekly (7d)" : activeTab === "monthly" ? "monthly (30d)" : "all historical"}</span> open events to view the leaderboard and export a snapshot.
           </p>
           
-          <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4">
+          <div className="flex items-center gap-4 bg-[#1cac64]/8 border border-[#1cac64]/15 rounded-xl p-4">
             <div className="text-center">
               <div className="text-[#1cac64] font-black text-xl">{solRankingPoints}</div>
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">SOL Box Points</div>
+              <div className="text-[10px] text-[#2d5a3f] uppercase tracking-wider font-bold">SOL Box Points</div>
             </div>
             <div className="w-px bg-white/10 h-10" />
             <div className="text-center">
               <div className="text-[#1cac64] font-black text-xl">{tokenRankingPoints}</div>
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Token Box Points</div>
+              <div className="text-[10px] text-[#2d5a3f] uppercase tracking-wider font-bold">Token Box Points</div>
             </div>
-            <div className="ml-4 text-xs text-gray-400">
-              Edit these in <button onClick={() => window.dispatchEvent(new CustomEvent('open-project-branding'))} className="text-indigo-300 hover:text-white underline cursor-pointer">Project Branding</button>
+            <div className="ml-4 text-xs text-[#2d5a3f]">
+              Edit these in <button onClick={() => window.dispatchEvent(new CustomEvent('open-project-branding'))} className="text-indigo-300 hover:text-[#0f2618] underline cursor-pointer">Project Branding</button>
             </div>
           </div>
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex bg-white/5 rounded-xl p-1 border border-white/5 backdrop-blur-md">
-            <button onClick={() => setActiveTab("all")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "all" ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/20 shadow-[0_0_15px_rgba(28,172,100,0.15)]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>All Time</button>
-            <button onClick={() => setActiveTab("monthly")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "monthly" ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/20 shadow-[0_0_15px_rgba(28,172,100,0.15)]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>Monthly</button>
-            <button onClick={() => setActiveTab("weekly")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "weekly" ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/20 shadow-[0_0_15px_rgba(28,172,100,0.15)]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>Weekly</button>
+          <div className="flex bg-[#1cac64]/8 rounded-xl p-1 border border-white/5 backdrop-blur-md">
+            <button onClick={() => setActiveTab("all")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "all" ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/20 shadow-[0_0_15px_rgba(28,172,100,0.15)]" : "text-[#2d5a3f] hover:text-[#0f2618] hover:bg-[#1cac64]/8"}`}>All Time</button>
+            <button onClick={() => setActiveTab("monthly")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "monthly" ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/20 shadow-[0_0_15px_rgba(28,172,100,0.15)]" : "text-[#2d5a3f] hover:text-[#0f2618] hover:bg-[#1cac64]/8"}`}>Monthly</button>
+            <button onClick={() => setActiveTab("weekly")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "weekly" ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/20 shadow-[0_0_15px_rgba(28,172,100,0.15)]" : "text-[#2d5a3f] hover:text-[#0f2618] hover:bg-[#1cac64]/8"}`}>Weekly</button>
           </div>
 
           <button
             onClick={() => fetchLeaderboard(true)}
             disabled={loading}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-bold rounded-xl border border-white/10 transition disabled:opacity-50"
+            className="px-4 py-2 bg-[#1cac64]/8 hover:bg-white/10 text-[#0f2618] text-sm font-bold rounded-xl border border-[#1cac64]/15 transition disabled:opacity-50"
           >
             {loading ? "Loading..." : hasLoaded ? "Refresh Data" : "Load Leaderboard"}
           </button>
@@ -355,7 +355,7 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
             <button
               onClick={syncHistoricalData}
               disabled={loading}
-              className="px-4 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-white text-sm font-bold rounded-xl border border-indigo-500/30 transition disabled:opacity-50"
+              className="px-4 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-[#0f2618] text-sm font-bold rounded-xl border border-indigo-500/30 transition disabled:opacity-50"
             >
               {loading ? "Syncing..." : "Sync Historical Data"}
             </button>
@@ -364,7 +364,7 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
           {hasLoaded && rankings.length > 0 && (
             <button
               onClick={downloadCSV}
-              className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition flex items-center gap-2"
+              className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-[#0f2618] text-sm font-bold rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition flex items-center gap-2"
             >
               <FiDownload /> Export CSV
             </button>
@@ -380,28 +380,28 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
       )}
 
       {hasLoaded && !loading && rankings.length === 0 && (
-        <div className="py-10 text-center text-gray-500">
+        <div className="py-10 text-center text-[#3d6b4e]">
           No boxes have been opened yet.
         </div>
       )}
 
       {hasLoaded && !loading && rankings.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-black/20">
+        <div className="overflow-hidden rounded-xl border border-[#1cac64]/15 bg-[#ffffff]/40">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-white/5 border-b border-white/10">
-                <th className="py-3 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Rank</th>
-                <th className="py-3 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Wallet</th>
-                <th className="py-3 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Opens</th>
-                <th className="py-3 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Points</th>
+              <tr className="bg-[#1cac64]/8 border-b border-[#1cac64]/15">
+                <th className="py-3 px-4 text-xs font-bold text-[#2d5a3f] uppercase tracking-wider">Rank</th>
+                <th className="py-3 px-4 text-xs font-bold text-[#2d5a3f] uppercase tracking-wider">Wallet</th>
+                <th className="py-3 px-4 text-xs font-bold text-[#2d5a3f] uppercase tracking-wider">Opens</th>
+                <th className="py-3 px-4 text-xs font-bold text-[#2d5a3f] uppercase tracking-wider text-right">Points</th>
               </tr>
             </thead>
             <tbody>
               {rankings.map((user, i) => (
-                <tr key={user.wallet} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
-                  <td className="py-3 px-4 text-sm font-black text-gray-300">#{i + 1}</td>
-                  <td className="py-3 px-4 text-sm font-mono text-gray-300">{user.wallet}</td>
-                  <td className="py-3 px-4 text-sm text-gray-300 flex items-center gap-1.5"><FiActivity className="text-gray-500" /> {user.opens}</td>
+                <tr key={user.wallet} className="border-b border-white/5 last:border-0 hover:bg-[#1cac64]/3">
+                  <td className="py-3 px-4 text-sm font-black text-[#1a3a2a]">#{i + 1}</td>
+                  <td className="py-3 px-4 text-sm font-mono text-[#1a3a2a]">{user.wallet}</td>
+                  <td className="py-3 px-4 text-sm text-[#1a3a2a] flex items-center gap-1.5"><FiActivity className="text-[#3d6b4e]" /> {user.opens}</td>
                   <td className="py-3 px-4 text-sm font-black text-[#1cac64] text-right">{user.points}</td>
                 </tr>
               ))}

@@ -65,7 +65,7 @@ function Ticker({ items }: { items: string[] }) {
   const doubled = [...items, ...items];
   return (
     <div className="overflow-hidden">
-      <div className="ticker-anim flex gap-10 whitespace-nowrap text-xs text-gray-400">
+      <div className="ticker-anim flex gap-10 whitespace-nowrap text-xs text-[#2d5a3f]">
         {doubled.map((t, i) => (
           <span key={i} className="flex items-center gap-2">
             <span className="relative flex h-1.5 w-1.5 shrink-0">
@@ -868,7 +868,7 @@ export default function ProjectView({ slug }: { slug: string }) {
       boxShadow: `0 0 20px ${themeColor}15`,
     } : {};
 
-    const buttonClass = themeColor ? "!text-white hover:!opacity-95" : "!text-black hover:!bg-[#2ecc12]";
+    const buttonClass = themeColor ? "!text-[#0f2618] hover:!opacity-95" : "!text-black hover:!bg-[#2ecc12]";
     const buttonStyle = themeColor ? {
       backgroundColor: themeColor,
       boxShadow: `0 0 25px ${themeColor}35`,
@@ -886,7 +886,7 @@ export default function ProjectView({ slug }: { slug: string }) {
       >
         <div 
           style={cardStyle}
-          className="max-w-md w-full bg-black/45 border border-white/[0.06] rounded-3xl p-8 backdrop-blur-xl space-y-6 shadow-2xl relative overflow-hidden ring-1 ring-white/10 transition-all duration-300"
+          className="max-w-md w-full bg-[#ffffff]/70 border border-[#1cac64]/10 rounded-3xl p-8 backdrop-blur-xl space-y-6 shadow-2xl relative overflow-hidden ring-1 ring-white/10 transition-all duration-300"
         >
           <div 
             style={glowBgStyle}
@@ -894,8 +894,8 @@ export default function ProjectView({ slug }: { slug: string }) {
           />
           
           <div className="space-y-1.5 text-center">
-            <h1 className="text-xl font-black text-white tracking-tight uppercase">{title} Mystery Box</h1>
-            <p className="text-xs text-gray-500 font-medium">Connect wallet to get access</p>
+            <h1 className="text-xl font-black text-[#0f2618] tracking-tight uppercase">{title} Mystery Box</h1>
+            <p className="text-xs text-[#3d6b4e] font-medium">Connect wallet to get access</p>
           </div>
           
           <div className="flex justify-center pt-2">
@@ -932,14 +932,14 @@ export default function ProjectView({ slug }: { slug: string }) {
           backgroundAttachment: 'fixed',
         } : {}}
       >
-        <div className="max-w-md w-full bg-black/45 border border-white/[0.06] rounded-3xl p-8 backdrop-blur-xl space-y-6 shadow-2xl relative overflow-hidden ring-1 ring-white/10">
+        <div className="max-w-md w-full bg-[#ffffff]/70 border border-[#1cac64]/10 rounded-3xl p-8 backdrop-blur-xl space-y-6 shadow-2xl relative overflow-hidden ring-1 ring-white/10">
           <div className="flex flex-col items-center justify-center py-12 space-y-5">
             <div 
               style={loaderStyle}
-              className="h-10 w-10 border-2 border-white/10 rounded-full animate-spin shadow-[0_0_15px_rgba(255,255,255,0.02)]" 
+              className="h-10 w-10 border-2 border-[#1cac64]/15 rounded-full animate-spin shadow-[0_0_15px_rgba(255,255,255,0.02)]" 
             />
             <div className="space-y-1">
-              <p className="text-xs text-gray-500 uppercase tracking-widest font-mono">Loading Storefront</p>
+              <p className="text-xs text-[#3d6b4e] uppercase tracking-widest font-mono">Loading Storefront</p>
               <p 
                 style={textStyle}
                 className="text-sm font-semibold text-[#1cac64] animate-pulse"
@@ -975,7 +975,7 @@ export default function ProjectView({ slug }: { slug: string }) {
       } : {}}
     >
       {/* ─── LIVE WINNINGS TICKER ─── */}
-      <div className="w-full bg-black/40 border-b border-white/[0.06] backdrop-blur-md relative z-40 overflow-hidden py-3">
+      <div className="w-full bg-[#ebfde3]/60 border-b border-[#1cac64]/10 backdrop-blur-md relative z-40 overflow-hidden py-3">
         <Ticker items={winsToDisplay} />
       </div>
 
@@ -1003,7 +1003,7 @@ export default function ProjectView({ slug }: { slug: string }) {
               <motion.h1
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="text-4xl sm:text-5xl font-black text-white tracking-tight uppercase"
+                className="text-4xl sm:text-5xl font-black text-[#0f2618] tracking-tight uppercase"
                 style={{ textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}
               >
                 {title}
@@ -1016,7 +1016,7 @@ export default function ProjectView({ slug }: { slug: string }) {
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1, duration: 0.5 }}
-                className="text-base sm:text-lg text-gray-300 max-w-2xl leading-relaxed text-center"
+                className="text-base sm:text-lg text-[#1a3a2a] max-w-2xl leading-relaxed text-center"
                 style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}
               >
                 {desc}
@@ -1031,17 +1031,17 @@ export default function ProjectView({ slug }: { slug: string }) {
 
         {/* Section header with tabs */}
         <div className="flex items-center justify-center mb-6">
-          <h2 className="text-lg font-bold text-white">Mystery Packs</h2>
+          <h2 className="text-lg font-bold text-[#0f2618]">Mystery Packs</h2>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 bg-[#111]/50 rounded-2xl p-1 border border-white/[0.06] mx-auto max-w-xl">
+        <div className="flex gap-2 mb-6 bg-[#111]/50 rounded-2xl p-1 border border-[#1cac64]/10 mx-auto max-w-xl">
           <button
             onClick={() => setActiveTab("active")}
             className={`flex-1 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
               activeTab === "active"
                 ? "bg-[#1cac64]/15 text-[#1cac64] border border-[#1cac64]/20"
-                : "text-gray-500 hover:text-gray-400 hover:bg-white/[0.03]"
+                : "text-[#3d6b4e] hover:text-[#2d5a3f] hover:bg-[#1cac64]/4"
             }`}
           >
             Active Packs ({activeBoxes.length})
@@ -1050,8 +1050,8 @@ export default function ProjectView({ slug }: { slug: string }) {
             onClick={() => setActiveTab("expired")}
             className={`flex-1 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
               activeTab === "expired"
-                ? "bg-gray-500/10 text-gray-400 border border-gray-500/20"
-                : "text-gray-500 hover:text-gray-400 hover:bg-white/[0.03]"
+                ? "bg-gray-500/10 text-[#2d5a3f] border border-gray-500/20"
+                : "text-[#3d6b4e] hover:text-[#2d5a3f] hover:bg-[#1cac64]/4"
             }`}
           >
             Expired Packs ({endedBoxes.length})
@@ -1065,10 +1065,10 @@ export default function ProjectView({ slug }: { slug: string }) {
             className="py-20 text-center rounded-3xl glass-panel"
           >
             <span className="text-5xl block mb-4">📦</span>
-            <p className="text-gray-400 text-sm">
+            <p className="text-[#2d5a3f] text-sm">
               {activeTab === "active" ? "No active packs available yet." : "No expired packs yet."}
             </p>
-            <p className="text-gray-600 text-xs mt-1">Check back soon!</p>
+            <p className="text-[#4a7d5e] text-xs mt-1">Check back soon!</p>
           </motion.div>
         ) : (
           <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 ${activeTab === "expired" ? "opacity-60" : ""}`}>
@@ -1118,19 +1118,19 @@ export default function ProjectView({ slug }: { slug: string }) {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-lg mx-4 bg-[#111] rounded-2xl border border-white/[0.08] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg mx-4 bg-[#111] rounded-2xl border border-[#1cac64]/12 shadow-2xl overflow-hidden"
             >
               {/* Header */}
-              <div className="p-6 border-b border-white/[0.06] flex items-center justify-between">
+              <div className="p-6 border-b border-[#1cac64]/10 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className="text-xl font-bold text-[#0f2618]">
                     {selectedBoxForRewards.name || `Pack #${selectedBoxForRewards.boxId}`}
                   </h2>
-                  <p className="text-xs text-gray-500 mt-1">Possible Rewards</p>
+                  <p className="text-xs text-[#3d6b4e] mt-1">Possible Rewards</p>
                 </div>
                 <button
                   onClick={() => setSelectedBoxForRewards(null)}
-                  className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors text-gray-400 hover:text-white"
+                  className="p-2 rounded-xl hover:bg-[#1cac64]/6 transition-colors text-[#2d5a3f] hover:text-[#0f2618]"
                 >
                   ✕
                 </button>
@@ -1154,21 +1154,21 @@ export default function ProjectView({ slug }: { slug: string }) {
                       const remaining = (prize.total_count ?? 0) - (prize.claimed_count ?? 0);
                       
                       return (
-                        <div key={idx} className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                        <div key={idx} className="flex items-center gap-4 p-4 rounded-xl bg-[#1cac64]/4 border border-white/[0.05]">
                           {displayImage && (displayImage.startsWith("http") || displayImage.startsWith("/")) ? (
                             <img
                               src={displayImage}
                               alt={displayName}
-                              className="h-14 w-14 rounded-xl object-cover border border-white/[0.08]"
+                              className="h-14 w-14 rounded-xl object-cover border border-[#1cac64]/12"
                             />
                           ) : (
-                            <div className="h-14 w-14 rounded-xl border border-white/[0.08] bg-black/40 flex items-center justify-center text-2xl select-none">
+                            <div className="h-14 w-14 rounded-xl border border-[#1cac64]/12 bg-[#ebfde3]/60 flex items-center justify-center text-2xl select-none">
                               {displayImage || "🎁"}
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="text-base font-bold text-white truncate">{displayName}</p>
-                            <p className="text-sm text-gray-400 mt-1 font-mono">
+                            <p className="text-base font-bold text-[#0f2618] truncate">{displayName}</p>
+                            <p className="text-sm text-[#2d5a3f] mt-1 font-mono">
                               {isNothing 
                                 ? "Better luck next time!"
                                 : prize.prize_type === "Sol" 
@@ -1182,7 +1182,7 @@ export default function ProjectView({ slug }: { slug: string }) {
                               <span className="text-[11px] px-3 py-1 rounded-full bg-[#1cac64]/10 text-[#1cac64] border border-[#1cac64]/20 font-semibold">
                                 {prize.win_percentage}% Chance
                               </span>
-                              <span className="text-[11px] text-gray-500 font-medium">
+                              <span className="text-[11px] text-[#3d6b4e] font-medium">
                                 {remaining} / {prize.total_count ?? 0} available
                               </span>
                             </div>
@@ -1194,8 +1194,8 @@ export default function ProjectView({ slug }: { slug: string }) {
                 ) : (
                   <div className="text-center py-16">
                     <span className="text-5xl block mb-4">🎁</span>
-                    <p className="text-gray-400 text-sm">No rewards listed yet</p>
-                    <p className="text-gray-600 text-xs mt-2">Check back soon!</p>
+                    <p className="text-[#2d5a3f] text-sm">No rewards listed yet</p>
+                    <p className="text-[#4a7d5e] text-xs mt-2">Check back soon!</p>
                   </div>
                 )}
               </div>
@@ -1206,22 +1206,22 @@ export default function ProjectView({ slug }: { slug: string }) {
       </div>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-white/[0.06] mt-auto bg-black/20 backdrop-blur-md">
+      <footer className="border-t border-[#1cac64]/10 mt-auto bg-[#ffffff]/40 backdrop-blur-md">
         <div className="mx-auto max-w-5xl px-5 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-base font-black">
-              <span className="text-[#1cac64]">Geck</span><span className="text-white/50">ura</span>
+              <span className="text-[#1cac64]">Geck</span><span className="text-[#0f2618]/50">ura</span>
             </span>
-            <span className="text-xs text-gray-500">© 2026 Geckura. All rights reserved.</span>
+            <span className="text-xs text-[#3d6b4e]">© 2026 Geckura. All rights reserved.</span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-gray-400">
+          <div className="flex items-center gap-4 text-xs text-[#2d5a3f]">
             <span>
               Made with <span className="text-red-500 animate-pulse">❤️</span> by{" "}
               <a 
                 href="https://x.com/geckura" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-[#1cac64] hover:text-white font-semibold transition-colors"
+                className="text-[#1cac64] hover:text-[#0f2618] font-semibold transition-colors"
               >
                 Geckura
               </a>
@@ -1265,7 +1265,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
   } else if (isExpired) {
     statusClass = remaining === 0 
       ? "bg-red-500/12 text-red-400 border-red-500/20"
-      : "bg-gray-500/12 text-gray-400 border-gray-500/20";
+      : "bg-gray-500/12 text-[#2d5a3f] border-gray-500/20";
   } else {
     statusClass = active
       ? "bg-[#1cac64]/12 text-[#1cac64] border-[#1cac64]/20"
@@ -1316,7 +1316,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08, duration: 0.4 }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl bg-[#111]/80 border border-white/[0.06]
+      className="group relative flex flex-col overflow-hidden rounded-2xl bg-[#111]/80 border border-[#1cac64]/10
         hover:border-[#1cac64]/20 transition-all duration-500 card-hover"
     >
       {/* Banner */}
@@ -1342,7 +1342,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
         {active && hasTime && hasStarted && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2">
             <motion.span 
-              className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-white/[0.08] text-gray-300 border-white/[0.12] flex items-center gap-1.5 cursor-default"
+              className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-white/[0.08] text-[#1a3a2a] border-white/[0.12] flex items-center gap-1.5 cursor-default"
               whileHover={{ scale: 1.05, backgroundColor: "rgba(28, 172, 100, 0.15)", color: "#1cac64", borderColor: "rgba(28, 172, 100, 0.25)" }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#1cac64] animate-pulse" />
@@ -1355,7 +1355,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
         <div className="absolute top-3 right-3">
           <motion.button
             onClick={(e) => { e.stopPropagation(); onShowRewards(); }}
-            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/[0.08] text-gray-300 border border-white/[0.12] hover:bg-[#1cac64]/15 hover:text-[#1cac64] hover:border-[#1cac64]/25 transition-all cursor-pointer"
+            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/[0.08] text-[#1a3a2a] border border-white/[0.12] hover:bg-[#1cac64]/15 hover:text-[#1cac64] hover:border-[#1cac64]/25 transition-all cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -1366,22 +1366,22 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
 
       {/* Content */}
       <div className="flex-1 p-5 flex flex-col">
-        <h3 className="text-base font-bold text-white leading-snug group-hover:text-[#1cac64] transition-colors duration-300">
+        <h3 className="text-base font-bold text-[#0f2618] leading-snug group-hover:text-[#1cac64] transition-colors duration-300">
           {box.name || `Pack #${box.boxId}`}
         </h3>
         {box.description && (
-          <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">{box.description}</p>
+          <p className="text-xs text-[#3d6b4e] mt-1 line-clamp-2 leading-relaxed">{box.description}</p>
         )}
 
         {/* Progress bar */}
         <div className="mt-4">
           <div className="flex justify-between text-[11px] mb-1.5">
-            <span className="text-gray-500">{sold} / {sup} opened</span>
+            <span className="text-[#3d6b4e]">{sold} / {sup} opened</span>
             <span className={`font-mono font-semibold ${remaining <= 10 && active ? "text-amber-400" : remaining === 0 ? "text-red-400" : "text-[#1cac64]"}`}>
               {remaining > 0 ? `${remaining} left` : "Sold out"}
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
+          <div className="h-1.5 rounded-full bg-[#1cac64]/5 overflow-hidden">
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-[#1cac64] to-emerald-400"
               initial={{ width: 0 }}
@@ -1396,13 +1396,13 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
           {/* Accepted payment tokens */}
           {payOptions.length > 0 && (
             <div className="flex-1">
-              <p className="text-[9px] text-gray-500 font-bold uppercase tracking-wider mb-1">Accepted Currencies</p>
+              <p className="text-[9px] text-[#3d6b4e] font-bold uppercase tracking-wider mb-1">Accepted Currencies</p>
               <div className="flex flex-wrap gap-1.5">
                 {payOptions.map((opt, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 bg-white/[0.02] border border-white/[0.06] rounded-xl px-2 py-0.5 hover:border-[#1cac64]/30 hover:bg-white/[0.04] transition duration-300">
-                    <img src={resolveIpfsUrl(opt.image)} alt={opt.symbol} className="h-3 w-3 object-contain rounded-full border border-white/[0.08]" />
-                    <span className="text-[9px] font-mono font-bold text-gray-300">
-                      {(opt.price / Math.pow(10, opt.decimals)).toFixed(2)} <span className="text-gray-500 font-sans font-normal">{opt.symbol}</span>
+                  <div key={idx} className="flex items-center gap-1.5 bg-[#1cac64]/3 border border-[#1cac64]/10 rounded-xl px-2 py-0.5 hover:border-[#1cac64]/30 hover:bg-[#1cac64]/5 transition duration-300">
+                    <img src={resolveIpfsUrl(opt.image)} alt={opt.symbol} className="h-3 w-3 object-contain rounded-full border border-[#1cac64]/12" />
+                    <span className="text-[9px] font-mono font-bold text-[#1a3a2a]">
+                      {(opt.price / Math.pow(10, opt.decimals)).toFixed(2)} <span className="text-[#3d6b4e] font-sans font-normal">{opt.symbol}</span>
                     </span>
                   </div>
                 ))}
@@ -1413,7 +1413,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
           {/* CTA Button */}
           <div>
             {!connected ? (
-              <span className="text-[10px] text-gray-500 bg-white/[0.03] border border-white/[0.06] px-3 py-2 rounded-xl whitespace-nowrap">
+              <span className="text-[10px] text-[#3d6b4e] bg-[#1cac64]/4 border border-[#1cac64]/10 px-3 py-2 rounded-xl whitespace-nowrap">
                 Connect wallet
               </span>
             ) : active && remaining > 0 && hasStarted ? (
@@ -1431,7 +1431,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
                 Starts soon
               </span>
             ) : (
-              <span className="text-[10px] text-gray-500 bg-white/[0.03] border border-white/[0.06] px-3 py-2 rounded-xl whitespace-nowrap">
+              <span className="text-[10px] text-[#3d6b4e] bg-[#1cac64]/4 border border-[#1cac64]/10 px-3 py-2 rounded-xl whitespace-nowrap">
                 Unavailable
               </span>
             )}
@@ -1939,7 +1939,7 @@ const handleOpen = useCallback(async () => {
 
       {/* Modal */}
       <motion.div
-        className="relative w-full max-w-md rounded-3xl border border-white/[0.08]
+        className="relative w-full max-w-md rounded-3xl border border-[#1cac64]/12
           bg-gradient-to-b from-[#ffffff] to-[#f4fef0] shadow-[0_0_80px_rgba(0,0,0,0.8)] max-h-[90vh] overflow-y-auto"
         initial={{ scale: 0.9, y: 30, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -1949,8 +1949,8 @@ const handleOpen = useCallback(async () => {
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-white/[0.06] border border-white/[0.1]
-            flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/[0.1] transition-all text-sm cursor-pointer"
+          className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-[#1cac64]/6 border border-white/[0.1]
+            flex items-center justify-center text-[#2d5a3f] hover:text-[#0f2618] hover:bg-white/[0.1] transition-all text-sm cursor-pointer"
         >✕</button>
 
         {/* ── SELECT PHASE ── */}
@@ -1958,7 +1958,7 @@ const handleOpen = useCallback(async () => {
           <div className="p-6 space-y-5">
             {/* Box preview */}
             <div className="flex items-center gap-4">
-              <div className="relative h-16 w-16 rounded-2xl overflow-hidden border border-white/[0.08] shrink-0 bg-[#111]">
+              <div className="relative h-16 w-16 rounded-2xl overflow-hidden border border-[#1cac64]/12 shrink-0 bg-[#111]">
                 {box.bannerUri ? (
                   <img src={resolveIpfsUrl(box.bannerUri)} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -1966,8 +1966,8 @@ const handleOpen = useCallback(async () => {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-bold text-white truncate">{box.name || `Pack #${box.boxId}`}</h3>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <h3 className="text-base font-bold text-[#0f2618] truncate">{box.name || `Pack #${box.boxId}`}</h3>
+                <p className="text-xs text-[#3d6b4e] mt-0.5">
                   {remaining} remaining · {formattedPrice} {selectedOption.symbol} each
                 </p>
               </div>
@@ -1975,7 +1975,7 @@ const handleOpen = useCallback(async () => {
 
             {/* Quantity selector */}
             <div>
-              <label className="text-xs text-gray-400 font-semibold uppercase tracking-wider block mb-3">
+              <label className="text-xs text-[#2d5a3f] font-semibold uppercase tracking-wider block mb-3">
                 How many packs?
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -1988,7 +1988,7 @@ const handleOpen = useCallback(async () => {
                     className={`py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer ${
                       qty === n
                         ? "bg-[#1cac64] text-black shadow-[0_0_20px_rgba(28,172,100,0.3)]"
-                        : "bg-white/[0.04] text-gray-300 border border-white/[0.08] hover:border-[#1cac64]/25 hover:bg-white/[0.06]"
+                        : "bg-[#1cac64]/5 text-[#1a3a2a] border border-[#1cac64]/12 hover:border-[#1cac64]/25 hover:bg-[#1cac64]/6"
                     }`}
                   >
                     {n}x
@@ -1997,14 +1997,14 @@ const handleOpen = useCallback(async () => {
               </div>
               {maxQty > 0 && !qtyOptions.includes(maxQty) && maxQty > 1 && (
                 <div className="mt-2 flex items-center gap-2">
-                  <span className="text-[10px] text-gray-600">Custom:</span>
+                  <span className="text-[10px] text-[#4a7d5e]">Custom:</span>
                   <input
                     type="number"
                     min={1}
                     max={maxQty}
                     value={qty}
                     onChange={e => setQty(Math.max(1, Math.min(maxQty, parseInt(e.target.value) || 1)))}
-                    className="w-20 bg-white/[0.04] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-white
+                    className="w-20 bg-[#1cac64]/5 border border-[#1cac64]/12 rounded-lg px-2.5 py-1.5 text-xs text-[#0f2618]
                       focus:outline-none focus:border-[#1cac64]/40 transition"
                   />
                 </div>
@@ -2014,7 +2014,7 @@ const handleOpen = useCallback(async () => {
             {/* Payment Token Selector */}
             {payOptions.length > 1 && (
               <div>
-                <label className="text-xs text-gray-400 font-semibold uppercase tracking-wider block mb-2.5">
+                <label className="text-xs text-[#2d5a3f] font-semibold uppercase tracking-wider block mb-2.5">
                   Pay with
                 </label>
                 <div className="flex flex-col gap-2">
@@ -2024,12 +2024,12 @@ const handleOpen = useCallback(async () => {
                       onClick={() => setSelectedPayIndex(idx)}
                       className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-300 cursor-pointer ${
                         selectedPayIndex === idx
-                          ? "bg-white/[0.04] border-[#1cac64] text-white shadow-[0_0_20px_rgba(28,172,100,0.05)]"
-                          : "bg-white/[0.01] border-white/[0.06] text-gray-400 hover:border-white/[0.15] hover:text-gray-300"
+                          ? "bg-[#1cac64]/5 border-[#1cac64] text-[#0f2618] shadow-[0_0_20px_rgba(28,172,100,0.05)]"
+                          : "bg-white/[0.01] border-[#1cac64]/10 text-[#2d5a3f] hover:border-white/[0.15] hover:text-[#1a3a2a]"
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-7 w-7 rounded-full bg-black/40 flex items-center justify-center border border-white/[0.08] shrink-0">
+                        <div className="h-7 w-7 rounded-full bg-[#ebfde3]/60 flex items-center justify-center border border-[#1cac64]/12 shrink-0">
                           {opt.image && opt.image !== "🎁" ? (
                             <img src={resolveIpfsUrl(opt.image)} alt={opt.symbol} className="h-full w-full object-contain rounded-full" />
                           ) : (
@@ -2038,7 +2038,7 @@ const handleOpen = useCallback(async () => {
                         </div>
                         <div className="text-left">
                           <p className="text-xs font-bold leading-tight">{opt.name}</p>
-                          <p className="text-[10px] text-gray-500 mt-0.5">{opt.symbol}</p>
+                          <p className="text-[10px] text-[#3d6b4e] mt-0.5">{opt.symbol}</p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -2051,64 +2051,64 @@ const handleOpen = useCallback(async () => {
             )}
 
             {/* Price breakdown */}
-            <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 space-y-2.5">
+            <div className="bg-[#1cac64]/3 border border-[#1cac64]/10 rounded-2xl p-4 space-y-2.5">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-500">Price per pack</span>
-                <span className="text-gray-300 font-mono">{formattedPrice} {selectedOption.symbol}</span>
+                <span className="text-[#3d6b4e]">Price per pack</span>
+                <span className="text-[#1a3a2a] font-mono">{formattedPrice} {selectedOption.symbol}</span>
               </div>
               {platformFeeLamports > 0 && (
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Platform Fee per pack</span>
-                  <span className="text-gray-300 font-mono">{(platformFeeLamports / 1e9).toFixed(4)} SOL</span>
+                  <span className="text-[#3d6b4e]">Platform Fee per pack</span>
+                  <span className="text-[#1a3a2a] font-mono">{(platformFeeLamports / 1e9).toFixed(4)} SOL</span>
                 </div>
               )}
               <div className="flex justify-between text-xs">
-                <span className="text-gray-500">Quantity</span>
-                <span className="text-gray-300 font-mono">× {qty}</span>
+                <span className="text-[#3d6b4e]">Quantity</span>
+                <span className="text-[#1a3a2a] font-mono">× {qty}</span>
               </div>
-              <div className="h-px bg-white/[0.06]" />
+              <div className="h-px bg-[#1cac64]/6" />
               {isPaySol ? (
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-400 font-semibold">Box Price</span>
-                    <span className="text-white font-mono font-bold">
+                    <span className="text-[#2d5a3f] font-semibold">Box Price</span>
+                    <span className="text-[#0f2618] font-mono font-bold">
                       {(totalCost / 1e9).toFixed(4)}{" "}
-                      <span className="text-gray-500 text-xs font-sans font-normal">SOL</span>
+                      <span className="text-[#3d6b4e] text-xs font-sans font-normal">SOL</span>
                     </span>
                   </div>
                   {totalSolFee > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400 font-semibold">Platform Fee</span>
-                      <span className="text-white font-mono font-bold">
+                      <span className="text-[#2d5a3f] font-semibold">Platform Fee</span>
+                      <span className="text-[#0f2618] font-mono font-bold">
                         {(totalSolFee / 1e9).toFixed(4)}{" "}
-                        <span className="text-gray-500 text-xs font-sans font-normal">SOL</span>
+                        <span className="text-[#3d6b4e] text-xs font-sans font-normal">SOL</span>
                       </span>
                     </div>
                   )}
-                  <div className="h-px bg-white/[0.06] my-1.5" />
+                  <div className="h-px bg-[#1cac64]/6 my-1.5" />
                   <div className="flex justify-between text-sm">
-                    <span className="text-white font-bold">Total</span>
+                    <span className="text-[#0f2618] font-bold">Total</span>
                     <span className="text-[#1cac64] font-mono font-bold">
                       {((totalCost + totalSolFee) / 1e9).toFixed(4)}{" "}
-                      <span className="text-gray-400 text-xs font-sans font-normal">SOL</span>
+                      <span className="text-[#2d5a3f] text-xs font-sans font-normal">SOL</span>
                     </span>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-400 font-semibold">Total Price</span>
-                    <span className="text-white font-mono font-bold">
+                    <span className="text-[#2d5a3f] font-semibold">Total Price</span>
+                    <span className="text-[#0f2618] font-mono font-bold">
                       {formattedTotal}{" "}
-                      <span className="text-gray-500 text-xs font-sans font-normal">{selectedOption.symbol}</span>
+                      <span className="text-[#3d6b4e] text-xs font-sans font-normal">{selectedOption.symbol}</span>
                     </span>
                   </div>
                   {totalSolFee > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400 font-semibold">Total Platform Fee</span>
-                      <span className="text-white font-mono font-bold">
+                      <span className="text-[#2d5a3f] font-semibold">Total Platform Fee</span>
+                      <span className="text-[#0f2618] font-mono font-bold">
                         {formattedSolFee}{" "}
-                        <span className="text-gray-500 text-xs font-sans font-normal">SOL</span>
+                        <span className="text-[#3d6b4e] text-xs font-sans font-normal">SOL</span>
                       </span>
                     </div>
                   )}
@@ -2118,15 +2118,15 @@ const handleOpen = useCallback(async () => {
 
             {/* CTA */}
             {!wallet.connected ? (
-              <div className="text-center py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-gray-500">
+              <div className="text-center py-3 rounded-xl bg-[#1cac64]/4 border border-[#1cac64]/10 text-xs text-[#3d6b4e]">
                 Connect your wallet to open packs
               </div>
             ) : !active ? (
-              <div className="text-center py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-gray-500">
+              <div className="text-center py-3 rounded-xl bg-[#1cac64]/4 border border-[#1cac64]/10 text-xs text-[#3d6b4e]">
                 This pack is currently unavailable
               </div>
             ) : remaining <= 0 ? (
-              <div className="text-center py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-gray-500">
+              <div className="text-center py-3 rounded-xl bg-[#1cac64]/4 border border-[#1cac64]/10 text-xs text-[#3d6b4e]">
                 Sold out
               </div>
             ) : (
@@ -2148,7 +2148,7 @@ const handleOpen = useCallback(async () => {
           <div className="p-8 flex flex-col items-center gap-5">
             {/* Animated box */}
             <motion.div
-              className="relative h-32 w-24 rounded-3xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-center overflow-hidden"
+              className="relative h-32 w-24 rounded-3xl bg-[#1cac64]/3 border border-[#1cac64]/12 flex items-center justify-center overflow-hidden"
               animate={{ rotateY: [0, 10, -10, 0], scale: [1, 1.02, 0.98, 1] }}
               transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
             >
@@ -2163,10 +2163,10 @@ const handleOpen = useCallback(async () => {
               <p className="text-xs text-[#1cac64]/60 uppercase tracking-widest mb-1.5 font-semibold">
                 {phase === "signing" ? "Waiting for Signature" : "Confirming Transaction"}
               </p>
-              <h3 className="text-xl font-bold text-white">
+              <h3 className="text-xl font-bold text-[#0f2618]">
                 Opening {qty} Pack{qty > 1 ? "s" : ""}
               </h3>
-              <p className="text-xs text-gray-500 mt-2 max-w-xs">
+              <p className="text-xs text-[#3d6b4e] mt-2 max-w-xs">
                 {phase === "signing"
                   ? "Please approve the transaction in your wallet."
                   : "Transaction submitted. Confirming on Solana…"}
@@ -2202,7 +2202,7 @@ const handleOpen = useCallback(async () => {
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: "spring", damping: 15, delay: i * 0.08 }}
-                      className="flex flex-col items-center p-3 rounded-2xl bg-white/[0.02] border border-[#1cac64]/15 space-y-2 shadow-[0_0_20px_rgba(28,172,100,0.02)]"
+                      className="flex flex-col items-center p-3 rounded-2xl bg-[#1cac64]/3 border border-[#1cac64]/15 space-y-2 shadow-[0_0_20px_rgba(28,172,100,0.02)]"
                     >
                       {/* Reward Image */}
                       <div className="relative h-16 w-16 rounded-xl overflow-hidden border border-[#1cac64]/20 bg-black/60 flex items-center justify-center shrink-0">
@@ -2225,7 +2225,7 @@ const handleOpen = useCallback(async () => {
 
                       {/* Reward Details */}
                       <div className="text-center space-y-0.5 min-w-0 w-full">
-                        <h4 className="text-xs font-bold text-white truncate max-w-full leading-tight">{reward.name}</h4>
+                        <h4 className="text-xs font-bold text-[#0f2618] truncate max-w-full leading-tight">{reward.name}</h4>
                         <p className="text-[10px] font-mono font-bold text-[#1cac64]">
                           {reward.isNFT ? "1x NFT" : reward.amount > 0 ? `+${reward.amount.toFixed(4)} ${reward.symbol || (reward.isSol ? "SOL" : "Tokens")}` : "No win"}
                         </p>
@@ -2253,7 +2253,7 @@ const handleOpen = useCallback(async () => {
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-xl font-black text-white"
+                className="text-xl font-black text-[#0f2618]"
               >
                 Pack{qty > 1 ? "s" : ""} Opened!
               </motion.h3>
@@ -2261,7 +2261,7 @@ const handleOpen = useCallback(async () => {
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="text-xs text-gray-400 mt-1.5"
+                className="text-xs text-[#2d5a3f] mt-1.5"
               >
                 {qty} pack{qty > 1 ? "s" : ""} opened successfully
               </motion.p>
@@ -2273,14 +2273,14 @@ const handleOpen = useCallback(async () => {
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 space-y-2"
+                className="w-full bg-[#1cac64]/4 border border-[#1cac64]/12 rounded-2xl p-4 space-y-2"
               >
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Transaction Signature</p>
+                <p className="text-[10px] text-[#3d6b4e] uppercase tracking-wider font-semibold">Transaction Signature</p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 text-xs font-mono text-[#1cac64] break-all select-all">{shortenSig(txSig)}</code>
                   <button
                     onClick={() => { navigator.clipboard.writeText(txSig); toast.success("Copied!"); }}
-                    className="text-gray-400 hover:text-white text-xs p-1.5 rounded-lg hover:bg-white/[0.06] transition cursor-pointer shrink-0"
+                    className="text-[#2d5a3f] hover:text-[#0f2618] text-xs p-1.5 rounded-lg hover:bg-[#1cac64]/6 transition cursor-pointer shrink-0"
                     title="Copy full signature"
                   >📋</button>
                 </div>
@@ -2303,8 +2303,8 @@ const handleOpen = useCallback(async () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={onClose}
-              className="w-full py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-sm font-semibold text-gray-300
-                hover:bg-white/[0.1] hover:text-white transition-all cursor-pointer"
+              className="w-full py-3 rounded-xl bg-[#1cac64]/6 border border-white/[0.1] text-sm font-semibold text-[#1a3a2a]
+                hover:bg-white/[0.1] hover:text-[#0f2618] transition-all cursor-pointer"
             >
               Done
             </motion.button>
@@ -2323,8 +2323,8 @@ const handleOpen = useCallback(async () => {
             </motion.div>
 
             <div className="text-center">
-              <h3 className="text-lg font-bold text-white">Transaction Failed</h3>
-              <p className="text-xs text-gray-500 mt-1.5 max-w-xs break-words">{errMsg}</p>
+              <h3 className="text-lg font-bold text-[#0f2618]">Transaction Failed</h3>
+              <p className="text-xs text-[#3d6b4e] mt-1.5 max-w-xs break-words">{errMsg}</p>
             </div>
 
             <div className="flex gap-2 w-full">
@@ -2338,8 +2338,8 @@ const handleOpen = useCallback(async () => {
               </motion.button>
               <button
                 onClick={onClose}
-                className="px-5 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-sm text-gray-400
-                  hover:text-white transition cursor-pointer"
+                className="px-5 py-3 rounded-xl bg-[#1cac64]/6 border border-white/[0.1] text-sm text-[#2d5a3f]
+                  hover:text-[#0f2618] transition cursor-pointer"
               >
                 Close
               </button>
@@ -2376,7 +2376,7 @@ function Skeleton() {
         {/* Grid skeleton */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3].map(i => (
-            <div key={i} className="rounded-2xl overflow-hidden border border-white/[0.04]">
+            <div key={i} className="rounded-2xl overflow-hidden border border-[#1cac64]/8">
               <div className="h-36 skeleton" />
               <div className="p-5 space-y-3">
                 <div className="h-5 w-40 skeleton rounded" />

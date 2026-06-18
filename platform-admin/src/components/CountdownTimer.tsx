@@ -55,7 +55,7 @@ export default function CountdownTimer({
     <div className="glass-panel rounded-2xl p-5 space-y-3.5">
       <div className="flex items-center gap-2">
         <FiClock className="text-amber-400" />
-        <h3 className="text-sm font-bold text-white">{label}</h3>
+        <h3 className="text-sm font-bold text-[#0f2618]">{label}</h3>
       </div>
 
       <div className="flex items-center gap-2">
@@ -64,11 +64,11 @@ export default function CountdownTimer({
           return (
             <div key={unit} className="flex items-center">
               {/* Digit block */}
-              <div className="flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] min-w-[52px]">
-                <span className="text-xl font-black tabular-nums text-white">
+              <div className="flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl bg-[#1cac64]/5 border border-[#1cac64]/12 min-w-[52px]">
+                <span className="text-xl font-black tabular-nums text-[#0f2618]">
                   {pad(value)}
                 </span>
-                <span className="text-[9px] text-gray-500 uppercase tracking-wider">
+                <span className="text-[9px] text-[#3d6b4e] uppercase tracking-wider">
                   {unit === "hour" ? "hrs" : unit === "min" ? "mins" : "secs"}
                 </span>
               </div>

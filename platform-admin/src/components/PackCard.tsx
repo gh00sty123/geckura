@@ -9,7 +9,7 @@ const RARITY_COLORS: Record<string, { border: string; glow: string; text: string
   legendary: { border: "border-amber-400/40", glow: "shadow-[0_0_20px_rgba(245,158,11,0.3)]", text: "text-amber-400",      badge: "bg-amber-400/15 text-amber-300" },
   epic:       { border: "border-purple-400/40", glow: "shadow-[0_0_20px_rgba(168,85,247,0.3)]", text: "text-purple-400",    badge: "bg-purple-400/15 text-purple-200" },
   rare:       { border: "border-blue-400/40",   glow: "shadow-[0_0_20px_rgba(59,130,246,0.3)]", text: "text-blue-400",     badge: "bg-blue-400/15 text-blue-200" },
-  common:     { border: "border-gray-400/40",   glow: "",                                         text: "text-gray-400",     badge: "bg-gray-400/15 text-gray-300" },
+  common:     { border: "border-gray-400/40",   glow: "",                                         text: "text-[#2d5a3f]",     badge: "bg-gray-400/15 text-[#1a3a2a]" },
 };
 
 function RarityMap(name: string) {
@@ -24,7 +24,7 @@ function SupplyBar({ used, total }: { used: number; total: number }) {
   const pct = Math.min(100, ((total - used) / total) * 100);
   const isLow = pct <= 10;
   return (
-    <div className="mt-2 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+    <div className="mt-2 h-1 rounded-full bg-[#1cac64]/6 overflow-hidden">
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}
@@ -67,7 +67,7 @@ export default function PackCard({
         {/* Pack header: icon + info */}
         <div className="flex items-start gap-3">
           {/* Pack artwork area */}
-          <div className="relative h-18 w-18 flex-shrink-0 rounded-xl overflow-hidden border border-white/[0.08]
+          <div className="relative h-18 w-18 flex-shrink-0 rounded-xl overflow-hidden border border-[#1cac64]/12
             bg-gradient-to-br from-[#1cac64]/10 to-emerald-500/5 flex items-center justify-center">
             <LuSwords className="text-[#1cac64] text-3xl drop-shadow-lg" />
 
@@ -91,17 +91,17 @@ export default function PackCard({
                 {pack.categoryLabel}
               </span>
             </div>
-            <h3 className="mt-1 text-base font-bold text-white leading-tight group-hover:text-[#1cac64] transition-colors">
+            <h3 className="mt-1 text-base font-bold text-[#0f2618] leading-tight group-hover:text-[#1cac64] transition-colors">
               {pack.name}
             </h3>
-            <p className="text-[11px] text-gray-600 mt-0.5 line-clamp-1">{pack.description}</p>
+            <p className="text-[11px] text-[#4a7d5e] mt-0.5 line-clamp-1">{pack.description}</p>
 
             <div className="flex items-center justify-between mt-2.5">
               <div className="flex items-center gap-1 text-base font-extrabold text-[#1cac64]">
                 <FiDollarSign className="text-sm opacity-70" />
-                {pack.price} <span className="text-xs font-medium text-gray-500">SOL</span>
+                {pack.price} <span className="text-xs font-medium text-[#3d6b4e]">SOL</span>
               </div>
-              <span className="text-[11px] text-gray-500">
+              <span className="text-[11px] text-[#3d6b4e]">
                 {pack.supplyLeft.toLocaleString()} left
               </span>
             </div>
@@ -131,8 +131,8 @@ export default function PackCard({
         {/* CTA */}
         <motion.button
           onClick={() => onOpen(pack.name)}
-          className="mt-4 w-full rounded-xl bg-white/[0.04] border border-white/[0.08] py-2.5
-            text-sm font-semibold text-white hover:bg-[#1cac64]/10 hover:border-[#1cac64]/30
+          className="mt-4 w-full rounded-xl bg-[#1cac64]/5 border border-[#1cac64]/12 py-2.5
+            text-sm font-semibold text-[#0f2618] hover:bg-[#1cac64]/10 hover:border-[#1cac64]/30
             hover:text-[#1cac64] transition-all duration-300"
           whileHover={{ scale: 1.022 }}
           whileTap={{ scale: 0.97 }}

@@ -231,7 +231,7 @@ function Overview() {
         </div>
         <div>
           <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Admin Dashboard</h2>
-          <p className="text-gray-500 mt-2 max-w-md mx-auto">Connect your wallet to access platform analytics, manage projects, and configure global settings.</p>
+          <p className="text-[#3d6b4e] mt-2 max-w-md mx-auto">Connect your wallet to access platform analytics, manage projects, and configure global settings.</p>
         </div>
       </div>
     );
@@ -276,7 +276,7 @@ function Overview() {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 transition-transform duration-300 group-hover:scale-105" />
             <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-white mix-blend-overlay transition-opacity duration-300" />
-            <span className="relative flex items-center gap-2 text-white">
+            <span className="relative flex items-center gap-2 text-[#0f2618]">
               <FiLayers /> New Project
             </span>
           </Link>
@@ -284,7 +284,7 @@ function Overview() {
           <button
             onClick={initializePlatform}
             disabled={initializing || !publicKey}
-            className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all disabled:opacity-50"
+            className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl text-sm font-semibold text-[#0f2618] shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all disabled:opacity-50"
           >
             {initializing ? "Initializing..." : "Initialize Platform"}
           </button>
@@ -300,24 +300,24 @@ function Overview() {
 
       {/* Stats Grid */}
       <motion.div variants={containerVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <motion.div variants={itemVariants} className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 group hover:bg-white/[0.04] transition-colors">
+        <motion.div variants={itemVariants} className="relative overflow-hidden bg-[#1cac64]/3 border border-white/[0.05] rounded-2xl p-6 group hover:bg-[#1cac64]/5 transition-colors">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <FiLayers className="w-16 h-16 text-indigo-400" />
           </div>
           <p className="text-xs text-indigo-300/70 uppercase tracking-widest font-semibold flex items-center gap-2 mb-2">
             Total Projects
           </p>
-          <p className="text-4xl font-black text-white font-mono">{platformStats.totalProjects}</p>
+          <p className="text-4xl font-black text-[#0f2618] font-mono">{platformStats.totalProjects}</p>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="relative overflow-hidden bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 group hover:bg-white/[0.04] transition-colors">
+        <motion.div variants={itemVariants} className="relative overflow-hidden bg-[#1cac64]/3 border border-white/[0.05] rounded-2xl p-6 group hover:bg-[#1cac64]/5 transition-colors">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <FiBox className="w-16 h-16 text-purple-400" />
           </div>
           <p className="text-xs text-purple-300/70 uppercase tracking-widest font-semibold flex items-center gap-2 mb-2">
             Boxes Opened
           </p>
-          <p className="text-4xl font-black text-white font-mono">{platformStats.totalBoxesOpened.toLocaleString()}</p>
+          <p className="text-4xl font-black text-[#0f2618] font-mono">{platformStats.totalBoxesOpened.toLocaleString()}</p>
         </motion.div>
 
         <motion.div variants={itemVariants} className="relative overflow-hidden bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-6 group hover:bg-emerald-500/10 transition-colors">
@@ -354,11 +354,11 @@ function Overview() {
             <p className="text-xs text-amber-400/85 uppercase tracking-widest font-semibold flex items-center gap-2 mb-2">
               <FiBox className="w-3 h-3 text-indigo-400" /> Box PDA Rent
             </p>
-            <p className="text-4xl font-black text-white font-mono">
+            <p className="text-4xl font-black text-[#0f2618] font-mono">
               {loadingRent ? (
                 <span className="text-lg animate-pulse">Scanning...</span>
               ) : (
-                <>{(Object.values(rentInfoMap).reduce((sum, info) => sum + info.totalRentLamports, 0) / 1e9).toFixed(4)} <span className="text-sm text-gray-400 font-normal">SOL</span></>
+                <>{(Object.values(rentInfoMap).reduce((sum, info) => sum + info.totalRentLamports, 0) / 1e9).toFixed(4)} <span className="text-sm text-[#2d5a3f] font-normal">SOL</span></>
               )}
             </p>
             <p className="text-xs text-amber-300/50 mt-1">
@@ -376,23 +376,23 @@ function Overview() {
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <FiSettings className="text-indigo-400" /> Global Settings
           </h3>
-          <div className="bg-white/[0.02] border border-white/[0.05] rounded-3xl p-6 backdrop-blur-xl space-y-6">
+          <div className="bg-[#1cac64]/3 border border-white/[0.05] rounded-3xl p-6 backdrop-blur-xl space-y-6">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">Authority</p>
-              <div className="bg-black/40 rounded-xl p-3 border border-white/[0.05]">
+              <p className="text-xs text-[#3d6b4e] uppercase tracking-widest mb-2 font-semibold">Authority</p>
+              <div className="bg-[#ebfde3]/60 rounded-xl p-3 border border-white/[0.05]">
                 <p className="font-mono text-xs text-indigo-300 break-all">{platform?.authority || "Not initialized"}</p>
               </div>
             </div>
             
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">Treasury</p>
-              <div className="bg-black/40 rounded-xl p-3 border border-white/[0.05]">
+              <p className="text-xs text-[#3d6b4e] uppercase tracking-widest mb-2 font-semibold">Treasury</p>
+              <div className="bg-[#ebfde3]/60 rounded-xl p-3 border border-white/[0.05]">
                 <p className="font-mono text-xs text-emerald-300 break-all">{platform?.treasury || "—"}</p>
               </div>
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t border-white/[0.05]">
-              <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold">Platform Status</p>
+              <p className="text-xs text-[#3d6b4e] uppercase tracking-widest font-semibold">Platform Status</p>
               <div className={`px-3 py-1 rounded-full text-xs font-bold border ${platform?.isPaused ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"}`}>
                 {platform?.isPaused ? "PAUSED" : "ACTIVE"}
               </div>
@@ -409,11 +409,11 @@ function Overview() {
           </div>
 
           {projects.length === 0 ? (
-            <div className="bg-white/[0.02] border border-white/[0.05] rounded-3xl p-12 text-center flex flex-col items-center">
+            <div className="bg-[#1cac64]/3 border border-white/[0.05] rounded-3xl p-12 text-center flex flex-col items-center">
               <div className="w-16 h-16 rounded-full bg-white/[0.05] flex items-center justify-center mb-4">
-                <FiLayers className="w-8 h-8 text-gray-500" />
+                <FiLayers className="w-8 h-8 text-[#3d6b4e]" />
               </div>
-              <p className="text-gray-400">No projects yet. Create your first mystery box project!</p>
+              <p className="text-[#2d5a3f]">No projects yet. Create your first mystery box project!</p>
               <Link href="/admin/new" className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/15 rounded-full text-sm font-semibold transition-colors">
                 Create Project
               </Link>
@@ -424,7 +424,7 @@ function Overview() {
                 <motion.div 
                   key={p.pubkey} 
                   variants={itemVariants}
-                  className="group bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-indigo-500/30 rounded-2xl p-5 transition-all duration-300"
+                  className="group bg-[#1cac64]/3 border border-white/[0.05] hover:bg-[#1cac64]/5 hover:border-indigo-500/30 rounded-2xl p-5 transition-all duration-300"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     {/* Project Info */}
@@ -433,25 +433,25 @@ function Overview() {
                         {p.logoUri ? (
                           <img src={p.logoUri} alt="" className="w-12 h-12 rounded-xl object-cover ring-1 ring-white/10" />
                         ) : (
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl font-black text-white shadow-inner">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl font-black text-[#0f2618] shadow-inner">
                             {p.name.charAt(0).toUpperCase()}
                           </div>
                         )}
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <h4 className="text-lg font-bold text-white truncate">{p.name}</h4>
+                            <h4 className="text-lg font-bold text-[#0f2618] truncate">{p.name}</h4>
                             <span className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider ${p.isActive ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"}`}>
                               {p.isActive ? "Active" : "Inactive"}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 font-mono truncate">{p.slug}</p>
+                          <p className="text-xs text-[#3d6b4e] font-mono truncate">{p.slug}</p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-400 line-clamp-1 ml-16">{p.description || "No description provided."}</p>
+                      <p className="text-sm text-[#2d5a3f] line-clamp-1 ml-16">{p.description || "No description provided."}</p>
                     </div>
 
                     {/* Fees & Actions */}
-                    <div className="md:w-80 shrink-0 bg-black/40 rounded-xl p-4 border border-white/[0.02]">
+                    <div className="md:w-80 shrink-0 bg-[#ebfde3]/60 rounded-xl p-4 border border-white/[0.02]">
                       <AnimatePresence mode="wait">
                         {editProjectSlug === p.slug ? (
                           <motion.div 
@@ -462,34 +462,34 @@ function Overview() {
                             className="space-y-3"
                           >
                             <div>
-                              <label className="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Fee Wallet</label>
+                              <label className="text-[10px] text-[#3d6b4e] uppercase font-bold mb-1 block">Fee Wallet</label>
                               <input
                                 value={editFeeWallet}
                                 onChange={(e) => setEditFeeWallet(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                                className="w-full bg-[#1cac64]/8 border border-[#1cac64]/15 rounded-lg px-3 py-1.5 text-xs font-mono text-[#0f2618] focus:outline-none focus:border-indigo-500 transition-colors"
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Fee per Box (SOL)</label>
+                              <label className="text-[10px] text-[#3d6b4e] uppercase font-bold mb-1 block">Fee per Box (SOL)</label>
                               <input
                                 type="number"
                                 step="0.000000001"
                                 value={editFeeLamports}
                                 onChange={(e) => setEditFeeLamports(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                                className="w-full bg-[#1cac64]/8 border border-[#1cac64]/15 rounded-lg px-3 py-1.5 text-xs text-[#0f2618] focus:outline-none focus:border-indigo-500 transition-colors"
                               />
                             </div>
                             <div className="flex gap-2 pt-1">
                               <button
                                 onClick={() => setEditProjectSlug(null)}
-                                className="flex-1 py-1.5 rounded-lg border border-white/10 text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition"
+                                className="flex-1 py-1.5 rounded-lg border border-[#1cac64]/15 text-xs font-semibold text-[#2d5a3f] hover:text-[#0f2618] hover:bg-[#1cac64]/8 transition"
                               >
                                 Cancel
                               </button>
                               <button
                                 onClick={() => handleSave(p.slug)}
                                 disabled={saving}
-                                className="flex-1 py-1.5 rounded-lg bg-indigo-600 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 transition flex items-center justify-center gap-1"
+                                className="flex-1 py-1.5 rounded-lg bg-indigo-600 text-xs font-semibold text-[#0f2618] hover:bg-indigo-500 disabled:opacity-50 transition flex items-center justify-center gap-1"
                               >
                                 {saving ? <span className="animate-pulse">Saving...</span> : <><FiCheck /> Save</>}
                               </button>
@@ -504,15 +504,15 @@ function Overview() {
                             className="space-y-3"
                           >
                             <div className="flex justify-between items-center text-xs">
-                              <span className="text-gray-500">Fee Wallet</span>
+                              <span className="text-[#3d6b4e]">Fee Wallet</span>
                               <span className="font-mono text-indigo-300 truncate w-32 text-right">{p.feeWallet.slice(0, 4)}…{p.feeWallet.slice(-4)}</span>
                             </div>
                             <div className="flex justify-between items-center text-xs">
-                              <span className="text-gray-500">Platform Fee</span>
+                              <span className="text-[#3d6b4e]">Platform Fee</span>
                               <span className="font-mono text-emerald-400 font-bold">{((p.feeLamports ?? 0) / 1e9).toFixed(5)} SOL</span>
                             </div>
                             <div className="flex justify-between items-center text-xs">
-                              <span className="text-gray-500">Rent Recipient</span>
+                              <span className="text-[#3d6b4e]">Rent Recipient</span>
                               <span className="font-mono text-indigo-400 font-semibold">{p.rentClaimMode === 1 ? "Platform" : "Project"}</span>
                             </div>
 
@@ -554,11 +554,11 @@ function Overview() {
                                           return (
                                             <div
                                               key={box.boxId}
-                                              className="flex items-center justify-between bg-white/[0.02] rounded-lg px-2.5 py-1.5 border border-white/[0.03]"
+                                              className="flex items-center justify-between bg-[#1cac64]/3 rounded-lg px-2.5 py-1.5 border border-white/[0.03]"
                                             >
                                               <div className="min-w-0 flex-1">
-                                                <p className="text-[11px] text-gray-300 truncate font-medium">{box.boxName}</p>
-                                                <p className="text-[10px] text-gray-500">
+                                                <p className="text-[11px] text-[#1a3a2a] truncate font-medium">{box.boxName}</p>
+                                                <p className="text-[10px] text-[#3d6b4e]">
                                                   {box.sold}/{box.supply} sold · {box.prizeItems.length} prize{box.prizeItems.length !== 1 ? "s" : ""}
                                                 </p>
                                               </div>
@@ -611,13 +611,13 @@ function Overview() {
                                   setEditFeeWallet(p.feeWallet);
                                   setEditFeeLamports(((p.feeLamports ?? 0) / 1e9).toString());
                                 }}
-                                className="flex-1 py-1.5 rounded-lg bg-white/[0.05] border border-white/[0.05] text-xs font-medium text-gray-300 hover:text-white hover:bg-white/10 transition flex items-center justify-center gap-1"
+                                className="flex-1 py-1.5 rounded-lg bg-white/[0.05] border border-white/[0.05] text-xs font-medium text-[#1a3a2a] hover:text-[#0f2618] hover:bg-white/10 transition flex items-center justify-center gap-1"
                               >
                                 <FiEdit3 /> Edit Fees
                               </button>
                               <Link 
                                 href={`/${p.slug}/admin`}
-                                className="flex-1 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-semibold text-white hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/20 text-center transition flex items-center justify-center gap-1"
+                                className="flex-1 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-semibold text-[#0f2618] hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/20 text-center transition flex items-center justify-center gap-1"
                               >
                                 Manage <FiTrendingUp />
                               </Link>

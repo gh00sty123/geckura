@@ -54,29 +54,29 @@ function LiveDrawHistory({
   }, [rarityFilter]);
 
   return (
-    <section aria-label="Live Draw History" className="glass-panel rounded-2xl overflow-hidden flex flex-col h-full border border-white/[0.06]">
+    <section aria-label="Live Draw History" className="glass-panel rounded-2xl overflow-hidden flex flex-col h-full border border-[#1cac64]/10">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[#1cac64]/10">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1cac64] opacity-60" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1cac64]" />
           </span>
-          <h3 className="text-sm font-bold text-white">Live Draw History</h3>
-          <span className="text-[10px] text-gray-500 ml-1">• Live</span>
+          <h3 className="text-sm font-bold text-[#0f2618]">Live Draw History</h3>
+          <span className="text-[10px] text-[#3d6b4e] ml-1">• Live</span>
         </div>
 
         <div className="flex items-center gap-1">
-          <FiFilter className="text-gray-500 text-xs" />
+          <FiFilter className="text-[#3d6b4e] text-xs" />
           <select
             value={rarityFilter}
             onChange={(e) => setDrawRarityFilter(e.target.value)}
-            className="bg-white/[0.04] border border-white/[0.08] rounded-lg text-[11px] text-gray-300
+            className="bg-[#1cac64]/5 border border-[#1cac64]/12 rounded-lg text-[11px] text-[#1a3a2a]
                        px-2.5 py-1 outline-none focus:border-[#1cac64]/40 transition-colors cursor-pointer"
           >
             {["all", "common", "rare", "epic", "legendary", "mythic"].map((r) => (
-              <option key={r} value={r} className="bg-[#111] text-gray-200 capitalize">
+              <option key={r} value={r} className="bg-[#111] text-[#1a3a2a] capitalize">
                 {r === "all" ? "All rarities" : r}
               </option>
             ))}
@@ -87,7 +87,7 @@ function LiveDrawHistory({
       {/* ── List */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         {filtered.length === 0 && (
-          <p className="p-6 text-center text-xs text-gray-600">No draws for this rarity</p>
+          <p className="p-6 text-center text-xs text-[#4a7d5e]">No draws for this rarity</p>
         )}
 
         {filtered.map((draw, i) => (
@@ -106,7 +106,7 @@ function DrawRow({ draw, index }: { draw: DrawRecord; index: number }) {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.32, delay: index * 0.04, ease: "easeOut" }}
-      className="flex items-center gap-3.5 px-5 py-3 hover:bg-white/[0.02] transition-colors border-b border-white/[0.04] last:border-b-0"
+      className="flex items-center gap-3.5 px-5 py-3 hover:bg-[#1cac64]/3 transition-colors border-b border-[#1cac64]/8 last:border-b-0"
     >
       {/* Rank */}
       <span className="text-[11px] font-semibold text-gray-700 w-4 shrink-0 text-right">
@@ -122,8 +122,8 @@ function DrawRow({ draw, index }: { draw: DrawRecord; index: number }) {
 
       {/* Identity */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-300 truncate">{draw.username}</p>
-        <p className="text-[11px] text-gray-500 truncate">{draw.packName}</p>
+        <p className="text-xs font-semibold text-[#1a3a2a] truncate">{draw.username}</p>
+        <p className="text-[11px] text-[#3d6b4e] truncate">{draw.packName}</p>
       </div>
 
       {/* Win badge */}

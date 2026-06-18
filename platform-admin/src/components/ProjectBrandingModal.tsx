@@ -69,76 +69,76 @@ export function ProjectBrandingModal({
       <div className="glass-panel w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 shadow-2xl relative">
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10"
+          className="absolute top-6 right-6 text-[#2d5a3f] hover:text-[#0f2618] transition-colors p-2 bg-[#1cac64]/8 rounded-full hover:bg-white/10"
         >
           ✕
         </button>
 
-        <h2 className="text-2xl font-black text-white mb-6 uppercase tracking-wider flex items-center gap-2">
+        <h2 className="text-2xl font-black text-[#0f2618] mb-6 uppercase tracking-wider flex items-center gap-2">
           Update Project Branding
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Project Slug</label>
+            <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Project Slug</label>
             <input
               type="text"
               disabled
               value={slug}
-              className="w-full bg-black/60 border border-white/5 rounded-xl px-4 py-3 text-sm text-gray-500 cursor-not-allowed font-mono"
+              className="w-full bg-black/60 border border-white/5 rounded-xl px-4 py-3 text-sm text-[#3d6b4e] cursor-not-allowed font-mono"
             />
-            <p className="text-[10px] text-gray-500 mt-1">The slug is permanent and acts as the project's unique blockchain identifier.</p>
+            <p className="text-[10px] text-[#3d6b4e] mt-1">The slug is permanent and acts as the project's unique blockchain identifier.</p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Project Name</label>
+            <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Project Name</label>
             <input
               type="text"
               required
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
+              className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
               placeholder="Awesome Mystery Boxes"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Project Description</label>
+            <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Project Description</label>
             <textarea
               required
               value={description}
               onChange={e => setDescription(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all resize-none h-24"
+              className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all resize-none h-24"
               placeholder="Describe your project..."
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Logo Upload</label>
-            <div className="p-3 bg-black/20 border border-white/5 rounded-xl">
+            <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Logo Upload</label>
+            <div className="p-3 bg-[#ffffff]/40 border border-white/5 rounded-xl">
               <ImageUpload
                 label="Logo"
                 onChange={(url: string) => setLogoUri(url)}
                 value={logoUri}
               />
             </div>
-            <p className="text-[10px] text-gray-500 mt-1">Recommended size: 200x200px. Upload an image to preview.</p>
+            <p className="text-[10px] text-[#3d6b4e] mt-1">Recommended size: 200x200px. Upload an image to preview.</p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Background Banner Upload</label>
-            <div className="p-3 bg-black/20 border border-white/5 rounded-xl">
+            <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Background Banner Upload</label>
+            <div className="p-3 bg-[#ffffff]/40 border border-white/5 rounded-xl">
               <ImageUpload
                 label="Background"
                 onChange={(url: string) => setBgUri(url)}
                 value={bgUri}
               />
             </div>
-            <p className="text-[10px] text-gray-500 mt-1">Recommended size: 1200x400px.</p>
+            <p className="text-[10px] text-[#3d6b4e] mt-1">Recommended size: 1200x400px.</p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Theme Color</label>
+            <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Theme Color</label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
@@ -151,14 +151,14 @@ export function ProjectBrandingModal({
                 required
                 value={themeColor}
                 onChange={e => setThemeColor(e.target.value)}
-                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
+                className="flex-1 bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
                 placeholder="#1cac64"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">
               &quot;Nothing&quot; Reward Visual Option
             </label>
             <div className="grid grid-cols-2 gap-3 mb-3">
@@ -166,13 +166,13 @@ export function ProjectBrandingModal({
               <button
                 type="button"
                 onClick={() => setNothingRewardImage("/nothing.png")}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all bg-black/40 hover:bg-black/60 ${
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all bg-[#ebfde3]/60 hover:bg-black/60 ${
                   nothingRewardImage === "/nothing.png"
-                    ? "border-[#1cac64] shadow-[0_0_15px_rgba(28,172,100,0.2)] text-white"
-                    : "border-white/10 text-gray-400"
+                    ? "border-[#1cac64] shadow-[0_0_15px_rgba(28,172,100,0.2)] text-[#0f2618]"
+                    : "border-[#1cac64]/15 text-[#2d5a3f]"
                 }`}
               >
-                <div className="h-12 w-12 rounded-lg overflow-hidden border border-white/10 mb-2 flex items-center justify-center bg-black/60">
+                <div className="h-12 w-12 rounded-lg overflow-hidden border border-[#1cac64]/15 mb-2 flex items-center justify-center bg-black/60">
                   <img src="/nothing.png" alt="Try Again Chest" className="w-full h-full object-cover" />
                 </div>
                 <span className="text-xs font-bold">Neon Empty Chest</span>
@@ -182,13 +182,13 @@ export function ProjectBrandingModal({
               <button
                 type="button"
                 onClick={() => setNothingRewardImage("🎁")}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all bg-black/40 hover:bg-black/60 ${
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all bg-[#ebfde3]/60 hover:bg-black/60 ${
                   nothingRewardImage === "🎁" || !nothingRewardImage
-                    ? "border-[#1cac64] shadow-[0_0_15px_rgba(28,172,100,0.2)] text-white"
-                    : "border-white/10 text-gray-400"
+                    ? "border-[#1cac64] shadow-[0_0_15px_rgba(28,172,100,0.2)] text-[#0f2618]"
+                    : "border-[#1cac64]/15 text-[#2d5a3f]"
                 }`}
               >
-                <div className="h-12 w-12 rounded-lg border border-white/10 mb-2 flex items-center justify-center bg-black/60 text-2xl">
+                <div className="h-12 w-12 rounded-lg border border-[#1cac64]/15 mb-2 flex items-center justify-center bg-black/60 text-2xl">
                   🎁
                 </div>
                 <span className="text-xs font-bold">Default Gift Box</span>
@@ -196,44 +196,44 @@ export function ProjectBrandingModal({
             </div>
 
             {/* Custom option */}
-            <div className="p-3 bg-black/20 border border-white/5 rounded-xl">
+            <div className="p-3 bg-[#ffffff]/40 border border-white/5 rounded-xl">
               <ImageUpload
                 label="Or Upload Custom 'Nothing' Image"
                 onChange={(url: string) => setNothingRewardImage(url)}
                 value={nothingRewardImage !== "/nothing.png" && nothingRewardImage !== "🎁" ? nothingRewardImage : ""}
               />
             </div>
-            <p className="text-[10px] text-gray-500 mt-1">This image will represent zero-value rewards (Try again / empty boxes) during pack openings.</p>
+            <p className="text-[10px] text-[#3d6b4e] mt-1">This image will represent zero-value rewards (Try again / empty boxes) during pack openings.</p>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
-            <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider">Leaderboard Points Configuration</h3>
+          <div className="bg-[#1cac64]/8 border border-[#1cac64]/15 rounded-xl p-5 space-y-4">
+            <h3 className="text-sm font-bold text-[#1a3a2a] uppercase tracking-wider">Leaderboard Points Configuration</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Points per SOL Box</label>
+                <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Points per SOL Box</label>
                 <input
                   type="number"
                   required
                   min="0"
                   value={solRankingPoints}
                   onChange={e => setSolRankingPoints(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
+                  className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
                   placeholder="2"
                 />
-                <p className="text-[10px] text-gray-500 mt-1">Points awarded for opening a SOL box</p>
+                <p className="text-[10px] text-[#3d6b4e] mt-1">Points awarded for opening a SOL box</p>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Points per Token Box</label>
+                <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Points per Token Box</label>
                 <input
                   type="number"
                   required
                   min="0"
                   value={tokenRankingPoints}
                   onChange={e => setTokenRankingPoints(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
+                  className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
                   placeholder="1"
                 />
-                <p className="text-[10px] text-gray-500 mt-1">Points awarded for opening a token box</p>
+                <p className="text-[10px] text-[#3d6b4e] mt-1">Points awarded for opening a token box</p>
               </div>
             </div>
           </div>
@@ -242,14 +242,14 @@ export function ProjectBrandingModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 rounded-xl font-bold uppercase tracking-wider text-sm bg-white/5 text-gray-300 hover:bg-white/10 transition-colors"
+              className="flex-1 py-3 px-4 rounded-xl font-bold uppercase tracking-wider text-sm bg-[#1cac64]/8 text-[#1a3a2a] hover:bg-white/10 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-3 px-4 rounded-xl font-bold uppercase tracking-wider text-sm bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-400 hover:to-teal-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-3 px-4 rounded-xl font-bold uppercase tracking-wider text-sm bg-gradient-to-r from-emerald-500 to-teal-500 text-[#0f2618] hover:from-emerald-400 hover:to-teal-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

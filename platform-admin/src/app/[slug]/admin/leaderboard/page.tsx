@@ -92,8 +92,8 @@ function AdminLeaderboardPageInner({ slug }: { slug: string }) {
       <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black text-white">Project Analytics</h1>
-          <p className="text-sm text-gray-400 mt-1">Manage leaderboard snapshots and activity for {slug}.</p>
+          <h1 className="text-3xl font-black text-[#0f2618]">Project Analytics</h1>
+          <p className="text-sm text-[#2d5a3f] mt-1">Manage leaderboard snapshots and activity for {slug}.</p>
         </div>
       </div>
       
@@ -119,7 +119,7 @@ export default function AdminLeaderboardPage({
 }) {
   const { slug } = use(params);
   return (
-    <Suspense fallback={<div className="p-6 text-gray-500 animate-pulse">Loading leaderboard…</div>}>
+    <Suspense fallback={<div className="p-6 text-[#3d6b4e] animate-pulse">Loading leaderboard…</div>}>
       <AdminLeaderboardPageInner slug={slug} />
     </Suspense>
   );

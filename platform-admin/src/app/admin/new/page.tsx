@@ -139,7 +139,7 @@ Theme Color Accent: ${themeColor}
         toast.success("Project request copied to clipboard!");
         
         toast((t) => (
-          <span className="text-xs text-gray-200">
+          <span className="text-xs text-[#1a3a2a]">
             Opening Discord Support. Paste your copied project request in the chat!
           </span>
         ), { duration: 4500, icon: "💬" });
@@ -160,14 +160,14 @@ Theme Color Accent: ${themeColor}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold">{isAdmin ? "Admin: Deploy Project" : "Configure Project Request"}</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-[#3d6b4e] mt-1">
             {isAdmin 
               ? "Instantly initialize a project on-chain." 
               : "Set up your project details to submit your launch request."
             }
           </p>
         </div>
-        <Link href="/" className="text-sm text-gray-400 hover:text-white transition">
+        <Link href="/" className="text-sm text-[#2d5a3f] hover:text-[#0f2618] transition">
           ← Back
         </Link>
       </div>
@@ -180,14 +180,14 @@ Theme Color Accent: ${themeColor}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Selected Package Tier */}
-        <div className="bg-gray-900/60 border border-gray-800/80 rounded-xl p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Plan Selected</h3>
+        <div className="bg-[#d9f5cc]/60 border border-[#1cac64]/20/80 rounded-xl p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-[#1a3a2a] uppercase tracking-wider">Plan Selected</h3>
           <div>
-            <label className="block text-xs text-gray-500 uppercase mb-1">Package Tier</label>
+            <label className="block text-xs text-[#3d6b4e] uppercase mb-1">Package Tier</label>
             <select
               value={selectedPackage}
               onChange={(e) => setSelectedPackage(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white cursor-pointer"
+              className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] cursor-pointer"
             >
               <option value="free">Basic (Free)</option>
               <option value="pro">Pro (1 SOL)</option>
@@ -197,41 +197,41 @@ Theme Color Accent: ${themeColor}
         </div>
 
         {/* Basic Info */}
-        <div className="bg-gray-900/60 border border-gray-800/80 rounded-xl p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Basic Information</h3>
+        <div className="bg-[#d9f5cc]/60 border border-[#1cac64]/20/80 rounded-xl p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-[#1a3a2a] uppercase tracking-wider">Basic Information</h3>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs text-gray-500 uppercase mb-1">Project Name</label>
+              <label className="block text-xs text-[#3d6b4e] uppercase mb-1">Project Name</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600"
+                className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] placeholder-[#6b9b7a]"
                 placeholder="Awesome Mystery Boxes"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-500 uppercase mb-1">Slug (URL friendly)</label>
+              <label className="block text-xs text-[#3d6b4e] uppercase mb-1">Slug (URL friendly)</label>
               <input
                 type="text"
                 required
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 font-mono"
+                className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] placeholder-[#6b9b7a] font-mono"
                 placeholder="awesome-boxes"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-500 uppercase mb-1">Description</label>
+              <label className="block text-xs text-[#3d6b4e] uppercase mb-1">Description</label>
               <textarea
                 required
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 min-h-24"
+                className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] placeholder-[#6b9b7a] min-h-24"
                 placeholder="Tell us about your project..."
               />
             </div>
@@ -239,8 +239,8 @@ Theme Color Accent: ${themeColor}
         </div>
 
         {/* Branding */}
-        <div className="bg-gray-900/60 border border-gray-800/80 rounded-xl p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Branding</h3>
+        <div className="bg-[#d9f5cc]/60 border border-[#1cac64]/20/80 rounded-xl p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-[#1a3a2a] uppercase tracking-wider">Branding</h3>
 
           <div className="space-y-4">
             <ImageUpload 
@@ -256,7 +256,7 @@ Theme Color Accent: ${themeColor}
             />
 
             <div>
-              <label className="block text-xs text-gray-500 uppercase mb-1">Theme Color</label>
+              <label className="block text-xs text-[#3d6b4e] uppercase mb-1">Theme Color</label>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -268,7 +268,7 @@ Theme Color Accent: ${themeColor}
                   type="text"
                   value={themeColor}
                   onChange={(e) => setThemeColor(e.target.value)}
-                  className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white font-mono"
+                  className="flex-1 bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] font-mono"
                 />
               </div>
             </div>
@@ -276,11 +276,11 @@ Theme Color Accent: ${themeColor}
         </div>
 
         {/* Admin Wallet configuration */}
-        <div className="bg-gray-900/60 border border-gray-800/80 rounded-xl p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Creator Authority</h3>
+        <div className="bg-[#d9f5cc]/60 border border-[#1cac64]/20/80 rounded-xl p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-[#1a3a2a] uppercase tracking-wider">Creator Authority</h3>
           <div>
             <div className="flex justify-between items-center mb-1.5">
-              <label className="block text-xs text-gray-500 uppercase">Creator Admin Wallet (authority over drops)</label>
+              <label className="block text-xs text-[#3d6b4e] uppercase">Creator Admin Wallet (authority over drops)</label>
               {wallet.publicKey && (
                 <button
                   type="button"
@@ -296,7 +296,7 @@ Theme Color Accent: ${themeColor}
               required
               value={adminWallet}
               onChange={(e) => setAdminWallet(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 font-mono"
+              className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] placeholder-[#6b9b7a] font-mono"
               placeholder="Enter Solana wallet address"
             />
           </div>
@@ -304,13 +304,13 @@ Theme Color Accent: ${themeColor}
 
         {/* Fees & Platform Config (Only visible to the platform administrator) */}
         {isAdmin && (
-          <div className="bg-gray-900/60 border border-gray-800/80 rounded-xl p-6 space-y-6">
+          <div className="bg-[#d9f5cc]/60 border border-[#1cac64]/20/80 rounded-xl p-6 space-y-6">
             <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wider">Platform & Fees Configuration (Admin Only)</h3>
 
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-xs text-gray-500 uppercase font-bold">Platform Fee Wallet 1 (Primary Split Recipient)</label>
+                  <label className="block text-xs text-[#3d6b4e] uppercase font-bold">Platform Fee Wallet 1 (Primary Split Recipient)</label>
                   {wallet.publicKey && (
                     <button
                       type="button"
@@ -326,14 +326,14 @@ Theme Color Accent: ${themeColor}
                   required
                   value={feeWallet}
                   onChange={(e) => setFeeWallet(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 font-mono"
+                  className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] placeholder-[#6b9b7a] font-mono"
                   placeholder="Enter Primary Solana wallet address"
                 />
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-xs text-gray-500 uppercase font-bold">Platform Fee Wallet 2 (Secondary Split Recipient)</label>
+                  <label className="block text-xs text-[#3d6b4e] uppercase font-bold">Platform Fee Wallet 2 (Secondary Split Recipient)</label>
                   {wallet.publicKey && (
                     <button
                       type="button"
@@ -349,13 +349,13 @@ Theme Color Accent: ${themeColor}
                   required
                   value={feeWallet2}
                   onChange={(e) => setFeeWallet2(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 font-mono"
+                  className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] placeholder-[#6b9b7a] font-mono"
                   placeholder="Enter Secondary Solana wallet address"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-gray-500 uppercase mb-1">Platform Fee (SOL per box opened)</label>
+                <label className="block text-xs text-[#3d6b4e] uppercase mb-1">Platform Fee (SOL per box opened)</label>
                 <input
                   type="number"
                   required
@@ -363,23 +363,23 @@ Theme Color Accent: ${themeColor}
                   step="0.000000001"
                   value={feeLamports}
                   onChange={(e) => setFeeLamports(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white"
+                  className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618]"
                   placeholder="0.001"
                 />
-                <p className="text-xs text-gray-500 mt-1">1 SOL = 1,000,000,000 lamports</p>
+                <p className="text-xs text-[#3d6b4e] mt-1">1 SOL = 1,000,000,000 lamports</p>
               </div>
 
               <div>
-                <label className="block text-xs text-gray-500 uppercase mb-1">ATA Rent Claim Recipient</label>
+                <label className="block text-xs text-[#3d6b4e] uppercase mb-1">ATA Rent Claim Recipient</label>
                 <select
                   value={rentClaimMode}
                   onChange={(e) => setRentClaimMode(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white cursor-pointer"
+                  className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] cursor-pointer"
                 >
                   <option value="0">Project Authority (Default)</option>
                   <option value="1">Platform Treasury</option>
                 </select>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#3d6b4e] mt-1">
                   Determines who receives the reclaimed Solana rent (~0.002 SOL) when vault Associated Token Accounts are closed.
                 </p>
               </div>
@@ -389,30 +389,30 @@ Theme Color Accent: ${themeColor}
 
         {/* Leaderboard Config (Only visible to the platform administrator) */}
         {isAdmin && (
-          <div className="bg-gray-900/60 border border-gray-800/80 rounded-xl p-6 space-y-4">
+          <div className="bg-[#d9f5cc]/60 border border-[#1cac64]/20/80 rounded-xl p-6 space-y-4">
             <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wider">Leaderboard Points (Admin Only)</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-gray-500 uppercase mb-1">Points per SOL Box Open</label>
+                <label className="block text-xs text-[#3d6b4e] uppercase mb-1">Points per SOL Box Open</label>
                 <input
                   type="number"
                   required
                   min="0"
                   value={solRankingPoints}
                   onChange={(e) => setSolRankingPoints(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600"
+                  className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] placeholder-[#6b9b7a]"
                   placeholder="2"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 uppercase mb-1">Points per Token Box Open</label>
+                <label className="block text-xs text-[#3d6b4e] uppercase mb-1">Points per Token Box Open</label>
                 <input
                   type="number"
                   required
                   min="0"
                   value={tokenRankingPoints}
                   onChange={(e) => setTokenRankingPoints(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600"
+                  className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] placeholder-[#6b9b7a]"
                   placeholder="1"
                 />
               </div>
@@ -425,7 +425,7 @@ Theme Color Accent: ${themeColor}
           <button
             type="submit"
             disabled={submitting}
-            className={`px-6 py-3 rounded-xl text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed text-white cursor-pointer ${
+            className={`px-6 py-3 rounded-xl text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed text-[#0f2618] cursor-pointer ${
               isAdmin 
                 ? "bg-purple-600 hover:bg-purple-700" 
                 : "bg-gradient-to-r from-[#1cac64] to-emerald-500 !text-black font-extrabold shadow-[0_0_20px_rgba(28,172,100,0.2)] hover:shadow-[0_0_30px_rgba(28,172,100,0.4)]"

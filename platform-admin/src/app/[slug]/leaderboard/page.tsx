@@ -343,13 +343,13 @@ export default function ProjectLeaderboardPage() {
     >
       <div className="flex-grow pb-12">
         {/* Hero header */}
-      <div className={`relative overflow-hidden py-16 ${resolvedBgUri ? "bg-transparent" : "bg-gradient-to-b from-[#d9f5cc] via-[#e0f8d5]/80 to-[#ebfde3] border-b border-white/[0.04]"}`}>
+      <div className={`relative overflow-hidden py-16 ${resolvedBgUri ? "bg-transparent" : "bg-gradient-to-b from-[#d9f5cc] via-[#e0f8d5]/80 to-[#ebfde3] border-b border-[#1cac64]/8"}`}>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(28,172,100,0.06),transparent_60%)] pointer-events-none" />
         <div className="relative max-w-5xl mx-auto px-5 text-center space-y-4">
-          <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight" style={resolvedBgUri ? { textShadow: "0 2px 10px rgba(0,0,0,0.95)" } : {}}>
+          <h1 className="text-4xl sm:text-5xl font-black text-[#0f2618] tracking-tight leading-tight" style={resolvedBgUri ? { textShadow: "0 2px 10px rgba(0,0,0,0.95)" } : {}}>
             {projectTitle} <span className="text-[#1cac64] drop-shadow-[0_0_20px_rgba(28,172,100,0.25)]">Leaderboard</span>
           </h1>
-          <p className="text-sm text-gray-300 max-w-lg mx-auto leading-relaxed" style={resolvedBgUri ? { textShadow: "0 1px 6px rgba(0,0,0,0.95)" } : {}}>
+          <p className="text-sm text-[#1a3a2a] max-w-lg mx-auto leading-relaxed" style={resolvedBgUri ? { textShadow: "0 1px 6px rgba(0,0,0,0.95)" } : {}}>
             Rankings for {projectTitle}. Solana box openings earn <span className="text-[#1cac64] font-semibold">{solRankingPoints} {solRankingPoints === 1 ? "point" : "points"}</span>, and token openings earn <span className="text-[#1cac64] font-semibold">{tokenRankingPoints} {tokenRankingPoints === 1 ? "point" : "points"}</span>.
           </p>
         </div>
@@ -359,12 +359,12 @@ export default function ProjectLeaderboardPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
             <div className="h-8 w-8 border-2 border-[#1cac64] border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-gray-500 uppercase tracking-widest">{progressMsg}</p>
+            <p className="text-xs text-[#3d6b4e] uppercase tracking-widest">{progressMsg}</p>
           </div>
         ) : (
           <div className="space-y-8">
             {/* Control bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 bg-[#111]/60 border border-white/[0.06] rounded-2xl backdrop-blur-xl">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 bg-[#111]/60 border border-[#1cac64]/10 rounded-2xl backdrop-blur-xl">
               {/* Weekly / Monthly tabs */}
               <div className="grid grid-cols-2 gap-1 w-full sm:w-auto sm:mx-auto">
                 <button
@@ -372,7 +372,7 @@ export default function ProjectLeaderboardPage() {
                   className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     activeTab === "weekly"
                       ? "bg-[#1cac64] text-black shadow-[0_0_20px_rgba(28,172,100,0.3)]"
-                      : "text-gray-400 hover:text-white"
+                      : "text-[#2d5a3f] hover:text-[#0f2618]"
                   }`}
                 >
                   <FiClock className="text-sm" /> Weekly
@@ -382,7 +382,7 @@ export default function ProjectLeaderboardPage() {
                   className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     activeTab === "monthly"
                       ? "bg-[#1cac64] text-black shadow-[0_0_20px_rgba(28,172,100,0.3)]"
-                      : "text-gray-400 hover:text-white"
+                      : "text-[#2d5a3f] hover:text-[#0f2618]"
                   }`}
                 >
                   <FiAward className="text-sm" /> Monthly
@@ -397,7 +397,7 @@ export default function ProjectLeaderboardPage() {
                   const isGold = user.rank === 1;
                   const isSilver = user.rank === 2;
                   const heightClass = isGold ? "h-64 sm:h-72" : isSilver ? "h-48 sm:h-56" : "h-36 sm:h-44";
-                  const rankColor = isGold ? "border-amber-400 text-amber-400" : isSilver ? "border-gray-300 text-gray-300" : "border-amber-600 text-amber-600";
+                  const rankColor = isGold ? "border-amber-400 text-amber-400" : isSilver ? "border-gray-300 text-[#1a3a2a]" : "border-amber-600 text-amber-600";
                   const shadowColor = isGold ? "shadow-[0_0_40px_rgba(245,158,11,0.15)]" : isSilver ? "shadow-[0_0_30px_rgba(209,213,219,0.08)]" : "shadow-[0_0_20px_rgba(180,83,9,0.06)]";
 
                   return (
@@ -405,14 +405,14 @@ export default function ProjectLeaderboardPage() {
                       key={user.wallet}
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`flex flex-col items-center justify-end rounded-t-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.03] to-[#111] p-4 text-center ${heightClass} ${shadowColor}`}
+                      className={`flex flex-col items-center justify-end rounded-t-3xl border border-[#1cac64]/10 bg-gradient-to-b from-white/[0.03] to-[#111] p-4 text-center ${heightClass} ${shadowColor}`}
                     >
                       {/* Avatar */}
                       <div className="relative group">
                         <img
                           src={user.avatar}
                           alt={user.username}
-                          className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border-2 border-white/[0.08] bg-[#ebfde3] group-hover:scale-105 transition-transform"
+                          className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border-2 border-[#1cac64]/12 bg-[#ebfde3] group-hover:scale-105 transition-transform"
                         />
                         <span className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full border bg-black text-[10px] font-black flex items-center justify-center ${rankColor}`}>
                           {user.rank}
@@ -420,18 +420,18 @@ export default function ProjectLeaderboardPage() {
                       </div>
 
                       {/* Name */}
-                      <p className="text-xs font-black text-white mt-4 truncate max-w-full">
+                      <p className="text-xs font-black text-[#0f2618] mt-4 truncate max-w-full">
                         {user.username}
                       </p>
-                      <p className="text-[10px] text-gray-500 font-mono mt-0.5 truncate max-w-full">
+                      <p className="text-[10px] text-[#3d6b4e] font-mono mt-0.5 truncate max-w-full">
                         {user.wallet.slice(0, 8)}…
                       </p>
 
                       {/* Score */}
-                      <div className="mt-4 bg-black/60 rounded-xl py-1.5 px-3 border border-white/[0.06] w-full">
-                        <p className="text-[10px] text-gray-500 uppercase tracking-widest leading-none">Points</p>
+                      <div className="mt-4 bg-black/60 rounded-xl py-1.5 px-3 border border-[#1cac64]/10 w-full">
+                        <p className="text-[10px] text-[#3d6b4e] uppercase tracking-widest leading-none">Points</p>
                         <p className="text-sm font-black text-[#1cac64] mt-1">{user.points}</p>
-                        <p className="text-[9px] text-gray-500 mt-0.5 font-semibold">{user.opens} opens</p>
+                        <p className="text-[9px] text-[#3d6b4e] mt-0.5 font-semibold">{user.opens} opens</p>
                       </div>
                     </motion.div>
                   );
@@ -443,19 +443,19 @@ export default function ProjectLeaderboardPage() {
             {displayedRankings.length === 0 ? (
               <div className="py-20 text-center glass-panel rounded-3xl">
                 <span className="text-4xl">🏆</span>
-                <p className="text-gray-400 text-sm mt-3">No activity logged for {projectTitle} yet.</p>
-                <p className="text-gray-600 text-xs mt-1">Open packs from this storefront to climb the leaderboard!</p>
+                <p className="text-[#2d5a3f] text-sm mt-3">No activity logged for {projectTitle} yet.</p>
+                <p className="text-[#4a7d5e] text-xs mt-1">Open packs from this storefront to climb the leaderboard!</p>
               </div>
             ) : (
-              <div className="glass-panel rounded-2xl overflow-hidden border border-white/[0.06]">
+              <div className="glass-panel rounded-2xl overflow-hidden border border-[#1cac64]/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-                        <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-gray-500">Rank</th>
-                        <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-gray-500">Opener</th>
-                        <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-gray-500">Total Opens</th>
-                        <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-gray-500 text-right">Points</th>
+                      <tr className="border-b border-[#1cac64]/10 bg-[#1cac64]/3">
+                        <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-[#3d6b4e]">Rank</th>
+                        <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-[#3d6b4e]">Opener</th>
+                        <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-[#3d6b4e]">Total Opens</th>
+                        <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-[#3d6b4e] text-right">Points</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -463,8 +463,8 @@ export default function ProjectLeaderboardPage() {
                         const isTopThree = (user.rank || 0) <= 3;
                         const rankColor =
                           user.rank === 1 ? "text-amber-400" :
-                          user.rank === 2 ? "text-gray-300" :
-                          user.rank === 3 ? "text-amber-600" : "text-gray-400";
+                          user.rank === 2 ? "text-[#1a3a2a]" :
+                          user.rank === 3 ? "text-amber-600" : "text-[#2d5a3f]";
 
                         const isCurrentUser = wallet.publicKey && wallet.publicKey.toBase58() === user.wallet;
 
@@ -474,7 +474,7 @@ export default function ProjectLeaderboardPage() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.03 }}
-                            className={`border-b border-white/[0.04] last:border-none hover:bg-white/[0.02] transition-colors ${
+                            className={`border-b border-[#1cac64]/8 last:border-none hover:bg-[#1cac64]/3 transition-colors ${
                               isCurrentUser ? "bg-[#1cac64]/[0.03] border-l-2 border-l-[#1cac64]" : ""
                             }`}
                           >
@@ -491,11 +491,11 @@ export default function ProjectLeaderboardPage() {
                                 <img
                                   src={user.avatar}
                                   alt={user.username}
-                                  className="h-8 w-8 rounded-full bg-[#111] border border-white/[0.08]"
+                                  className="h-8 w-8 rounded-full bg-[#111] border border-[#1cac64]/12"
                                 />
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-xs font-bold text-white hover:text-[#1cac64] cursor-pointer">
+                                    <span className="text-xs font-bold text-[#0f2618] hover:text-[#1cac64] cursor-pointer">
                                       {user.username}
                                     </span>
                                     {isCurrentUser && (
@@ -504,7 +504,7 @@ export default function ProjectLeaderboardPage() {
                                       </span>
                                     )}
                                   </div>
-                                  <p className="text-[10px] text-gray-500 font-mono mt-0.5 truncate max-w-[150px] sm:max-w-xs" title={user.wallet}>
+                                  <p className="text-[10px] text-[#3d6b4e] font-mono mt-0.5 truncate max-w-[150px] sm:max-w-xs" title={user.wallet}>
                                     {user.wallet}
                                   </p>
                                 </div>
@@ -513,8 +513,8 @@ export default function ProjectLeaderboardPage() {
 
                             {/* Total Opens */}
                             <td className="py-4 px-5">
-                              <div className="flex items-center gap-1.5 text-xs text-gray-300 font-semibold">
-                                <FiActivity className="text-gray-500 text-sm" />
+                              <div className="flex items-center gap-1.5 text-xs text-[#1a3a2a] font-semibold">
+                                <FiActivity className="text-[#3d6b4e] text-sm" />
                                 {user.opens}
                               </div>
                             </td>
@@ -535,8 +535,8 @@ export default function ProjectLeaderboardPage() {
 
                 {/* Footer hint */}
                 {rankings.length > 3 && (
-                  <div className="p-4 bg-white/[0.02] text-center border-t border-white/[0.04]">
-                    <p className="text-[11px] text-gray-500">
+                  <div className="p-4 bg-[#1cac64]/3 text-center border-t border-[#1cac64]/8">
+                    <p className="text-[11px] text-[#3d6b4e]">
                       Showing ranks 4-10. Top 3 are displayed in the podium above.
                     </p>
                   </div>
@@ -549,22 +549,22 @@ export default function ProjectLeaderboardPage() {
       </div>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-white/[0.06] mt-auto bg-black/20 backdrop-blur-md">
+      <footer className="border-t border-[#1cac64]/10 mt-auto bg-[#ffffff]/40 backdrop-blur-md">
         <div className="mx-auto max-w-5xl px-5 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-base font-black">
-              <span className="text-[#1cac64]">Geck</span><span className="text-white/50">ura</span>
+              <span className="text-[#1cac64]">Geck</span><span className="text-[#0f2618]/50">ura</span>
             </span>
-            <span className="text-xs text-gray-500">© 2026 Geckura. All rights reserved.</span>
+            <span className="text-xs text-[#3d6b4e]">© 2026 Geckura. All rights reserved.</span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-gray-400">
+          <div className="flex items-center gap-4 text-xs text-[#2d5a3f]">
             <span>
               Made with <span className="text-red-500 animate-pulse">❤️</span> by{" "}
               <a 
                 href="https://x.com/geckura" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-[#1cac64] hover:text-white font-semibold transition-colors"
+                className="text-[#1cac64] hover:text-[#0f2618] font-semibold transition-colors"
               >
                 Geckura
               </a>
