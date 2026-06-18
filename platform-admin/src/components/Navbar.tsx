@@ -158,6 +158,8 @@ export default function Navbar({
   }, []);
 
   const themeColor = branding.themeColor || "#1cac64";
+  const navbarColor = branding.navbarColor || "";
+  const textColor = branding.textColor || "";
 
   return (
     <>
@@ -194,8 +196,17 @@ export default function Navbar({
           color: ${themeColor} !important;
           text-shadow: 0 0 12px ${themeColor}40 !important;
         }
+        .text-brand {
+          color: ${textColor || '#0f2618'} !important;
+        }
+        .text-brand-muted {
+          color: ${textColor ? textColor + 'b3' : '#3d6b4e'} !important;
+        }
       `}} />
-      <nav className="sticky top-0 z-50 h-[68px] border-b border-[#1cac64]/10 bg-[#ebfde3]/80 backdrop-blur-2xl">
+      <nav
+        className="sticky top-0 z-50 h-[68px] border-b border-[#1cac64]/10 backdrop-blur-2xl"
+        style={{ backgroundColor: navbarColor ? `${navbarColor}cc` : 'rgba(235,253,227,0.8)' }}
+      >
         <div className="mx-auto max-w-[1440px] h-full px-4 lg:px-6 flex items-center justify-between gap-3">
 
           {/* ── Logo / Project branding ── */}
@@ -210,7 +221,7 @@ export default function Navbar({
                   className="rounded-full"
                   unoptimized
                 />
-                <span className="hidden sm:inline text-sm font-semibold text-[#1a3a2a]">
+                <span className="hidden sm:inline text-sm font-semibold text-brand">
                   {branding.name}
                 </span>
               </>
@@ -218,7 +229,7 @@ export default function Navbar({
               <>
                 <span className="relative inline-flex">
                   <span className="absolute -inset-1 rounded-full blur-md" style={{ backgroundColor: `${themeColor}15` }} />
-                  <span className="relative text-[20px] tracking-tight leading-none font-bold select-none text-[#1a3a2a]">
+                  <span className="relative text-[20px] tracking-tight leading-none font-bold select-none text-brand">
                     {branding.name}
                   </span>
                 </span>
@@ -233,7 +244,7 @@ export default function Navbar({
                   className="rounded-full"
                   unoptimized
                 />
-                <span className="hidden sm:inline text-sm font-bold text-[#1a3a2a]">
+                <span className="hidden sm:inline text-sm font-bold text-brand">
                   GeckuraBox
                 </span>
               </>
@@ -254,7 +265,7 @@ export default function Navbar({
                       e.preventDefault();
                       document.getElementById("projects-directory")?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-[#3d6b4e] cursor-pointer"
+                    className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-brand-muted cursor-pointer"
                   >
                     Projects
                   </a>
@@ -264,7 +275,7 @@ export default function Navbar({
                       e.preventDefault();
                       document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-[#3d6b4e] cursor-pointer"
+                    className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-brand-muted cursor-pointer"
                   >
                     Pricing
                   </a>
@@ -274,7 +285,7 @@ export default function Navbar({
                   <Link
                     href={slug === "geckurabox" ? "/" : `/${slug}`}
                     className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
-                      pathname === `/${slug}` || pathname === "/" ? "text-theme-glow" : "text-[#3d6b4e]"
+                      pathname === `/${slug}` || pathname === "/" ? "text-theme-glow" : "text-brand-muted"
                     }`}
                   >
                     Packs
@@ -282,7 +293,7 @@ export default function Navbar({
                   <Link
                     href={`/${slug}/leaderboard`}
                     className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
-                      pathname?.includes("/leaderboard") ? "text-theme-glow" : "text-[#3d6b4e]"
+                      pathname?.includes("/leaderboard") ? "text-theme-glow" : "text-brand-muted"
                     }`}
                   >
                     Leaderboard
@@ -297,19 +308,19 @@ export default function Navbar({
                   <>
                     <button
                       onClick={() => window.dispatchEvent(new CustomEvent('open-project-branding'))}
-                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#2d5a3f] hover-theme-glow transition-all"
+                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-brand-muted hover-theme-glow transition-all"
                     >
                       Branding
                     </button>
                     <button
                       onClick={() => window.dispatchEvent(new CustomEvent('open-vault-manager'))}
-                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#2d5a3f] hover-theme-glow transition-all"
+                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-brand-muted hover-theme-glow transition-all"
                     >
                       Vault Manager
                     </button>
                     <button
                       onClick={() => window.dispatchEvent(new CustomEvent('open-create-box'))}
-                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#2d5a3f] hover-theme-glow transition-all"
+                      className="text-xs sm:text-sm font-bold uppercase tracking-wider text-brand-muted hover-theme-glow transition-all"
                     >
                       Create Box
                     </button>
@@ -318,7 +329,7 @@ export default function Navbar({
                   <Link
                     href={`/${slug}/admin`}
                     className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
-                      pathname?.endsWith("/admin") ? "text-theme-glow" : "text-[#2d5a3f]"
+                      pathname?.endsWith("/admin") ? "text-theme-glow" : "text-brand-muted"
                     }`}
                   >
                     Back to Admin
@@ -327,7 +338,7 @@ export default function Navbar({
                 <Link
                   href={`/${slug}/admin/leaderboard`}
                   className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
-                    pathname?.includes("/admin/leaderboard") ? "text-theme-glow" : "text-[#2d5a3f]"
+                    pathname?.includes("/admin/leaderboard") ? "text-theme-glow" : "text-brand-muted"
                   }`}
                 >
                   Leaderboard

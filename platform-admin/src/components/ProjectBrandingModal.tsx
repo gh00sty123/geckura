@@ -26,6 +26,8 @@ export function ProjectBrandingModal({
   const [bgUri, setBgUri] = useState(slugProj?.bgUri || "");
   const [description, setDescription] = useState(slugProj?.description || "");
   const [themeColor, setThemeColor] = useState(slugProj?.themeColor || "#1cac64");
+  const [navbarColor, setNavbarColor] = useState(slugProj?.navbarColor || "");
+  const [textColor, setTextColor] = useState(slugProj?.textColor || "");
   const [solRankingPoints, setSolRankingPoints] = useState(String(slugProj?.solRankingPoints ?? "2"));
   const [tokenRankingPoints, setTokenRankingPoints] = useState(String(slugProj?.tokenRankingPoints ?? "1"));
   const [nothingRewardImage, setNothingRewardImage] = useState(slugProj?.nothingRewardImage || "");
@@ -49,6 +51,8 @@ export function ProjectBrandingModal({
         bgUri,
         description,
         themeColor,
+        navbarColor,
+        textColor,
         solRankingPoints: parseInt(solRankingPoints),
         tokenRankingPoints: parseInt(tokenRankingPoints),
         nothingRewardImage,
@@ -154,6 +158,47 @@ export function ProjectBrandingModal({
                 className="flex-1 bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
                 placeholder="#1cac64"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Navbar Color</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={navbarColor || "#ebfde3"}
+                  onChange={e => setNavbarColor(e.target.value)}
+                  className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                />
+                <input
+                  type="text"
+                  value={navbarColor}
+                  onChange={e => setNavbarColor(e.target.value)}
+                  className="flex-1 bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
+                  placeholder="#ebfde3"
+                />
+              </div>
+              <p className="text-[10px] text-[#3d6b4e] mt-1">Background color of the navigation bar</p>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Text Color</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={textColor || "#1a3a2a"}
+                  onChange={e => setTextColor(e.target.value)}
+                  className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                />
+                <input
+                  type="text"
+                  value={textColor}
+                  onChange={e => setTextColor(e.target.value)}
+                  className="flex-1 bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
+                  placeholder="#1a3a2a"
+                />
+              </div>
+              <p className="text-[10px] text-[#3d6b4e] mt-1">Primary text color in the navigation bar</p>
             </div>
           </div>
 

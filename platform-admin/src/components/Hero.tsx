@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import CountUp from "react-countup";
 import {
-  FiShoppingBag, FiChevronRight, FiStar, FiBox,
+  FiStar, FiBox, FiChevronDown,
 } from "react-icons/fi";
 import { LuSwords, LuSparkles } from "react-icons/lu";
 import type { PackItem } from "@/lib/mockData";
@@ -29,37 +28,13 @@ function Ticker({ items }: { items: string[] }) {
 }
 
 /* ══════════════════════════════════════════
-   Stat cards row
-══════════════════════════════════════════ */
-function StatCard({ icon: Icon, label, value, sub }: {
-  icon: React.ElementType;
-  label: string;
-  value: React.ReactNode;
-  sub?: string;
-}) {
-  return (
-    <div className="glass-panel rounded-2xl px-5 py-4 flex items-center gap-3.5 min-w-0">
-      <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-[#1cac64]/10 flex items-center justify-center">
-        <Icon className="text-[#1cac64] text-lg" />
-      </div>
-      <div className="min-w-0">
-        <p className="text-[11px] uppercase tracking-wider text-[#3d6b4e]">{label}</p>
-        <p className="text-lg font-bold text-[#1a3a2a] leading-tight">{value}</p>
-        {sub && <p className="text-[11px] text-[#1cac64]/60">{sub}</p>}
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════
-   HERO
+   HERO — Vertical layout
 ══════════════════════════════════════════ */
 export default function Hero({
   onOpenPack,
 }: {
   onOpenPack: (packName: string) => void;
 }) {
-  const [jackpot, setJackpot] = useState(25_431.72);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const wins = [
@@ -71,26 +46,51 @@ export default function Hero({
     "MoonKid won a Legendary Plasma Spine",
   ];
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setJackpot((p) => p + Math.random() * 0.84);
-    }, 2500);
-    return () => clearInterval(id);
-  }, []);
-
   return (
     <section
       ref={containerRef}
-      className="relative overflow-hidden rounded-3xl border border-[#1cac64]/15 bg-[linear-gradient(135deg,#e0f8d5_0%,#ebfde3_40%,#d9f5cc_100%)]"
+      className="relative overflow-hidden rounded-3xl border border-[#1cac64]/15"
     >
+      {/* ── Animated gradient background ── */}
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,#e0f8d5_0%,#ebfde3_30%,#d9f5cc_60%,#c8edba_100%)]" />
+
+      {/* ── Floating gradient orbs ── */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute -top-20 -right-20 w-[400px] h-[400px] rounded-full bg-[#1cac64]/8 blur-[100px]"
+          animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute -bottom-32 -left-20 w-[350px] h-[350px] rounded-full bg-emerald-400/10 blur-[80px]"
+          animate={{ x: [0, -25, 0], y: [0, 20, 0] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-[#22c55e]/6 blur-[90px]"
+          animate={{ scale: [1, 1.15, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </div>
+
       {/* ── Background particle field ── */}
-      <div className="pointer-events-none absolute inset-0 opacity-40">
+      <div className="pointer-events-none absolute inset-0 opacity-30">
         <ParticleField />
       </div>
 
-      {/* ── Left label — live badge ── */}
+      {/* ── Decorative grid pattern ── */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(28,172,100,1) 1px, transparent 1px), linear-gradient(90deg, rgba(28,172,100,1) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+
+      {/* ── Live badge ── */}
       <div className="pointer-events-none absolute top-6 left-6 z-10">
-        <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] font-semibold text-[#1cac64]/70">
+        <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] font-semibold text-[#1cac64]/80">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1cac64] opacity-60" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1cac64]" />
@@ -99,64 +99,112 @@ export default function Hero({
         </span>
       </div>
 
-      {/* ── Main grid ── */}
-      <div className="relative z-10 grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-12 p-6 sm:p-10 lg:p-14">
-
-        {/* Left column */}
-        <div className="flex flex-col justify-center gap-8">
-
-          {/* Headline */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-black leading-[1.05] tracking-tight">
-              <span className="text-[#1a3a2a]">Premium </span>
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1cac64] via-emerald-500 to-[#22c55e]">
-                Geckura Mystery
-              </span>
-              <br />
-              <span className="text-[#1a3a2a]">Boxes</span>
-            </h1>
-            <p className="mt-4 text-base text-[#3d6b4e] max-w-md leading-relaxed">
-              Unlock rare NFT collectibles from Solana&apos;s most exciting mystery drop ecosystem — real-time odds, provably fair, instant settlements.
-            </p>
-          </motion.div>
-
-
-        </div>
-
-        {/* Right column — featured pack */}
+      {/* ── Floating decorative icons ── */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <motion.div
-          initial={{ opacity: 0, x: 32 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative flex items-center justify-center py-8"
+          className="absolute top-12 right-16 text-[#1cac64]/10 text-4xl"
+          animate={{ y: [0, -12, 0], rotate: [0, 10, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <LuSparkles />
+        </motion.div>
+        <motion.div
+          className="absolute bottom-20 left-12 text-[#1cac64]/10 text-3xl"
+          animate={{ y: [0, 8, 0], rotate: [0, -8, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        >
+          <FiBox />
+        </motion.div>
+        <motion.div
+          className="absolute top-1/3 right-[10%] text-[#1cac64]/8 text-5xl"
+          animate={{ y: [0, -8, 0], x: [0, 5, 0] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        >
+          <LuSwords />
+        </motion.div>
+      </div>
+
+      {/* ── Main vertical content ── */}
+      <div className="relative z-10 flex flex-col items-center text-center px-6 sm:px-10 pt-16 pb-10 gap-10">
+
+        {/* ── Headline section ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="max-w-2xl"
+        >
+          <h1 className="text-4xl sm:text-5xl lg:text-[60px] font-black leading-[1.05] tracking-tight">
+            <span className="text-[#1a3a2a]">Premium </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1cac64] via-emerald-500 to-[#22c55e]">
+              Geckura Mystery
+            </span>
+            <br />
+            <span className="text-[#1a3a2a]">Boxes</span>
+          </h1>
+          <p className="mt-5 text-base sm:text-lg text-[#3d6b4e] max-w-lg mx-auto leading-relaxed">
+            Unlock rare NFT collectibles from Solana&apos;s most exciting mystery drop ecosystem — real-time odds, provably fair, instant settlements.
+          </p>
+
+          {/* ── CTA Button ── */}
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => onOpenPack("Gecko Genesis")}
+            className="mt-7 inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-[#1cac64] text-white font-bold text-sm
+              shadow-[0_4px_24px_rgba(28,172,100,0.3)] hover:shadow-[0_4px_40px_rgba(28,172,100,0.45)]
+              transition-all cursor-pointer"
+          >
+            <LuSparkles className="text-lg" />
+            Explore Packs
+            <FiChevronDown className="text-sm -rotate-90" />
+          </motion.button>
+        </motion.div>
+
+        {/* ── Featured pack card — centered ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.85, delay: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="relative"
         >
           {/* Ambient glow behind pack */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-72 h-72 rounded-full opacity-30 blur-[80px] bg-[#1cac64]/20" />
-            <div className="absolute w-48 h-48 rounded-full opacity-20 blur-[60px] bg-emerald-500/30" />
+            <div className="w-80 h-80 rounded-full opacity-35 blur-[90px] bg-[#1cac64]/25" />
+            <div className="absolute w-52 h-52 rounded-full opacity-25 blur-[60px] bg-emerald-400/30" />
           </div>
 
-          {/* Featured pack card — doubled height for 3D effect */}
+          {/* Featured pack card */}
           <div className="relative float-anim">
             <FeaturedPack onOpen={onOpenPack} />
           </div>
+        </motion.div>
 
-          {/* Scroll hint */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-[#6b9b7a]">
-            <span className="text-[10px] uppercase tracking-[0.2em]">Scroll</span>
-            <motion.div
-              animate={{ y: [0, 6, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="text-xs"
-            >
-              ↓
-            </motion.div>
-          </div>
+        {/* ── Ticker bar ── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="w-full max-w-3xl mx-auto rounded-2xl bg-white/40 backdrop-blur-md border border-[#1cac64]/10 px-4 py-3"
+        >
+          <Ticker items={wins} />
+        </motion.div>
+
+        {/* ── Scroll hint ── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="flex flex-col items-center gap-1.5 text-[#6b9b7a]"
+        >
+          <span className="text-[10px] uppercase tracking-[0.2em]">Scroll to explore</span>
+          <motion.div
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="text-xs"
+          >
+            <FiChevronDown />
+          </motion.div>
         </motion.div>
       </div>
     </section>
@@ -164,7 +212,7 @@ export default function Hero({
 }
 
 /* ══════════════════════════════════════════
-   Featured (hero) mini pack
+   Featured (hero) mini pack — enhanced
 ══════════════════════════════════════════ */
 function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
   const packs: PackItem[] = [
@@ -182,64 +230,87 @@ function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
     },
   ];
   const pack = packs[0];
+  const soldPercent = Math.round(((pack.totalSupply - pack.supplyLeft) / pack.totalSupply) * 100);
 
   return (
     <motion.div
-      className="relative w-[220px] rounded-[20px] overflow-hidden cursor-pointer"
-      whileHover={{ scale: 1.055, rotateY: 10 }}
+      className="relative w-[240px] rounded-[24px] overflow-hidden cursor-pointer"
+      whileHover={{ scale: 1.06, rotateY: 8, rotateX: -3 }}
       transition={{ type: "spring", stiffness: 300, damping: 18 }}
       style={{ transformStyle: "preserve-3d" }}
       onClick={() => onOpen(pack.name)}
     >
       {/* Back glow */}
-      <div className="absolute -inset-10 rounded-[36px] bg-gradient-to-br from-[#1cac64] to-emerald-500 opacity-40 blur-3xl -z-10" />
+      <div className="absolute -inset-12 rounded-[40px] bg-gradient-to-br from-[#1cac64] to-emerald-400 opacity-35 blur-3xl -z-10" />
 
-      <div className="relative w-full aspect-[140/190] rounded-[20px] overflow-hidden border border-[#1cac64]/25 shadow-[0_0_36px_rgba(28,172,100,0.2)]">
+      <div className="relative w-full aspect-[140/200] rounded-[24px] overflow-hidden border-2 border-[#1cac64]/30 shadow-[0_0_48px_rgba(28,172,100,0.2),0_8px_32px_rgba(0,0,0,0.1)]">
 
         {/* Grid background */}
         <div
-          className="absolute inset-0 opacity-20"
+          className="absolute inset-0 opacity-15"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(28,172,100,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(28,172,100,0.12) 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
+              "linear-gradient(rgba(28,172,100,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(28,172,100,0.15) 1px, transparent 1px)",
+            backgroundSize: "18px 18px",
           }}
         />
 
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a2e1a]/95 via-[#0a2e1a]/40 to-[#0a2e1a]/10" />
 
         {/* Scanlines */}
         <div
-          className="absolute inset-0 opacity-[0.06]"
+          className="absolute inset-0 opacity-[0.04]"
           style={{
-            backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.5) 2px, rgba(255,255,255,0.5) 3px)",
+            backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.4) 2px, rgba(255,255,255,0.4) 3px)",
           }}
         />
 
-        {/* Solana emblem */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#1cac64]/15 to-emerald-500/10 border border-[#1cac64]/25 flex items-center justify-center">
-            <LuSwords className="text-[#1cac64] text-3xl" />
-          </div>
+        {/* Corner accents */}
+        <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-[#1cac64]/40 rounded-tl-lg" />
+        <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-[#1cac64]/40 rounded-tr-lg" />
+
+        {/* Center emblem */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            animate={{ rotateY: [0, 360] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+            className="h-18 w-18 rounded-2xl bg-gradient-to-br from-[#1cac64]/20 to-emerald-500/15 border border-[#1cac64]/30 flex items-center justify-center backdrop-blur-sm"
+            style={{ width: 72, height: 72 }}
+          >
+            <LuSwords className="text-[#1cac64] text-4xl drop-shadow-[0_0_8px_rgba(28,172,100,0.4)]" />
+          </motion.div>
         </div>
 
-        {/* Bottom info */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <p className="text-[9px] uppercase tracking-[0.18em] text-[#1cac64]/60 mb-0.5">
+        {/* Bottom info panel */}
+        <div className="absolute bottom-0 left-0 right-0 p-5">
+          <p className="text-[9px] uppercase tracking-[0.2em] text-[#1cac64]/70 mb-1 flex items-center gap-1.5">
+            <LuSparkles className="text-[10px]" />
             Featured · Limited Drop
           </p>
-          <p className="text-sm font-bold text-[#0f2618]">{pack.name}</p>
+          <p className="text-base font-bold text-white">{pack.name}</p>
+
+          {/* Supply bar */}
+          <div className="mt-2.5 w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-[#1cac64] to-emerald-400"
+              initial={{ width: 0 }}
+              animate={{ width: `${soldPercent}%` }}
+              transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
+            />
+          </div>
+
           <div className="flex items-center justify-between mt-2">
-            <span className="text-base font-extrabold text-[#1cac64]">{pack.price} SOL</span>
-            <span className="text-[10px] text-[#6b9b7a]">+{pack.supplyLeft.toLocaleString()} left</span>
+            <span className="text-lg font-extrabold text-[#1cac64]">{pack.price} SOL</span>
+            <span className="text-[10px] text-white/60">{pack.supplyLeft.toLocaleString()} left</span>
           </div>
 
           {/* CTA */}
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
-            className="mt-3 w-full rounded-xl bg-[#1cac64] text-[#0f2618] font-bold text-xs py-2.5 hover:shadow-[0_0_20px_rgba(28,172,100,0.4)] transition-shadow"
+            className="mt-3 w-full rounded-xl bg-[#1cac64] text-white font-bold text-xs py-3
+              shadow-[0_0_20px_rgba(28,172,100,0.35)] hover:shadow-[0_0_30px_rgba(28,172,100,0.5)] transition-shadow"
             onClick={(e) => { e.stopPropagation(); onOpen(pack.name); }}
           >
             ✦ Open Pack
@@ -273,13 +344,13 @@ function ParticleField() {
     resize();
     window.addEventListener("resize", resize);
 
-    const particles = Array.from({ length: 70 }, () => ({
+    const particles = Array.from({ length: 80 }, () => ({
       x: Math.random() * canvas.offsetWidth,
       y: Math.random() * canvas.offsetHeight,
-      r: Math.random() * 1.8 + 0.4,
-      dx: (Math.random() - 0.5) * 0.25,
-      dy: (Math.random() - 0.5) * 0.25,
-      alpha: Math.random() * 0.6 + 0.1,
+      r: Math.random() * 2 + 0.3,
+      dx: (Math.random() - 0.5) * 0.2,
+      dy: (Math.random() - 0.5) * 0.2,
+      alpha: Math.random() * 0.5 + 0.1,
     }));
 
     let raf = 0;

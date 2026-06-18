@@ -643,6 +643,8 @@ export default function ProjectView({ slug }: { slug: string }) {
                   decodedProject.logoUri = decodedProject.logoUri || parsed.logoUri || "";
                   decodedProject.bgUri = decodedProject.bgUri || parsed.bgUri || "";
                   decodedProject.themeColor = decodedProject.themeColor || parsed.themeColor || "";
+                  decodedProject.navbarColor = parsed.navbarColor || "";
+                  decodedProject.textColor = parsed.textColor || "";
                   decodedProject.nothingRewardImage = parsed.nothingRewardImage || "";
                 } catch {}
               }
@@ -814,6 +816,8 @@ export default function ProjectView({ slug }: { slug: string }) {
         name,
         logoUrl: logoUri,
         themeColor: tColor || null,
+        navbarColor: (project.navbarColor as string) || null,
+        textColor: (project.textColor as string) || null,
         nothingRewardImage: resolveIpfsUrl((project.nothingRewardImage as string | null | undefined)) || null,
       });
 

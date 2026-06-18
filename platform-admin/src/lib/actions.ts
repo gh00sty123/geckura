@@ -492,6 +492,8 @@ export const updateProjectBrandingTx = async (
     bgUri: string;
     description: string;
     themeColor: string;
+    navbarColor?: string;
+    textColor?: string;
     solRankingPoints: number;
     tokenRankingPoints: number;
     nothingRewardImage?: string;
@@ -506,6 +508,8 @@ export const updateProjectBrandingTx = async (
         bgUri: params.bgUri,
         description: params.description,
         themeColor: params.themeColor,
+        navbarColor: params.navbarColor || "",
+        textColor: params.textColor || "",
         nothingRewardImage: params.nothingRewardImage || "",
         solRankingPoints: params.solRankingPoints,
         tokenRankingPoints: params.tokenRankingPoints,
