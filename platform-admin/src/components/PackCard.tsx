@@ -29,7 +29,7 @@ function SupplyBar({ used, total }: { used: number; total: number }) {
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}
         transition={{ duration: 0.9, ease: "easeOut" }}
-        className={`h-full rounded-full ${isLow ? "bg-red-500/70" : "bg-[#39ff14]/55"}`}
+        className={`h-full rounded-full ${isLow ? "bg-red-500/70" : "bg-[#1cac64]/55"}`}
       />
     </div>
   );
@@ -61,15 +61,15 @@ export default function PackCard({
         duration-400 hover:bg-[#191919] ${glowClass} card-hover`}
     >
       {/* Top gradient shimmer strip */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-[#39ff14]/40 to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-[#1cac64]/40 to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
 
       <div className="p-5">
         {/* Pack header: icon + info */}
         <div className="flex items-start gap-3">
           {/* Pack artwork area */}
           <div className="relative h-18 w-18 flex-shrink-0 rounded-xl overflow-hidden border border-white/[0.08]
-            bg-gradient-to-br from-[#39ff14]/10 to-emerald-500/5 flex items-center justify-center">
-            <LuSwords className="text-[#39ff14] text-3xl drop-shadow-lg" />
+            bg-gradient-to-br from-[#1cac64]/10 to-emerald-500/5 flex items-center justify-center">
+            <LuSwords className="text-[#1cac64] text-3xl drop-shadow-lg" />
 
             {/* Subtle animated glow on hover */}
             <div
@@ -79,7 +79,7 @@ export default function PackCard({
                 background: style.text === "text-amber-400" ? "#f59e0b40" :
                            style.text === "text-purple-400" ? "#a855f740" :
                            style.text === "text-blue-400"   ? "#3b82f640" :
-                           "#39ff1440",
+                           "#1cac6440",
               }}
             />
           </div>
@@ -91,13 +91,13 @@ export default function PackCard({
                 {pack.categoryLabel}
               </span>
             </div>
-            <h3 className="mt-1 text-base font-bold text-white leading-tight group-hover:text-[#39ff14] transition-colors">
+            <h3 className="mt-1 text-base font-bold text-white leading-tight group-hover:text-[#1cac64] transition-colors">
               {pack.name}
             </h3>
             <p className="text-[11px] text-gray-600 mt-0.5 line-clamp-1">{pack.description}</p>
 
             <div className="flex items-center justify-between mt-2.5">
-              <div className="flex items-center gap-1 text-base font-extrabold text-[#39ff14]">
+              <div className="flex items-center gap-1 text-base font-extrabold text-[#1cac64]">
                 <FiDollarSign className="text-sm opacity-70" />
                 {pack.price} <span className="text-xs font-medium text-gray-500">SOL</span>
               </div>
@@ -132,8 +132,8 @@ export default function PackCard({
         <motion.button
           onClick={() => onOpen(pack.name)}
           className="mt-4 w-full rounded-xl bg-white/[0.04] border border-white/[0.08] py-2.5
-            text-sm font-semibold text-white hover:bg-[#39ff14]/10 hover:border-[#39ff14]/30
-            hover:text-[#39ff14] transition-all duration-300"
+            text-sm font-semibold text-white hover:bg-[#1cac64]/10 hover:border-[#1cac64]/30
+            hover:text-[#1cac64] transition-all duration-300"
           whileHover={{ scale: 1.022 }}
           whileTap={{ scale: 0.97 }}
         >
@@ -149,7 +149,7 @@ export default function PackCard({
       )}
 
       {/* Card bottom glow */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#39ff14]/25 to-transparent opacity-50" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#1cac64]/25 to-transparent opacity-50" />
     </motion.div>
   );
 }

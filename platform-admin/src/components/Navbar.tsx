@@ -157,7 +157,7 @@ export default function Navbar({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  const themeColor = branding.themeColor || "#39ff14";
+  const themeColor = branding.themeColor || "#1cac64";
 
   return (
     <>
@@ -170,7 +170,7 @@ export default function Navbar({
         }
         .theme-avatar-gradient {
           background: linear-gradient(135deg, ${themeColor}, #059669) !important;
-          color: #0a0a0a !important;
+          color: #ffffff !important;
           box-shadow: 0 0 12px ${themeColor}40 !important;
         }
         .text-theme {
@@ -195,7 +195,7 @@ export default function Navbar({
           text-shadow: 0 0 12px ${themeColor}40 !important;
         }
       `}} />
-      <nav className="sticky top-0 z-50 h-[68px] border-b border-white/[0.06] bg-[#0a0a0a]/75 backdrop-blur-2xl glass-panel">
+      <nav className="sticky top-0 z-50 h-[68px] border-b border-[#1cac64]/10 bg-[#ebfde3]/80 backdrop-blur-2xl">
         <div className="mx-auto max-w-[1440px] h-full px-4 lg:px-6 flex items-center justify-between gap-3">
 
           {/* ── Logo / Project branding ── */}
@@ -210,38 +210,31 @@ export default function Navbar({
                   className="rounded-full"
                   unoptimized
                 />
-                <span className="hidden sm:inline text-sm font-semibold text-white">
+                <span className="hidden sm:inline text-sm font-semibold text-[#1a3a2a]">
                   {branding.name}
                 </span>
               </>
             ) : slug !== "geckurabox" ? (
               <>
                 <span className="relative inline-flex">
-                  <span className="absolute -inset-1 rounded-full blur-md" style={{ backgroundColor: `${themeColor}26` }} />
-                  <span className="relative text-[20px] tracking-tight leading-none font-bold select-none text-white">
+                  <span className="absolute -inset-1 rounded-full blur-md" style={{ backgroundColor: `${themeColor}15` }} />
+                  <span className="relative text-[20px] tracking-tight leading-none font-bold select-none text-[#1a3a2a]">
                     {branding.name}
                   </span>
                 </span>
               </>
             ) : (
               <>
-                <span className="relative inline-flex">
-                  <span className="absolute -inset-1 rounded-full blur-md" style={{ backgroundColor: `${themeColor}26` }} />
-                  <span className="relative text-[22px] tracking-tight leading-none font-bold select-none">
-                    <span style={{ color: themeColor }}>Geck</span>
-                    <span className="text-white/80">ura</span>
-                  </span>
-                </span>
-                <span 
-                  className="hidden sm:inline text-[10px] font-semibold tracking-[0.18em] uppercase rounded-full px-2 py-0.5"
-                  style={{ 
-                    color: `${themeColor}b3`, 
-                    borderColor: `${themeColor}40`,
-                    borderWidth: "1px",
-                    borderStyle: "solid"
-                  }}
-                >
-                  Box
+                <Image
+                  src="/geckura-logo.jpg"
+                  alt="Geckura"
+                  width={36}
+                  height={36}
+                  className="rounded-full"
+                  unoptimized
+                />
+                <span className="hidden sm:inline text-sm font-bold text-[#1a3a2a]">
+                  GeckuraBox
                 </span>
               </>
             )}
@@ -261,7 +254,7 @@ export default function Navbar({
                       e.preventDefault();
                       document.getElementById("projects-directory")?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-gray-400 cursor-pointer"
+                    className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-[#3d6b4e] cursor-pointer"
                   >
                     Projects
                   </a>
@@ -271,7 +264,7 @@ export default function Navbar({
                       e.preventDefault();
                       document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-gray-400 cursor-pointer"
+                    className="text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow text-[#3d6b4e] cursor-pointer"
                   >
                     Pricing
                   </a>
@@ -281,7 +274,7 @@ export default function Navbar({
                   <Link
                     href={slug === "geckurabox" ? "/" : `/${slug}`}
                     className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
-                      pathname === `/${slug}` || pathname === "/" ? "text-theme-glow" : "text-gray-400"
+                      pathname === `/${slug}` || pathname === "/" ? "text-theme-glow" : "text-[#3d6b4e]"
                     }`}
                   >
                     Packs
@@ -289,7 +282,7 @@ export default function Navbar({
                   <Link
                     href={`/${slug}/leaderboard`}
                     className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-all hover-theme-glow ${
-                      pathname?.includes("/leaderboard") ? "text-theme-glow" : "text-gray-400"
+                      pathname?.includes("/leaderboard") ? "text-theme-glow" : "text-[#3d6b4e]"
                     }`}
                   >
                     Leaderboard
@@ -356,8 +349,8 @@ export default function Navbar({
             <div className="relative" ref={profileRef}>
               <motion.button
                 onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-2xl bg-white/[0.04] border border-white/[0.08]
-                  hover:bg-white/[0.07] hover-theme-border transition-all cursor-pointer"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-2xl bg-white/50 border border-[#1cac64]/15
+                  hover:bg-white/70 hover-theme-border transition-all cursor-pointer"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
               >
@@ -369,7 +362,7 @@ export default function Navbar({
 
                 {/* Address + Balance */}
                 <div className="hidden sm:flex flex-col items-start leading-none">
-                  <span className="text-xs font-semibold text-gray-200">{walletAddress}</span>
+                  <span className="text-xs font-semibold text-[#1a3a2a]">{walletAddress}</span>
                   {solBalance && (
                     <span className="text-[10px] font-mono text-theme-muted mt-0.5">◎ {solBalance} SOL</span>
                   )}
@@ -389,15 +382,15 @@ export default function Navbar({
                     className="absolute right-0 top-[calc(100%+8px)] w-72 glass-panel-lg rounded-2xl overflow-hidden shadow-2xl"
                   >
                     {/* Header card */}
-                    <div className="p-4 theme-gradient-header border-b border-white/[0.06]">
+                    <div className="p-4 theme-gradient-header border-b border-[#1cac64]/10">
                       <div className="flex items-center gap-3">
                         <div className="h-11 w-11 rounded-full flex items-center justify-center
                           text-[17px] font-black shrink-0 theme-avatar-gradient">
                           {fullAddress ? fullAddress.slice(0, 1).toUpperCase() : "G"}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{walletAddress}</p>
-                          <p className="text-[10px] text-gray-500 font-mono truncate mt-0.5">{fullAddress}</p>
+                          <p className="text-sm font-semibold text-[#1a3a2a] truncate">{walletAddress}</p>
+                          <p className="text-[10px] text-[#6b9b7a] font-mono truncate mt-0.5">{fullAddress}</p>
                         </div>
                       </div>
 
@@ -415,23 +408,23 @@ export default function Navbar({
                     <div className="p-1.5">
                       <button
                         onClick={handleCopyAddress}
-                        className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-gray-300
-                          hover:text-white hover:bg-white/[0.04] transition-colors cursor-pointer"
+                        className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-[#3d6b4e]
+                          hover:text-[#1a3a2a] hover:bg-[#1cac64]/5 transition-colors cursor-pointer"
                       >
-                        <FiCopy className="text-sm text-gray-500" />
+                        <FiCopy className="text-sm text-[#6b9b7a]" />
                         Copy Address
                       </button>
                       <button
                         onClick={handleViewExplorer}
-                        className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-gray-300
-                          hover:text-white hover:bg-white/[0.04] transition-colors cursor-pointer"
+                        className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-[#3d6b4e]
+                          hover:text-[#1a3a2a] hover:bg-[#1cac64]/5 transition-colors cursor-pointer"
                       >
-                        <FiExternalLink className="text-sm text-gray-500" />
+                        <FiExternalLink className="text-sm text-[#6b9b7a]" />
                         View on Explorer
                       </button>
 
                       {/* Divider */}
-                      <div className="h-px bg-white/[0.06] my-1" />
+                      <div className="h-px bg-[#1cac64]/10 my-1" />
 
                       <button
                         onClick={handleDisconnect}

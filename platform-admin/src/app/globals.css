@@ -1,28 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  /* Core palette */
-  --black-900: #0a0a0a;
-  --black-800: #111111;
-  --black-700: #1a1a1a;
-  --black-600: #222222;
-  --black-500: #2a2a2a;
-  --gray-400: #6b6b6b;
-  --gray-300: #888888;
-  --gray-200: #b0b0b0;
-  --gray-100: #d8d8d8;
-  --white: #ffffff;
+  /* Core palette — light theme */
+  --bg-primary: #ebfde3;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f4fef0;
+  --bg-surface: #d9f5cc;
+  --bg-muted: #c8edba;
+  --text-primary: #1a3a2a;
+  --text-secondary: #3d6b4e;
+  --text-muted: #6b9b7a;
+  --text-faint: #9bc4a8;
+  --border-color: rgba(28, 172, 100, 0.15);
+  --border-hover: rgba(28, 172, 100, 0.35);
 
-  /* Emerald / neon green */
+  /* Geckura green */
   --green-400: #34d399;
   --green-500: #22c55e;
-  --green-600: #16a34a;
+  --green-600: #1cac64;
   --green-700: #15803d;
-  --neon: #39ff14;
-  --neon-dim: #1a7a0a;
+  --neon: #1cac64;
+  --neon-dim: #148a50;
 
   /* Rarity */
-  --rarity-common: #9ca3af;
+  --rarity-common: #6b9b7a;
   --rarity-rare: #3b82f6;
   --rarity-epic: #a855f7;
   --rarity-legendary: #f59e0b;
@@ -30,15 +31,8 @@
 }
 
 @theme inline {
-  --color-black-900: var(--black-900);
-  --color-black-800: var(--black-800);
-  --color-black-700: var(--black-700);
-  --color-black-600: var(--black-600);
-  --color-black-500: var(--black-500);
-  --color-gray-400: var(--gray-400);
-  --color-gray-300: var(--gray-300);
-  --color-gray-200: var(--gray-200);
-  --color-gray-100: var(--gray-100);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-card: var(--bg-card);
   --color-neon: var(--neon);
   --color-neon-dim: var(--neon-dim);
   --color-rarity-common: var(--rarity-common);
@@ -52,7 +46,7 @@
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--green-600) var(--black-900);
+  scrollbar-color: var(--green-600) var(--bg-primary);
 }
 
 *::-webkit-scrollbar {
@@ -60,7 +54,7 @@
 }
 
 *::-webkit-scrollbar-track {
-  background: var(--black-900);
+  background: var(--bg-primary);
 }
 
 *::-webkit-scrollbar-thumb {
@@ -73,46 +67,46 @@
 }
 
 body {
-  background: var(--black-900);
-  color: var(--gray-100);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   overflow-x: hidden;
 }
 
 /* ── Glass panel ─────────────────────────────────── */
 @utility glass-panel {
-  background: rgba(17, 17, 17, 0.72);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(57, 255, 20, 0.08);
+  border: 1px solid rgba(28, 172, 100, 0.12);
 }
 
 @utility glass-panel-lg {
-  background: rgba(17, 17, 17, 0.82);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
-  border: 1px solid rgba(57, 255, 20, 0.12);
+  border: 1px solid rgba(28, 172, 100, 0.18);
 }
 
 /* ── Neon glow helpers ────────────────────────────── */
 @utility neon-glow {
   box-shadow:
-    0 0 8px rgba(57, 255, 20, 0.25),
-    0 0 24px rgba(57, 255, 20, 0.1),
-    inset 0 1px 0 rgba(57, 255, 20, 0.15);
+    0 0 8px rgba(28, 172, 100, 0.2),
+    0 0 24px rgba(28, 172, 100, 0.08),
+    inset 0 1px 0 rgba(28, 172, 100, 0.1);
 }
 
 @utility neon-glow-lg {
   box-shadow:
-    0 0 12px rgba(57, 255, 20, 0.35),
-    0 0 40px rgba(57, 255, 20, 0.18),
-    0 0 80px rgba(57, 255, 20, 0.06),
-    inset 0 1px 0 rgba(57, 255, 20, 0.2);
+    0 0 12px rgba(28, 172, 100, 0.25),
+    0 0 40px rgba(28, 172, 100, 0.12),
+    0 0 80px rgba(28, 172, 100, 0.04),
+    inset 0 1px 0 rgba(28, 172, 100, 0.15);
 }
 
 @utility neon-text {
   color: var(--neon);
-  text-shadow: 0 0 10px rgba(57, 255, 20, 0.6);
+  text-shadow: 0 0 10px rgba(28, 172, 100, 0.4);
 }
 
 /* ── Animated gradient background ────────────────── */
@@ -123,7 +117,7 @@ body {
 }
 
 @utility gradient-bg {
-  background: linear-gradient(-45deg, #0a0a0a, #0a140a, #0a0a0a, #07160a);
+  background: linear-gradient(-45deg, #ebfde3, #d9f5cc, #ebfde3, #e0f8d5);
   background-size: 400% 400%;
   animation: gradient-shift 18s ease infinite;
 }
@@ -147,10 +141,10 @@ body {
 .skeleton {
   background: linear-gradient(
     90deg,
-    var(--black-700)  0%,
-    var(--black-600)  40%,
-    var(--black-700)  80%,
-    var(--black-700) 100%
+    #d9f5cc  0%,
+    #c8edba  40%,
+    #d9f5cc  80%,
+    #d9f5cc 100%
   );
   background-size: 400% 100%;
   animation: shimmer 1.5s ease-in-out infinite;

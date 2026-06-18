@@ -331,26 +331,26 @@ export default function ProjectLeaderboardPage() {
 
   return (
     <div 
-      className="min-h-screen text-gray-100 flex flex-col"
+      className="min-h-screen text-[#1a3a2a] flex flex-col"
       style={resolvedBgUri ? {
         backgroundImage: `radial-gradient(circle at top, rgba(10, 10, 10, 0.4) 0%, rgba(10, 10, 10, 0.85) 100%), url('${resolvedBgUri}')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
       } : {
-        backgroundColor: '#0a0a0a'
+        backgroundColor: '#ebfde3'
       }}
     >
       <div className="flex-grow pb-12">
         {/* Hero header */}
-      <div className={`relative overflow-hidden py-16 ${resolvedBgUri ? "bg-transparent" : "bg-gradient-to-b from-[#111] via-[#0d0d0d]/80 to-[#0a0a0a] border-b border-white/[0.04]"}`}>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(57,255,20,0.06),transparent_60%)] pointer-events-none" />
+      <div className={`relative overflow-hidden py-16 ${resolvedBgUri ? "bg-transparent" : "bg-gradient-to-b from-[#d9f5cc] via-[#e0f8d5]/80 to-[#ebfde3] border-b border-white/[0.04]"}`}>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(28,172,100,0.06),transparent_60%)] pointer-events-none" />
         <div className="relative max-w-5xl mx-auto px-5 text-center space-y-4">
           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight" style={resolvedBgUri ? { textShadow: "0 2px 10px rgba(0,0,0,0.95)" } : {}}>
-            {projectTitle} <span className="text-[#39ff14] drop-shadow-[0_0_20px_rgba(57,255,20,0.25)]">Leaderboard</span>
+            {projectTitle} <span className="text-[#1cac64] drop-shadow-[0_0_20px_rgba(28,172,100,0.25)]">Leaderboard</span>
           </h1>
           <p className="text-sm text-gray-300 max-w-lg mx-auto leading-relaxed" style={resolvedBgUri ? { textShadow: "0 1px 6px rgba(0,0,0,0.95)" } : {}}>
-            Rankings for {projectTitle}. Solana box openings earn <span className="text-[#39ff14] font-semibold">{solRankingPoints} {solRankingPoints === 1 ? "point" : "points"}</span>, and token openings earn <span className="text-[#39ff14] font-semibold">{tokenRankingPoints} {tokenRankingPoints === 1 ? "point" : "points"}</span>.
+            Rankings for {projectTitle}. Solana box openings earn <span className="text-[#1cac64] font-semibold">{solRankingPoints} {solRankingPoints === 1 ? "point" : "points"}</span>, and token openings earn <span className="text-[#1cac64] font-semibold">{tokenRankingPoints} {tokenRankingPoints === 1 ? "point" : "points"}</span>.
           </p>
         </div>
       </div>
@@ -358,7 +358,7 @@ export default function ProjectLeaderboardPage() {
       <div className="max-w-5xl mx-auto px-5 mt-10">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <div className="h-8 w-8 border-2 border-[#39ff14] border-t-transparent rounded-full animate-spin" />
+            <div className="h-8 w-8 border-2 border-[#1cac64] border-t-transparent rounded-full animate-spin" />
             <p className="text-xs text-gray-500 uppercase tracking-widest">{progressMsg}</p>
           </div>
         ) : (
@@ -371,7 +371,7 @@ export default function ProjectLeaderboardPage() {
                   onClick={() => setActiveTab("weekly")}
                   className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     activeTab === "weekly"
-                      ? "bg-[#39ff14] text-black shadow-[0_0_20px_rgba(57,255,20,0.3)]"
+                      ? "bg-[#1cac64] text-black shadow-[0_0_20px_rgba(28,172,100,0.3)]"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -381,7 +381,7 @@ export default function ProjectLeaderboardPage() {
                   onClick={() => setActiveTab("monthly")}
                   className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     activeTab === "monthly"
-                      ? "bg-[#39ff14] text-black shadow-[0_0_20px_rgba(57,255,20,0.3)]"
+                      ? "bg-[#1cac64] text-black shadow-[0_0_20px_rgba(28,172,100,0.3)]"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -412,7 +412,7 @@ export default function ProjectLeaderboardPage() {
                         <img
                           src={user.avatar}
                           alt={user.username}
-                          className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border-2 border-white/[0.08] bg-[#0a0a0a] group-hover:scale-105 transition-transform"
+                          className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border-2 border-white/[0.08] bg-[#ebfde3] group-hover:scale-105 transition-transform"
                         />
                         <span className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full border bg-black text-[10px] font-black flex items-center justify-center ${rankColor}`}>
                           {user.rank}
@@ -430,7 +430,7 @@ export default function ProjectLeaderboardPage() {
                       {/* Score */}
                       <div className="mt-4 bg-black/60 rounded-xl py-1.5 px-3 border border-white/[0.06] w-full">
                         <p className="text-[10px] text-gray-500 uppercase tracking-widest leading-none">Points</p>
-                        <p className="text-sm font-black text-[#39ff14] mt-1">{user.points}</p>
+                        <p className="text-sm font-black text-[#1cac64] mt-1">{user.points}</p>
                         <p className="text-[9px] text-gray-500 mt-0.5 font-semibold">{user.opens} opens</p>
                       </div>
                     </motion.div>
@@ -475,7 +475,7 @@ export default function ProjectLeaderboardPage() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.03 }}
                             className={`border-b border-white/[0.04] last:border-none hover:bg-white/[0.02] transition-colors ${
-                              isCurrentUser ? "bg-[#39ff14]/[0.03] border-l-2 border-l-[#39ff14]" : ""
+                              isCurrentUser ? "bg-[#1cac64]/[0.03] border-l-2 border-l-[#1cac64]" : ""
                             }`}
                           >
                             {/* Rank */}
@@ -495,11 +495,11 @@ export default function ProjectLeaderboardPage() {
                                 />
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-xs font-bold text-white hover:text-[#39ff14] cursor-pointer">
+                                    <span className="text-xs font-bold text-white hover:text-[#1cac64] cursor-pointer">
                                       {user.username}
                                     </span>
                                     {isCurrentUser && (
-                                      <span className="text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-[#39ff14]/20 text-[#39ff14] border border-[#39ff14]/30 font-black">
+                                      <span className="text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/30 font-black">
                                         You
                                       </span>
                                     )}
@@ -521,7 +521,7 @@ export default function ProjectLeaderboardPage() {
 
                             {/* Points */}
                             <td className="py-4 px-5 text-right">
-                              <div className="flex items-center justify-end gap-1 font-mono font-bold text-[#39ff14]">
+                              <div className="flex items-center justify-end gap-1 font-mono font-bold text-[#1cac64]">
                                 <FiTrendingUp className="text-xs animate-bounce" />
                                 <span className="text-sm">{user.points}</span>
                               </div>
@@ -553,7 +553,7 @@ export default function ProjectLeaderboardPage() {
         <div className="mx-auto max-w-5xl px-5 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-base font-black">
-              <span className="text-[#39ff14]">Geck</span><span className="text-white/50">ura</span>
+              <span className="text-[#1cac64]">Geck</span><span className="text-white/50">ura</span>
             </span>
             <span className="text-xs text-gray-500">© 2026 Geckura. All rights reserved.</span>
           </div>
@@ -564,7 +564,7 @@ export default function ProjectLeaderboardPage() {
                 href="https://x.com/geckura" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-[#39ff14] hover:text-white font-semibold transition-colors"
+                className="text-[#1cac64] hover:text-white font-semibold transition-colors"
               >
                 Geckura
               </a>

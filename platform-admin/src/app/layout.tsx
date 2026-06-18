@@ -20,6 +20,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Geckura — Mystery Pack NFT Storefront",
   description: "Premium Solana-powered mystery pack NFT marketplace. Open rare collectibles, earn rewards.",
+  icons: {
+    icon: "/geckura-logo.jpg",
+    shortcut: "/geckura-logo.jpg",
+    apple: "/geckura-logo.jpg",
+  },
 };
 
 export default function RootLayout({
@@ -29,19 +34,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full bg-[#0a0a0a] toB" data-theme="dark">
+      <body className="min-h-full bg-[#ebfde3]" data-theme="light">
         <Toaster
           position="bottom-right"
           toastOptions={{
             style: {
-              background: "#171717",
-              color: "#d8d8d8",
-              border: "1px solid rgba(57,255,20,0.2)",
+              background: "#ffffff",
+              color: "#1a3a2a",
+              border: "1px solid rgba(28,172,100,0.25)",
               borderRadius: "12px",
               fontFamily: "var(--font-geist-sans)",
             },
-            success: { iconTheme: { primary: "#39ff14", secondary: "#0a0a0a" } },
-            error:   { iconTheme: { primary: "#ef4444", secondary: "#0a0a0a" } },
+            success: { iconTheme: { primary: "#1cac64", secondary: "#ffffff" } },
+            error:   { iconTheme: { primary: "#ef4444", secondary: "#ffffff" } },
           }}
         />
         <WalletProviders>

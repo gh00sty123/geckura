@@ -19,7 +19,7 @@ function Ticker({ items }: { items: string[] }) {
       <div className="ticker-anim flex gap-10 whitespace-nowrap text-sm text-gray-400">
         {doubled.map((t, i) => (
           <span key={i} className="flex items-center gap-2">
-            <FiStar className="text-[#39ff14] text-xs" />
+            <FiStar className="text-[#1cac64] text-xs" />
             {t}
           </span>
         ))}
@@ -39,13 +39,13 @@ function StatCard({ icon: Icon, label, value, sub }: {
 }) {
   return (
     <div className="glass-panel rounded-2xl px-5 py-4 flex items-center gap-3.5 min-w-0">
-      <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-[#39ff14]/10 flex items-center justify-center">
-        <Icon className="text-[#39ff14] text-lg" />
+      <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-[#1cac64]/10 flex items-center justify-center">
+        <Icon className="text-[#1cac64] text-lg" />
       </div>
       <div className="min-w-0">
         <p className="text-[11px] uppercase tracking-wider text-gray-500">{label}</p>
-        <p className="text-lg font-bold text-white leading-tight">{value}</p>
-        {sub && <p className="text-[11px] text-[#39ff14]/60">{sub}</p>}
+        <p className="text-lg font-bold text-[#1a3a2a] leading-tight">{value}</p>
+        {sub && <p className="text-[11px] text-[#1cac64]/60">{sub}</p>}
       </div>
     </div>
   );
@@ -81,7 +81,7 @@ export default function Hero({
   return (
     <section
       ref={containerRef}
-      className="relative overflow-hidden rounded-3xl border border-white/[0.07] bg-[linear-gradient(135deg,#0d1118_0%,#0a0a0a_40%,#0a1208_100%)]"
+      className="relative overflow-hidden rounded-3xl border border-[#1cac64]/15 bg-[linear-gradient(135deg,#e0f8d5_0%,#ebfde3_40%,#d9f5cc_100%)]"
     >
       {/* ── Background particle field ── */}
       <div className="pointer-events-none absolute inset-0 opacity-40">
@@ -90,10 +90,10 @@ export default function Hero({
 
       {/* ── Left label — live badge ── */}
       <div className="pointer-events-none absolute top-6 left-6 z-10">
-        <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] font-semibold text-[#39ff14]/70">
+        <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] font-semibold text-[#1cac64]/70">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#39ff14] opacity-60" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#39ff14]" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1cac64] opacity-60" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1cac64]" />
           </span>
           Live Now
         </span>
@@ -112,15 +112,15 @@ export default function Hero({
             transition={{ duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-black leading-[1.05] tracking-tight">
-              <span className="text-white">Premium </span>
+              <span className="text-[#1a3a2a]">Premium </span>
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#39ff14] via-emerald-400 to-[#22c55e]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1cac64] via-emerald-500 to-[#22c55e]">
                 Geckura Mystery
               </span>
               <br />
-              <span className="text-white">Boxes</span>
+              <span className="text-[#1a3a2a]">Boxes</span>
             </h1>
-            <p className="mt-4 text-base text-gray-400 max-w-md leading-relaxed">
+            <p className="mt-4 text-base text-[#3d6b4e] max-w-md leading-relaxed">
               Unlock rare NFT collectibles from Solana&apos;s most exciting mystery drop ecosystem — real-time odds, provably fair, instant settlements.
             </p>
           </motion.div>
@@ -137,7 +137,7 @@ export default function Hero({
         >
           {/* Ambient glow behind pack */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-72 h-72 rounded-full opacity-30 blur-[80px] bg-[#39ff14]/20" />
+            <div className="w-72 h-72 rounded-full opacity-30 blur-[80px] bg-[#1cac64]/20" />
             <div className="absolute w-48 h-48 rounded-full opacity-20 blur-[60px] bg-emerald-500/30" />
           </div>
 
@@ -147,7 +147,7 @@ export default function Hero({
           </div>
 
           {/* Scroll hint */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-gray-600">
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-[#6b9b7a]">
             <span className="text-[10px] uppercase tracking-[0.2em]">Scroll</span>
             <motion.div
               animate={{ y: [0, 6, 0] }}
@@ -192,16 +192,16 @@ function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
       onClick={() => onOpen(pack.name)}
     >
       {/* Back glow */}
-      <div className="absolute -inset-10 rounded-[36px] bg-gradient-to-br from-[#39ff14] to-emerald-500 opacity-40 blur-3xl -z-10" />
+      <div className="absolute -inset-10 rounded-[36px] bg-gradient-to-br from-[#1cac64] to-emerald-500 opacity-40 blur-3xl -z-10" />
 
-      <div className="relative w-full aspect-[140/190] rounded-[20px] overflow-hidden border border-[#39ff14]/25 shadow-[0_0_36px_rgba(57,255,20,0.28)]">
+      <div className="relative w-full aspect-[140/190] rounded-[20px] overflow-hidden border border-[#1cac64]/25 shadow-[0_0_36px_rgba(28,172,100,0.2)]">
 
         {/* Grid background */}
         <div
           className="absolute inset-0 opacity-20"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(57,255,20,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.15) 1px, transparent 1px)",
+              "linear-gradient(rgba(28,172,100,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(28,172,100,0.12) 1px, transparent 1px)",
             backgroundSize: "20px 20px",
           }}
         />
@@ -219,27 +219,27 @@ function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
 
         {/* Solana emblem */}
         <div className="absolute top-6 left-1/2 -translate-x-1/2">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#39ff14]/15 to-emerald-500/10 border border-[#39ff14]/25 flex items-center justify-center">
-            <LuSwords className="text-[#39ff14] text-3xl" />
+          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#1cac64]/15 to-emerald-500/10 border border-[#1cac64]/25 flex items-center justify-center">
+            <LuSwords className="text-[#1cac64] text-3xl" />
           </div>
         </div>
 
         {/* Bottom info */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <p className="text-[9px] uppercase tracking-[0.18em] text-[#39ff14]/60 mb-0.5">
+          <p className="text-[9px] uppercase tracking-[0.18em] text-[#1cac64]/60 mb-0.5">
             Featured · Limited Drop
           </p>
           <p className="text-sm font-bold text-white">{pack.name}</p>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-base font-extrabold text-[#39ff14]">{pack.price} SOL</span>
-            <span className="text-[10px] text-gray-500">+{pack.supplyLeft.toLocaleString()} left</span>
+            <span className="text-base font-extrabold text-[#1cac64]">{pack.price} SOL</span>
+            <span className="text-[10px] text-[#6b9b7a]">+{pack.supplyLeft.toLocaleString()} left</span>
           </div>
 
           {/* CTA */}
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
-            className="mt-3 w-full rounded-xl bg-[#39ff14] text-black font-bold text-xs py-2.5 hover:shadow-[0_0_20px_rgba(57,255,20,0.55)] transition-shadow"
+            className="mt-3 w-full rounded-xl bg-[#1cac64] text-white font-bold text-xs py-2.5 hover:shadow-[0_0_20px_rgba(28,172,100,0.4)] transition-shadow"
             onClick={(e) => { e.stopPropagation(); onOpen(pack.name); }}
           >
             ✦ Open Pack
@@ -247,7 +247,7 @@ function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
         </div>
 
         {/* Bottom glow stripe */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#39ff14]/60 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#1cac64]/60 to-transparent" />
       </div>
     </motion.div>
   );
@@ -287,7 +287,7 @@ function ParticleField() {
       const W = canvas!.offsetWidth;
       const H = canvas!.offsetHeight;
       ctx!.clearRect(0, 0, W, H);
-      ctx!.fillStyle = "#39ff14";
+      ctx!.fillStyle = "#1cac64";
       for (const p of particles) {
         p.x += p.dx; p.y += p.dy;
         if (p.x < 0) p.x = W;

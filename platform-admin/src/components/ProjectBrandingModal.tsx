@@ -25,7 +25,7 @@ export function ProjectBrandingModal({
   const [logoUri, setLogoUri] = useState(slugProj?.logoUri || "");
   const [bgUri, setBgUri] = useState(slugProj?.bgUri || "");
   const [description, setDescription] = useState(slugProj?.description || "");
-  const [themeColor, setThemeColor] = useState(slugProj?.themeColor || "#39ff14");
+  const [themeColor, setThemeColor] = useState(slugProj?.themeColor || "#1cac64");
   const [solRankingPoints, setSolRankingPoints] = useState(String(slugProj?.solRankingPoints ?? "2"));
   const [tokenRankingPoints, setTokenRankingPoints] = useState(String(slugProj?.tokenRankingPoints ?? "1"));
   const [nothingRewardImage, setNothingRewardImage] = useState(slugProj?.nothingRewardImage || "");
@@ -97,7 +97,7 @@ export function ProjectBrandingModal({
               required
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#39ff14]/50 focus:ring-1 focus:ring-[#39ff14]/50 transition-all"
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
               placeholder="Awesome Mystery Boxes"
             />
           </div>
@@ -108,7 +108,7 @@ export function ProjectBrandingModal({
               required
               value={description}
               onChange={e => setDescription(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#39ff14]/50 focus:ring-1 focus:ring-[#39ff14]/50 transition-all resize-none h-24"
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all resize-none h-24"
               placeholder="Describe your project..."
             />
           </div>
@@ -151,8 +151,8 @@ export function ProjectBrandingModal({
                 required
                 value={themeColor}
                 onChange={e => setThemeColor(e.target.value)}
-                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#39ff14]/50 focus:ring-1 focus:ring-[#39ff14]/50 transition-all font-mono"
-                placeholder="#39ff14"
+                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
+                placeholder="#1cac64"
               />
             </div>
           </div>
@@ -168,7 +168,7 @@ export function ProjectBrandingModal({
                 onClick={() => setNothingRewardImage("/nothing.png")}
                 className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all bg-black/40 hover:bg-black/60 ${
                   nothingRewardImage === "/nothing.png"
-                    ? "border-[#39ff14] shadow-[0_0_15px_rgba(57,255,20,0.2)] text-white"
+                    ? "border-[#1cac64] shadow-[0_0_15px_rgba(28,172,100,0.2)] text-white"
                     : "border-white/10 text-gray-400"
                 }`}
               >
@@ -184,7 +184,7 @@ export function ProjectBrandingModal({
                 onClick={() => setNothingRewardImage("🎁")}
                 className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all bg-black/40 hover:bg-black/60 ${
                   nothingRewardImage === "🎁" || !nothingRewardImage
-                    ? "border-[#39ff14] shadow-[0_0_15px_rgba(57,255,20,0.2)] text-white"
+                    ? "border-[#1cac64] shadow-[0_0_15px_rgba(28,172,100,0.2)] text-white"
                     : "border-white/10 text-gray-400"
                 }`}
               >
@@ -217,7 +217,7 @@ export function ProjectBrandingModal({
                   min="0"
                   value={solRankingPoints}
                   onChange={e => setSolRankingPoints(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#39ff14]/50 focus:ring-1 focus:ring-[#39ff14]/50 transition-all font-mono"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
                   placeholder="2"
                 />
                 <p className="text-[10px] text-gray-500 mt-1">Points awarded for opening a SOL box</p>
@@ -230,7 +230,7 @@ export function ProjectBrandingModal({
                   min="0"
                   value={tokenRankingPoints}
                   onChange={e => setTokenRankingPoints(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#39ff14]/50 focus:ring-1 focus:ring-[#39ff14]/50 transition-all font-mono"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
                   placeholder="1"
                 />
                 <p className="text-[10px] text-gray-500 mt-1">Points awarded for opening a token box</p>

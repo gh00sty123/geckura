@@ -523,7 +523,7 @@ function Inner({ slug }: { slug: string }) {
       let descVal = slugProj.description || "";
       let logoVal = slugProj.logoUri || "";
       let bgVal = slugProj.bgUri || "";
-      let themeVal = slugProj.themeColor || "#39ff14";
+      let themeVal = slugProj.themeColor || "#1cac64";
 
       if (typeof window !== "undefined") {
         const localBranding = localStorage.getItem(`project_branding_${slug}`);
@@ -784,7 +784,7 @@ function Inner({ slug }: { slug: string }) {
         <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-base font-black">
-              <span className="text-[#39ff14]">Geck</span><span className="text-white/50">ura</span>
+              <span className="text-[#1cac64]">Geck</span><span className="text-white/50">ura</span>
             </span>
             <span className="text-xs text-gray-500">© 2026 Geckura. All rights reserved.</span>
           </div>
@@ -795,7 +795,7 @@ function Inner({ slug }: { slug: string }) {
                 href="https://x.com/geckura" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-[#39ff14] hover:text-white font-semibold transition-colors"
+                className="text-[#1cac64] hover:text-white font-semibold transition-colors"
               >
                 Geckura
               </a>
@@ -1280,15 +1280,15 @@ function StatRevenue({ label, boxes }: { label: string; boxes: any[] }) {
   return (
     <div className="relative">
       <div
-        className="bg-[#39ff14]/5 border border-[#39ff14]/30 rounded-xl p-4 flex flex-col justify-between shadow-lg cursor-pointer hover:bg-[#39ff14]/10 transition"
+        className="bg-[#1cac64]/5 border border-[#1cac64]/30 rounded-xl p-4 flex flex-col justify-between shadow-lg cursor-pointer hover:bg-[#1cac64]/10 transition"
         onClick={() => setShowBreakdown(!showBreakdown)}
       >
-        <p className="text-[10px] text-[#39ff14]/70 uppercase tracking-wider font-bold">{label}</p>
-        <p className="text-2xl font-black mt-1 font-mono text-[#39ff14]">
+        <p className="text-[10px] text-[#1cac64]/70 uppercase tracking-wider font-bold">{label}</p>
+        <p className="text-2xl font-black mt-1 font-mono text-[#1cac64]">
           {totalRevenueSol.toFixed(4)} SOL
         </p>
         {revenueByToken.length > 1 && (
-          <p className="text-[10px] text-[#39ff14]/50 mt-1">
+          <p className="text-[10px] text-[#1cac64]/50 mt-1">
             +{revenueByToken.length - 1} token{revenueByToken.length - 1 > 1 ? "s" : ""}
           </p>
         )}
@@ -1301,7 +1301,7 @@ function StatRevenue({ label, boxes }: { label: string; boxes: any[] }) {
             {revenueByToken.map(([mint, data]) => (
               <div key={mint} className="flex justify-between items-center text-xs">
                 <span className="text-gray-300 font-mono">{data.symbol}</span>
-                <span className="text-[#39ff14] font-mono">
+                <span className="text-[#1cac64] font-mono">
                   {data.amount.toFixed(4)}
                   {mint !== "SOL" ? "" : " SOL"}
                 </span>

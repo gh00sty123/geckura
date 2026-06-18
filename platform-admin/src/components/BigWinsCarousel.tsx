@@ -27,12 +27,12 @@ export default function BigWinsCarousel({ wins }: { wins: BigWin[] }) {
   }, [len]);
 
   const win = wins[active];
-  const rc  = RARITY_COLORS[win.rarity] ?? "#39ff14";
+  const rc  = RARITY_COLORS[win.rarity] ?? "#1cac64";
 
   return (
     <section aria-label="Big Wins" className="space-y-5">
       <div className="flex items-center gap-2">
-        <FiAward className="text-[#39ff14] text-lg" />
+        <FiAward className="text-[#1cac64] text-lg" />
         <h2 className="text-xl font-bold text-white">Recent Big Wins</h2>
       </div>
 
@@ -96,7 +96,7 @@ export default function BigWinsCarousel({ wins }: { wins: BigWin[] }) {
               key={w.id}
               onClick={() => { setActive(i); clearInterval(timer.current); }}
               className={`h-1.5 rounded-full transition-all duration-300
-                ${i === active ? "w-5 bg-[#39ff14]" : "w-2 bg-white/20 hover:bg-white/40"}`}
+                ${i === active ? "w-5 bg-[#1cac64]" : "w-2 bg-white/20 hover:bg-white/40"}`}
             />
           ))}
         </div>

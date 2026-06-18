@@ -18,13 +18,13 @@ export default function StatsDashboard({ stats }: { stats: UserStats }) {
   return (
     <section aria-label="Statistics" className="space-y-5">
       <div className="flex items-center gap-2">
-        <LuSparkles className="text-[#39ff14]" />
+        <LuSparkles className="text-[#1cac64]" />
         <h2 className="text-xl font-bold text-white">Your Statistics</h2>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
         {[
-          { icon: FiZap,      label: "Packs Opened",  value: stats.totalPacksOpened,        color: "text-[#39ff14]", bg: "bg-[#39ff14]/10" },
+          { icon: FiZap,      label: "Packs Opened",  value: stats.totalPacksOpened,        color: "text-[#1cac64]", bg: "bg-[#1cac64]/10" },
           { icon: FiShield,   label: "Luck Rating",   value: `${stats.luckPercentage}%`,    color: "text-purple-400", bg: "bg-purple-400/10" },
           { icon: FiTrendingUp, label: "Total Winnings", value: `${stats.totalWinnings.toFixed(2)} SOL`, color: "text-emerald-400", bg: "bg-emerald-400/10" },
           { icon: FiArrowUp,  label: "Live Jackpot",  value: `$${stats.jackpotPool.toLocaleString()}`, color: "text-amber-400", bg: "bg-amber-400/10" },

@@ -69,8 +69,8 @@ function Ticker({ items }: { items: string[] }) {
         {doubled.map((t, i) => (
           <span key={i} className="flex items-center gap-2">
             <span className="relative flex h-1.5 w-1.5 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#39ff14] opacity-70" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#39ff14]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1cac64] opacity-70" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#1cac64]" />
             </span>
             {t}
           </span>
@@ -890,7 +890,7 @@ export default function ProjectView({ slug }: { slug: string }) {
         >
           <div 
             style={glowBgStyle}
-            className="absolute inset-0 bg-gradient-to-br from-[#39ff14]/5 via-transparent to-transparent pointer-events-none" 
+            className="absolute inset-0 bg-gradient-to-br from-[#1cac64]/5 via-transparent to-transparent pointer-events-none" 
           />
           
           <div className="space-y-1.5 text-center">
@@ -901,7 +901,7 @@ export default function ProjectView({ slug }: { slug: string }) {
           <div className="flex justify-center pt-2">
             <WalletMultiButton 
               style={buttonStyle}
-              className={`!bg-[#39ff14] hover:!scale-[1.02] ${buttonClass} !transition-all !rounded-xl !h-12 !px-6 !text-sm !font-bold shadow-[0_0_20px_rgba(57,255,20,0.25)]`} 
+              className={`!bg-[#1cac64] hover:!scale-[1.02] ${buttonClass} !transition-all !rounded-xl !h-12 !px-6 !text-sm !font-bold shadow-[0_0_20px_rgba(28,172,100,0.25)]`} 
             />
           </div>
         </div>
@@ -913,13 +913,13 @@ export default function ProjectView({ slug }: { slug: string }) {
     const loaderStyle = themeColor ? {
       borderTopColor: themeColor,
     } : {
-      borderTopColor: '#39ff14',
+      borderTopColor: '#1cac64',
     };
 
     const textStyle = themeColor ? {
       color: themeColor,
     } : {
-      color: '#39ff14',
+      color: '#1cac64',
     };
 
     return (
@@ -942,7 +942,7 @@ export default function ProjectView({ slug }: { slug: string }) {
               <p className="text-xs text-gray-500 uppercase tracking-widest font-mono">Loading Storefront</p>
               <p 
                 style={textStyle}
-                className="text-sm font-semibold text-[#39ff14] animate-pulse"
+                className="text-sm font-semibold text-[#1cac64] animate-pulse"
               >
                 {progressMsg}
               </p>
@@ -985,7 +985,7 @@ export default function ProjectView({ slug }: { slug: string }) {
         {/* Subtle animated particles (CSS-based) */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="absolute rounded-full bg-[#39ff14]/10 blur-xl float-anim"
+            <div key={i} className="absolute rounded-full bg-[#1cac64]/10 blur-xl float-anim"
               style={{
                 width: `${20 + i * 15}px`, height: `${20 + i * 15}px`,
                 left: `${10 + i * 16}%`, top: `${20 + (i % 3) * 25}%`,
@@ -998,27 +998,7 @@ export default function ProjectView({ slug }: { slug: string }) {
         {/* Content */}
         <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-12 pb-7 sm:pt-16 sm:pb-10">
           <div className="flex flex-col items-center justify-center text-center space-y-6">
-            {/* Logo */}
-            {logoUri ? (
-              <motion.img
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                src={logoUri}
-                alt={title}
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-2 border-white/[0.1] shadow-2xl bg-black/40"
-              />
-            ) : (
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-[#39ff14]/10 border border-[#39ff14]/25 flex items-center justify-center text-4xl shadow-inner bg-black/40"
-              >
-                🦎
-              </motion.div>
-            )}
-
-            {/* Title & Slug */}
+            {/* Title */}
             <div className="space-y-2">
               <motion.h1
                 initial={{ y: -10, opacity: 0 }}
@@ -1028,9 +1008,6 @@ export default function ProjectView({ slug }: { slug: string }) {
               >
                 {title}
               </motion.h1>
-              <p className="text-xs text-[#39ff14] font-mono tracking-widest uppercase">
-                /{slug}
-              </p>
             </div>
 
             {/* Description */}
@@ -1063,7 +1040,7 @@ export default function ProjectView({ slug }: { slug: string }) {
             onClick={() => setActiveTab("active")}
             className={`flex-1 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
               activeTab === "active"
-                ? "bg-[#39ff14]/15 text-[#39ff14] border border-[#39ff14]/20"
+                ? "bg-[#1cac64]/15 text-[#1cac64] border border-[#1cac64]/20"
                 : "text-gray-500 hover:text-gray-400 hover:bg-white/[0.03]"
             }`}
           >
@@ -1202,7 +1179,7 @@ export default function ProjectView({ slug }: { slug: string }) {
                               }
                             </p>
                             <div className="flex items-center gap-3 mt-3">
-                              <span className="text-[11px] px-3 py-1 rounded-full bg-[#39ff14]/10 text-[#39ff14] border border-[#39ff14]/20 font-semibold">
+                              <span className="text-[11px] px-3 py-1 rounded-full bg-[#1cac64]/10 text-[#1cac64] border border-[#1cac64]/20 font-semibold">
                                 {prize.win_percentage}% Chance
                               </span>
                               <span className="text-[11px] text-gray-500 font-medium">
@@ -1233,7 +1210,7 @@ export default function ProjectView({ slug }: { slug: string }) {
         <div className="mx-auto max-w-5xl px-5 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-base font-black">
-              <span className="text-[#39ff14]">Geck</span><span className="text-white/50">ura</span>
+              <span className="text-[#1cac64]">Geck</span><span className="text-white/50">ura</span>
             </span>
             <span className="text-xs text-gray-500">© 2026 Geckura. All rights reserved.</span>
           </div>
@@ -1244,7 +1221,7 @@ export default function ProjectView({ slug }: { slug: string }) {
                 href="https://x.com/geckura" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-[#39ff14] hover:text-white font-semibold transition-colors"
+                className="text-[#1cac64] hover:text-white font-semibold transition-colors"
               >
                 Geckura
               </a>
@@ -1291,7 +1268,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
       : "bg-gray-500/12 text-gray-400 border-gray-500/20";
   } else {
     statusClass = active
-      ? "bg-[#39ff14]/12 text-[#39ff14] border-[#39ff14]/20"
+      ? "bg-[#1cac64]/12 text-[#1cac64] border-[#1cac64]/20"
       : statusCode === 1
       ? "bg-amber-400/12 text-amber-400 border-amber-400/20"
       : "bg-red-500/12 text-red-400 border-red-500/20";
@@ -1340,10 +1317,10 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08, duration: 0.4 }}
       className="group relative flex flex-col overflow-hidden rounded-2xl bg-[#111]/80 border border-white/[0.06]
-        hover:border-[#39ff14]/20 transition-all duration-500 card-hover"
+        hover:border-[#1cac64]/20 transition-all duration-500 card-hover"
     >
       {/* Banner */}
-      <div className="relative h-36 overflow-hidden bg-gradient-to-br from-[#111] to-[#0a0a0a]">
+      <div className="relative h-36 overflow-hidden bg-gradient-to-br from-[#f4fef0] to-[#ebfde3]">
         {box.bannerUri ? (
           <img src={resolveIpfsUrl(box.bannerUri)} alt={box.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
@@ -1366,9 +1343,9 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
           <div className="absolute top-3 left-1/2 -translate-x-1/2">
             <motion.span 
               className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-white/[0.08] text-gray-300 border-white/[0.12] flex items-center gap-1.5 cursor-default"
-              whileHover={{ scale: 1.05, backgroundColor: "rgba(57, 255, 20, 0.15)", color: "#39ff14", borderColor: "rgba(57, 255, 20, 0.25)" }}
+              whileHover={{ scale: 1.05, backgroundColor: "rgba(28, 172, 100, 0.15)", color: "#1cac64", borderColor: "rgba(28, 172, 100, 0.25)" }}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#39ff14] animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1cac64] animate-pulse" />
               {timeLeft(box.endTime)}
             </motion.span>
           </div>
@@ -1378,7 +1355,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
         <div className="absolute top-3 right-3">
           <motion.button
             onClick={(e) => { e.stopPropagation(); onShowRewards(); }}
-            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/[0.08] text-gray-300 border border-white/[0.12] hover:bg-[#39ff14]/15 hover:text-[#39ff14] hover:border-[#39ff14]/25 transition-all cursor-pointer"
+            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/[0.08] text-gray-300 border border-white/[0.12] hover:bg-[#1cac64]/15 hover:text-[#1cac64] hover:border-[#1cac64]/25 transition-all cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -1389,7 +1366,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
 
       {/* Content */}
       <div className="flex-1 p-5 flex flex-col">
-        <h3 className="text-base font-bold text-white leading-snug group-hover:text-[#39ff14] transition-colors duration-300">
+        <h3 className="text-base font-bold text-white leading-snug group-hover:text-[#1cac64] transition-colors duration-300">
           {box.name || `Pack #${box.boxId}`}
         </h3>
         {box.description && (
@@ -1400,13 +1377,13 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
         <div className="mt-4">
           <div className="flex justify-between text-[11px] mb-1.5">
             <span className="text-gray-500">{sold} / {sup} opened</span>
-            <span className={`font-mono font-semibold ${remaining <= 10 && active ? "text-amber-400" : remaining === 0 ? "text-red-400" : "text-[#39ff14]"}`}>
+            <span className={`font-mono font-semibold ${remaining <= 10 && active ? "text-amber-400" : remaining === 0 ? "text-red-400" : "text-[#1cac64]"}`}>
               {remaining > 0 ? `${remaining} left` : "Sold out"}
             </span>
           </div>
           <div className="h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-[#39ff14] to-emerald-400"
+              className="h-full rounded-full bg-gradient-to-r from-[#1cac64] to-emerald-400"
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -1422,7 +1399,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
               <p className="text-[9px] text-gray-500 font-bold uppercase tracking-wider mb-1">Accepted Currencies</p>
               <div className="flex flex-wrap gap-1.5">
                 {payOptions.map((opt, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 bg-white/[0.02] border border-white/[0.06] rounded-xl px-2 py-0.5 hover:border-[#39ff14]/30 hover:bg-white/[0.04] transition duration-300">
+                  <div key={idx} className="flex items-center gap-1.5 bg-white/[0.02] border border-white/[0.06] rounded-xl px-2 py-0.5 hover:border-[#1cac64]/30 hover:bg-white/[0.04] transition duration-300">
                     <img src={resolveIpfsUrl(opt.image)} alt={opt.symbol} className="h-3 w-3 object-contain rounded-full border border-white/[0.08]" />
                     <span className="text-[9px] font-mono font-bold text-gray-300">
                       {(opt.price / Math.pow(10, opt.decimals)).toFixed(2)} <span className="text-gray-500 font-sans font-normal">{opt.symbol}</span>
@@ -1444,8 +1421,8 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
                 onClick={(e) => { e.stopPropagation(); onSelect(); }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="text-xs font-bold text-black bg-gradient-to-r from-[#39ff14] to-emerald-400 px-4 py-2 rounded-xl whitespace-nowrap
-                  shadow-[0_0_20px_rgba(57,255,20,0.25)] group-hover:shadow-[0_0_35px_rgba(57,255,20,0.4)] transition-shadow duration-500 cursor-pointer"
+                className="text-xs font-bold text-black bg-gradient-to-r from-[#1cac64] to-emerald-400 px-4 py-2 rounded-xl whitespace-nowrap
+                  shadow-[0_0_20px_rgba(28,172,100,0.25)] group-hover:shadow-[0_0_35px_rgba(28,172,100,0.4)] transition-shadow duration-500 cursor-pointer"
               >
                 Open Pack
               </motion.button>
@@ -1463,7 +1440,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
       </div>
 
       {/* Bottom glow line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#39ff14]/20 to-transparent
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#1cac64]/20 to-transparent
         opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
     </motion.div>
   );
@@ -1963,7 +1940,7 @@ const handleOpen = useCallback(async () => {
       {/* Modal */}
       <motion.div
         className="relative w-full max-w-md rounded-3xl border border-white/[0.08]
-          bg-gradient-to-b from-[#141414] to-[#0a0a0a] shadow-[0_0_80px_rgba(0,0,0,0.8)] max-h-[90vh] overflow-y-auto"
+          bg-gradient-to-b from-[#ffffff] to-[#f4fef0] shadow-[0_0_80px_rgba(0,0,0,0.8)] max-h-[90vh] overflow-y-auto"
         initial={{ scale: 0.9, y: 30, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.9, y: 30, opacity: 0 }}
@@ -2010,8 +1987,8 @@ const handleOpen = useCallback(async () => {
                     onClick={() => setQty(n)}
                     className={`py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer ${
                       qty === n
-                        ? "bg-[#39ff14] text-black shadow-[0_0_20px_rgba(57,255,20,0.3)]"
-                        : "bg-white/[0.04] text-gray-300 border border-white/[0.08] hover:border-[#39ff14]/25 hover:bg-white/[0.06]"
+                        ? "bg-[#1cac64] text-black shadow-[0_0_20px_rgba(28,172,100,0.3)]"
+                        : "bg-white/[0.04] text-gray-300 border border-white/[0.08] hover:border-[#1cac64]/25 hover:bg-white/[0.06]"
                     }`}
                   >
                     {n}x
@@ -2028,7 +2005,7 @@ const handleOpen = useCallback(async () => {
                     value={qty}
                     onChange={e => setQty(Math.max(1, Math.min(maxQty, parseInt(e.target.value) || 1)))}
                     className="w-20 bg-white/[0.04] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-white
-                      focus:outline-none focus:border-[#39ff14]/40 transition"
+                      focus:outline-none focus:border-[#1cac64]/40 transition"
                   />
                 </div>
               )}
@@ -2047,7 +2024,7 @@ const handleOpen = useCallback(async () => {
                       onClick={() => setSelectedPayIndex(idx)}
                       className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-300 cursor-pointer ${
                         selectedPayIndex === idx
-                          ? "bg-white/[0.04] border-[#39ff14] text-white shadow-[0_0_20px_rgba(57,255,20,0.05)]"
+                          ? "bg-white/[0.04] border-[#1cac64] text-white shadow-[0_0_20px_rgba(28,172,100,0.05)]"
                           : "bg-white/[0.01] border-white/[0.06] text-gray-400 hover:border-white/[0.15] hover:text-gray-300"
                       }`}
                     >
@@ -2111,7 +2088,7 @@ const handleOpen = useCallback(async () => {
                   <div className="h-px bg-white/[0.06] my-1.5" />
                   <div className="flex justify-between text-sm">
                     <span className="text-white font-bold">Total</span>
-                    <span className="text-[#39ff14] font-mono font-bold">
+                    <span className="text-[#1cac64] font-mono font-bold">
                       {((totalCost + totalSolFee) / 1e9).toFixed(4)}{" "}
                       <span className="text-gray-400 text-xs font-sans font-normal">SOL</span>
                     </span>
@@ -2157,8 +2134,8 @@ const handleOpen = useCallback(async () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleOpen}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#39ff14] to-emerald-400 text-black text-sm font-bold
-                  shadow-[0_0_25px_rgba(57,255,20,0.3)] hover:shadow-[0_0_45px_rgba(57,255,20,0.5)] transition-shadow duration-500 cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#1cac64] to-emerald-400 text-black text-sm font-bold
+                  shadow-[0_0_25px_rgba(28,172,100,0.3)] hover:shadow-[0_0_45px_rgba(28,172,100,0.5)] transition-shadow duration-500 cursor-pointer"
               >
                 Open {qty} Pack{qty > 1 ? "s" : ""} — {isPaySol ? ((totalCost + totalSolFee) / 1e9).toFixed(4) : formattedTotal} {selectedOption.symbol}
               </motion.button>
@@ -2183,7 +2160,7 @@ const handleOpen = useCallback(async () => {
             </motion.div>
 
             <div className="text-center">
-              <p className="text-xs text-[#39ff14]/60 uppercase tracking-widest mb-1.5 font-semibold">
+              <p className="text-xs text-[#1cac64]/60 uppercase tracking-widest mb-1.5 font-semibold">
                 {phase === "signing" ? "Waiting for Signature" : "Confirming Transaction"}
               </p>
               <h3 className="text-xl font-bold text-white">
@@ -2201,7 +2178,7 @@ const handleOpen = useCallback(async () => {
               {[0, 1, 2].map(i => (
                 <motion.div
                   key={i}
-                  className="w-2 h-2 rounded-full bg-[#39ff14]"
+                  className="w-2 h-2 rounded-full bg-[#1cac64]"
                   animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
                   transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
                 />
@@ -2217,7 +2194,7 @@ const handleOpen = useCallback(async () => {
             {/* Won Reward display */}
             {wonRewards && wonRewards.length > 0 ? (
               <div className="w-full space-y-4 max-h-[220px] overflow-y-auto pr-1">
-                <div className="text-xs text-[#39ff14] font-black uppercase tracking-widest text-center animate-pulse mb-3">You Won!</div>
+                <div className="text-xs text-[#1cac64] font-black uppercase tracking-widest text-center animate-pulse mb-3">You Won!</div>
                 <div className={`grid gap-3 ${wonRewards.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
                   {wonRewards.map((reward, i) => (
                     <motion.div
@@ -2225,10 +2202,10 @@ const handleOpen = useCallback(async () => {
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: "spring", damping: 15, delay: i * 0.08 }}
-                      className="flex flex-col items-center p-3 rounded-2xl bg-white/[0.02] border border-[#39ff14]/15 space-y-2 shadow-[0_0_20px_rgba(57,255,20,0.02)]"
+                      className="flex flex-col items-center p-3 rounded-2xl bg-white/[0.02] border border-[#1cac64]/15 space-y-2 shadow-[0_0_20px_rgba(28,172,100,0.02)]"
                     >
                       {/* Reward Image */}
-                      <div className="relative h-16 w-16 rounded-xl overflow-hidden border border-[#39ff14]/20 bg-black/60 flex items-center justify-center shrink-0">
+                      <div className="relative h-16 w-16 rounded-xl overflow-hidden border border-[#1cac64]/20 bg-black/60 flex items-center justify-center shrink-0">
                         {reward.image && reward.image !== "🎁" ? (
                           <img src={resolveIpfsUrl(reward.image)} alt={reward.name} className="w-full h-full object-cover" />
                         ) : (
@@ -2249,7 +2226,7 @@ const handleOpen = useCallback(async () => {
                       {/* Reward Details */}
                       <div className="text-center space-y-0.5 min-w-0 w-full">
                         <h4 className="text-xs font-bold text-white truncate max-w-full leading-tight">{reward.name}</h4>
-                        <p className="text-[10px] font-mono font-bold text-[#39ff14]">
+                        <p className="text-[10px] font-mono font-bold text-[#1cac64]">
                           {reward.isNFT ? "1x NFT" : reward.amount > 0 ? `+${reward.amount.toFixed(4)} ${reward.symbol || (reward.isSol ? "SOL" : "Tokens")}` : "No win"}
                         </p>
                       </div>
@@ -2263,10 +2240,10 @@ const handleOpen = useCallback(async () => {
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: "spring", damping: 12, stiffness: 200 }}
-                className="relative h-28 w-28 rounded-full bg-gradient-to-br from-[#39ff14]/20 to-emerald-500/10
-                  border-2 border-[#39ff14]/30 flex items-center justify-center"
+                className="relative h-28 w-28 rounded-full bg-gradient-to-br from-[#1cac64]/20 to-emerald-500/10
+                  border-2 border-[#1cac64]/30 flex items-center justify-center"
               >
-                <span className="absolute -inset-4 rounded-full bg-[#39ff14]/10 blur-2xl -z-10 animate-pulse" />
+                <span className="absolute -inset-4 rounded-full bg-[#1cac64]/10 blur-2xl -z-10 animate-pulse" />
                 <span className="text-5xl">🎉</span>
               </motion.div>
             )}
@@ -2300,7 +2277,7 @@ const handleOpen = useCallback(async () => {
               >
                 <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Transaction Signature</p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 text-xs font-mono text-[#39ff14] break-all select-all">{shortenSig(txSig)}</code>
+                  <code className="flex-1 text-xs font-mono text-[#1cac64] break-all select-all">{shortenSig(txSig)}</code>
                   <button
                     onClick={() => { navigator.clipboard.writeText(txSig); toast.success("Copied!"); }}
                     className="text-gray-400 hover:text-white text-xs p-1.5 rounded-lg hover:bg-white/[0.06] transition cursor-pointer shrink-0"
@@ -2311,7 +2288,7 @@ const handleOpen = useCallback(async () => {
                   href={`${EXPLORER_BASE}/${txSig}${CLUSTER_PARAM}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-[#39ff14]/70 hover:text-[#39ff14] transition mt-1"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#1cac64]/70 hover:text-[#1cac64] transition mt-1"
                 >
                   View on Solana Explorer
                   <span className="text-[10px]">↗</span>
@@ -2355,7 +2332,7 @@ const handleOpen = useCallback(async () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setPhase("select")}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#39ff14] to-emerald-400 text-black text-sm font-bold transition cursor-pointer"
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#1cac64] to-emerald-400 text-black text-sm font-bold transition cursor-pointer"
               >
                 Try Again
               </motion.button>

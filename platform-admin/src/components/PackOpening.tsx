@@ -138,10 +138,10 @@ export default function PackOpening({
 
             {/* Pack name header */}
             <div className="text-center mb-8">
-              <p className="text-xs uppercase tracking-[0.2em] text-[#39ff14]/50 mb-1">Opening</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-[#1cac64]/50 mb-1">Opening</p>
               <h2
                 className="text-2xl font-bold text-white neon-text"
-                style={{ textShadow: "0 0 24px rgba(57,255,20,.7)" }}
+                style={{ textShadow: "0 0 24px rgba(28,172,100,.7)" }}
               >
                 {packName}
               </h2>
@@ -191,8 +191,8 @@ export default function PackOpening({
                   }}
                   whileHover={{ scale: 1.07 }}
                   whileTap={{ scale: 0.95 }}
-                  className="rounded-2xl bg-gradient-to-r from-[#39ff14] to-emerald-500 px-10 py-4 text-black
-                    font-bold text-lg shadow-[0_0_32px_rgba(57,255,20,0.55)] cursor-pointer"
+                  className="rounded-2xl bg-gradient-to-r from-[#1cac64] to-emerald-500 px-10 py-4 text-black
+                    font-bold text-lg shadow-[0_0_32px_rgba(28,172,100,0.55)] cursor-pointer"
                 >
                   TAP TO OPEN
                 </motion.button>
@@ -202,7 +202,7 @@ export default function PackOpening({
             {/* ── Spinning ── */}
             {phase === "spinning" && (
               <div className="flex flex-col items-center gap-6">
-                <div className="relative h-48 w-40 rounded-2xl bg-gradient-to-br from-[#39ff14]/15 to-emerald-500/10 border border-[#39ff14]/40 flex items-center justify-center overflow-hidden">
+                <div className="relative h-48 w-40 rounded-2xl bg-gradient-to-br from-[#1cac64]/15 to-emerald-500/10 border border-[#1cac64]/40 flex items-center justify-center overflow-hidden">
                   {/* Animating question marks */}
                   {Array.from({ length: count }).map((_, i) => (
                     <motion.span
@@ -283,7 +283,7 @@ export default function PackOpening({
                   onClick={() => { onClose(); if (win) onComplete(win); }}
                   whileHover={{ scale: 1.06 }}
                   whileTap={{ scale: 0.96 }}
-                  className="rounded-2xl bg-[#39ff14] px-10 py-4 text-black font-bold shadow-[0_0_32px_rgba(57,255,20,0.5)] cursor-pointer"
+                  className="rounded-2xl bg-[#1cac64] px-10 py-4 text-black font-bold shadow-[0_0_32px_rgba(28,172,100,0.5)] cursor-pointer"
                 >
                   Claim Reward
                 </motion.button>

@@ -317,17 +317,17 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
             <FiUsers className="text-indigo-400" /> User Leaderboard Snapshot
           </h2>
           <p className="text-sm text-gray-400 mt-1 font-medium leading-relaxed">
-            Pre-select timeframe to load quickly: Load <span className="text-[#39ff14] font-bold">{activeTab === "weekly" ? "weekly (7d)" : activeTab === "monthly" ? "monthly (30d)" : "all historical"}</span> open events to view the leaderboard and export a snapshot.
+            Pre-select timeframe to load quickly: Load <span className="text-[#1cac64] font-bold">{activeTab === "weekly" ? "weekly (7d)" : activeTab === "monthly" ? "monthly (30d)" : "all historical"}</span> open events to view the leaderboard and export a snapshot.
           </p>
           
           <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4">
             <div className="text-center">
-              <div className="text-[#39ff14] font-black text-xl">{solRankingPoints}</div>
+              <div className="text-[#1cac64] font-black text-xl">{solRankingPoints}</div>
               <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">SOL Box Points</div>
             </div>
             <div className="w-px bg-white/10 h-10" />
             <div className="text-center">
-              <div className="text-[#39ff14] font-black text-xl">{tokenRankingPoints}</div>
+              <div className="text-[#1cac64] font-black text-xl">{tokenRankingPoints}</div>
               <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Token Box Points</div>
             </div>
             <div className="ml-4 text-xs text-gray-400">
@@ -338,9 +338,9 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
         
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex bg-white/5 rounded-xl p-1 border border-white/5 backdrop-blur-md">
-            <button onClick={() => setActiveTab("all")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "all" ? "bg-[#39ff14]/20 text-[#39ff14] border border-[#39ff14]/20 shadow-[0_0_15px_rgba(57,255,20,0.15)]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>All Time</button>
-            <button onClick={() => setActiveTab("monthly")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "monthly" ? "bg-[#39ff14]/20 text-[#39ff14] border border-[#39ff14]/20 shadow-[0_0_15px_rgba(57,255,20,0.15)]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>Monthly</button>
-            <button onClick={() => setActiveTab("weekly")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "weekly" ? "bg-[#39ff14]/20 text-[#39ff14] border border-[#39ff14]/20 shadow-[0_0_15px_rgba(57,255,20,0.15)]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>Weekly</button>
+            <button onClick={() => setActiveTab("all")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "all" ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/20 shadow-[0_0_15px_rgba(28,172,100,0.15)]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>All Time</button>
+            <button onClick={() => setActiveTab("monthly")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "monthly" ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/20 shadow-[0_0_15px_rgba(28,172,100,0.15)]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>Monthly</button>
+            <button onClick={() => setActiveTab("weekly")} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeTab === "weekly" ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/20 shadow-[0_0_15px_rgba(28,172,100,0.15)]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>Weekly</button>
           </div>
 
           <button
@@ -402,7 +402,7 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
                   <td className="py-3 px-4 text-sm font-black text-gray-300">#{i + 1}</td>
                   <td className="py-3 px-4 text-sm font-mono text-gray-300">{user.wallet}</td>
                   <td className="py-3 px-4 text-sm text-gray-300 flex items-center gap-1.5"><FiActivity className="text-gray-500" /> {user.opens}</td>
-                  <td className="py-3 px-4 text-sm font-black text-[#39ff14] text-right">{user.points}</td>
+                  <td className="py-3 px-4 text-sm font-black text-[#1cac64] text-right">{user.points}</td>
                 </tr>
               ))}
             </tbody>

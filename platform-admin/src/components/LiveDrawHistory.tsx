@@ -60,8 +60,8 @@ function LiveDrawHistory({
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#39ff14] opacity-60" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#39ff14]" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1cac64] opacity-60" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1cac64]" />
           </span>
           <h3 className="text-sm font-bold text-white">Live Draw History</h3>
           <span className="text-[10px] text-gray-500 ml-1">• Live</span>
@@ -73,7 +73,7 @@ function LiveDrawHistory({
             value={rarityFilter}
             onChange={(e) => setDrawRarityFilter(e.target.value)}
             className="bg-white/[0.04] border border-white/[0.08] rounded-lg text-[11px] text-gray-300
-                       px-2.5 py-1 outline-none focus:border-[#39ff14]/40 transition-colors cursor-pointer"
+                       px-2.5 py-1 outline-none focus:border-[#1cac64]/40 transition-colors cursor-pointer"
           >
             {["all", "common", "rare", "epic", "legendary", "mythic"].map((r) => (
               <option key={r} value={r} className="bg-[#111] text-gray-200 capitalize">

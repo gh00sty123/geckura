@@ -23,7 +23,7 @@ export default function DailyRewards() {
   return (
     <div className="glass-panel rounded-2xl p-5 space-y-4">
       <div className="flex items-center gap-2">
-        <FiGift className="text-[#39ff14] text-lg" />
+        <FiGift className="text-[#1cac64] text-lg" />
         <h3 className="text-sm font-bold text-white">Daily Reward</h3>
       </div>
 
@@ -35,8 +35,8 @@ export default function DailyRewards() {
             <div
               key={i}
               className={`aspect-square rounded-xl flex items-center justify-center text-xs font-bold
-                ${done    ? "bg-[#39ff14]/20 text-[#39ff14] border border-[#39ff14]/30"
-                  : active ? "bg-white/[0.06] border border-[#39ff14]/40 text-[#39ff14]/90"
+                ${done    ? "bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/30"
+                  : active ? "bg-white/[0.06] border border-[#1cac64]/40 text-[#1cac64]/90"
                   : "bg-white/[0.04] border border-white/[0.08] text-gray-600"
                 }`}
             >
@@ -58,7 +58,7 @@ export default function DailyRewards() {
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => setClaimed(true)}
-            className="px-4 py-2 rounded-xl bg-[#39ff14] text-black text-xs font-bold shadow-[0_0_14px_rgba(57,255,20,0.35)] hover:shadow-[0_0_28px_rgba(57,255,20,0.55)] transition-shadow cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-[#1cac64] text-black text-xs font-bold shadow-[0_0_14px_rgba(28,172,100,0.35)] hover:shadow-[0_0_28px_rgba(28,172,100,0.55)] transition-shadow cursor-pointer"
           >
             Claim Now
           </motion.button>

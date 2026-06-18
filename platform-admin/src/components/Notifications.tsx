@@ -38,7 +38,7 @@ export default function Notifications() {
       case "new_pack":
         return <FiPackage className="text-blue-400" />;
       case "daily_reward":
-        return <FiGift className="text-[#39ff14]" />;
+        return <FiGift className="text-[#1cac64]" />;
       default:
         return <FiBell className="text-gray-400" />;
     }
@@ -102,7 +102,7 @@ export default function Notifications() {
       >
         <FiBell className="text-xl" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 h-2 w-2 bg-[#39ff14] rounded-full" />
+          <span className="absolute top-1 right-1 h-2 w-2 bg-[#1cac64] rounded-full" />
         )}
       </button>
 
@@ -118,10 +118,10 @@ export default function Notifications() {
             {/* Header */}
             <div className="p-4 border-b border-white/[0.06] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FiBell className="text-[#39ff14]" />
+                <FiBell className="text-[#1cac64]" />
                 <h3 className="text-sm font-bold text-white">Notifications</h3>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-[#39ff14]/10 text-[#39ff14] text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-[#1cac64]/10 text-[#1cac64] text-[10px] font-bold">
                     {unreadCount} new
                   </span>
                 )}
@@ -165,7 +165,7 @@ export default function Notifications() {
                         </p>
                       </div>
                       {!notification.read && (
-                        <div className="flex-shrink-0 w-2 h-2 bg-[#39ff14] rounded-full mt-2" />
+                        <div className="flex-shrink-0 w-2 h-2 bg-[#1cac64] rounded-full mt-2" />
                       )}
                     </div>
                   </div>

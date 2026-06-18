@@ -55,7 +55,7 @@ export default function PackGrid({
               onClick={() => setCategoryFilter(cat.key)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all
                 ${active
-                  ? "bg-[#39ff14] text-[#0a0a0a] shadow-[0_0_18px_rgba(57,255,20,0.35)]"
+                  ? "bg-[#1cac64] text-[#0a0a0a] shadow-[0_0_18px_rgba(28,172,100,0.35)]"
                   : "bg-white/[0.04] border border-white/[0.08] text-gray-400 hover:bg-white/[0.07] hover:text-gray-200"
                 }`}
             >

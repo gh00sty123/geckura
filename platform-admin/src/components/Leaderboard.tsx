@@ -58,10 +58,10 @@ export default function Leaderboard({ data }: { data: LeaderEntry[] }) {
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-gray-200 truncate">{entry.username}</p>
                 <div className="flex items-center gap-1 text-[10px] text-gray-500">
-                  <FiTrendingUp className="text-[#39ff14]" /> +2.4%
+                  <FiTrendingUp className="text-[#1cac64]" /> +2.4%
                 </div>
               </div>
-              <span className="text-xs font-bold text-[#39ff14] tabular-nums">
+              <span className="text-xs font-bold text-[#1cac64] tabular-nums">
                 <CountUp end={entry.value} duration={0.6} decimals={1} prefix="$" separator="," />
               </span>
             </motion.div>

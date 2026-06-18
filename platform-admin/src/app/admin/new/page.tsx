@@ -19,7 +19,7 @@ export default function NewProjectPage() {
   const [description, setDescription] = useState("");
   const [logoUri, setLogoUri] = useState("");
   const [bgUri, setBgUri] = useState("");
-  const [themeColor, setThemeColor] = useState("#39ff14");
+  const [themeColor, setThemeColor] = useState("#1cac64");
   const [adminWallet, setAdminWallet] = useState("");
   const PRIMARY_FEE_WALLET = "FBPFAtDxCwPEKb5kUp779TdFQU3hyPmfjT2LwtrkKscq";
   const SECONDARY_FEE_WALLET = "9xQeQCtdv4URZ9wTnv2N31A3S6d85s1D4x9gZtLrtg52";
@@ -428,7 +428,7 @@ Theme Color Accent: ${themeColor}
             className={`px-6 py-3 rounded-xl text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed text-white cursor-pointer ${
               isAdmin 
                 ? "bg-purple-600 hover:bg-purple-700" 
-                : "bg-gradient-to-r from-[#39ff14] to-emerald-500 !text-black font-extrabold shadow-[0_0_20px_rgba(57,255,20,0.2)] hover:shadow-[0_0_30px_rgba(57,255,20,0.4)]"
+                : "bg-gradient-to-r from-[#1cac64] to-emerald-500 !text-black font-extrabold shadow-[0_0_20px_rgba(28,172,100,0.2)] hover:shadow-[0_0_30px_rgba(28,172,100,0.4)]"
             }`}
           >
             {submitting ? (
