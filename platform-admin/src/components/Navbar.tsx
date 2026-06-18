@@ -302,7 +302,7 @@ export default function Navbar({
               )}
             </div>
           ) : (
-            pathname !== "/admin" && (
+            pathname !== "/admin" && pathname !== "/admin/new" && (
               <div className="flex items-center gap-6">
                 {pathname.endsWith("/admin") ? (
                   <>
