@@ -11,7 +11,7 @@ export function Sidebar() {
   return (
     <aside className="w-56 shrink-0 border-r border-[#1cac64]/20 min-h-screen flex flex-col">
       <div className="p-4 border-b border-[#1cac64]/20">
-        <h1 className="text-lg font-bold text-purple-400">MysteryBox</h1>
+        <h1 className="text-lg font-bold text-[#1cac64]">GeckuraBox</h1>
         <p className="text-xs text-[#3d6b4e] mt-0.5">Platform Admin</p>
       </div>
       <nav className="flex-1 p-3 space-y-1">

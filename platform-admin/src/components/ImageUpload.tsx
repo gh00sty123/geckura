@@ -80,12 +80,12 @@ export function ImageUpload({ label, value, onChange, className = "" }: ImageUpl
           className={`
             border-2 border-dashed border-gray-700 rounded-lg p-6 
             flex flex-col items-center justify-center gap-3
-            cursor-pointer hover:border-purple-500 hover:bg-purple-500/5 transition-colors
+            cursor-pointer hover:border-[#1cac64] hover:bg-[#1cac64]/5 transition-colors
             ${isUploading ? "opacity-50 pointer-events-none" : ""}
           `}
         >
           {isUploading ? (
-            <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-[#1cac64] border-t-transparent rounded-full animate-spin" />
           ) : (
             <FiUploadCloud className="w-8 h-8 text-[#3d6b4e]" />
           )}
@@ -94,7 +94,7 @@ export function ImageUpload({ label, value, onChange, className = "" }: ImageUpl
               <span>Uploading...</span>
             ) : (
               <span>
-                <span className="text-purple-400 font-semibold">Click to upload</span> or drag and drop
+                <span className="text-[#1cac64] font-semibold">Click to upload</span> or drag and drop
               </span>
             )}
           </div>
