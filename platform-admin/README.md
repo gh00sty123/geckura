@@ -1,4 +1,7 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Geckura — Mystery Box Platform Admin
+
+Next.js frontend for the Geckura Mystery Box platform. Built with Next.js 16, React 19, Solana Web3.js, and Tailwind CSS.
+
 
 ## Getting Started
 
