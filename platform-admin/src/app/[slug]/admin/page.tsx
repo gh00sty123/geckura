@@ -1094,12 +1094,19 @@ function EditModal({
   }, [wallet, slug, id, name, desc, banner, startStr, endStr, selectedMints, customMints, prices, onDone]);
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[85vh] overflow-auto border border-[#1cac64]/20 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-        <div className="flex justify-between items-center pb-2 border-b border-[#1cac64]/20">
-          <h3 className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Edit Box #{id}</h3>
-          <button onClick={onClose} className="text-[#2d5a3f] text-sm hover:text-[#0f2618] p-1 hover:bg-[#c8edba] rounded">✕</button>
-        </div>
+    <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="glass-panel w-full max-w-lg rounded-3xl p-6 space-y-5 max-h-[85vh] overflow-auto shadow-2xl relative">
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 text-[#2d5a3f] hover:text-[#0f2618] transition-colors p-2 bg-[#1cac64]/8 rounded-full hover:bg-white/10"
+        >
+          ✕
+        </button>
+
+        <h2 className="text-xl font-black text-[#0f2618] uppercase tracking-wider">
+          Edit Box #{id}
+        </h2>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Field label="Name *" val={name} onChange={setName} mdFull />
           <Field label="Description" val={desc} onChange={setDesc} rows={2} mdFull />
@@ -1109,9 +1116,9 @@ function EditModal({
         </div>
         
         <div className="space-y-2">
-          <p className="text-xs font-bold text-[#2d5a3f]">Accepted tokens (up to 3):</p>
+          <p className="text-xs font-bold text-[#2d5a3f] uppercase tracking-wider">Accepted tokens (up to 3):</p>
           {[0, 1, 2].map(i => (
-            <div key={i} className="flex flex-col gap-1.5 p-2 bg-gray-950 border border-gray-900 rounded-lg">
+            <div key={i} className="flex flex-col gap-1.5 p-3 bg-[#ffffff]/40 border border-[#1cac64]/15 rounded-xl">
               <div className="flex gap-2">
                 <select
                   value={selectedMints[i]}
@@ -1120,7 +1127,7 @@ function EditModal({
                     c[i] = e.target.value;
                     setSelectedMints(c);
                   }}
-                  className="flex-1 bg-[#d9f5cc] border border-[#1cac64]/20 rounded px-2.5 py-1.5 text-xs text-[#1a3a2a] focus:outline-none focus:border-amber-500"
+                  className="flex-1 bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-2.5 py-1.5 text-xs text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
                 >
                   {tokenOptions.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1135,7 +1142,7 @@ function EditModal({
                     c[i] = e.target.value;
                     setPrices(c);
                   }}
-                  className="w-28 bg-[#d9f5cc] border border-[#1cac64]/20 rounded px-2.5 py-1.5 text-xs text-[#0f2618]"
+                  className="w-28 bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-2.5 py-1.5 text-xs text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
                 />
               </div>
               {selectedMints[i] === "CUSTOM" && (
@@ -1147,17 +1154,29 @@ function EditModal({
                     c[i] = e.target.value;
                     setCustomMints(c);
                   }}
-                  className="bg-[#d9f5cc] border border-amber-500/20 focus:border-amber-500 focus:outline-none rounded px-2.5 py-1 text-[11px] font-mono text-[#1a3a2a]"
+                  className="bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-2.5 py-1.5 text-xs font-mono text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
                 />
               )}
             </div>
           ))}
         </div>
 
-        {err && <p className="text-red-400 text-xs p-3 bg-red-950/40 border border-red-700/50 rounded-lg">{err}</p>}
-        <div className="flex gap-2 pt-2 border-t border-[#1cac64]/20">
-          <button onClick={submit} disabled={loading || !name.trim()} className="flex-1 py-2 bg-amber-500 text-black font-bold rounded-lg hover:bg-amber-400 disabled:opacity-40 transition">{loading?"Saving…":"Save Changes"}</button>
-          <button onClick={onClose} className="px-4 py-2 border border-[#1cac64]/20 rounded-lg text-sm text-[#2d5a3f] hover:text-[#0f2618] hover:bg-[#d9f5cc] transition">Cancel</button>
+        {err && <p className="text-red-600 text-xs p-3 bg-red-500/10 border border-red-500/20 rounded-xl">{err}</p>}
+        
+        <div className="flex gap-3 pt-3 border-t border-[#1cac64]/15">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 px-4 rounded-xl font-bold uppercase tracking-wider text-xs bg-[#1cac64]/8 text-[#1a3a2a] hover:bg-white/10 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={submit}
+            disabled={loading || !name.trim()}
+            className="flex-1 py-3 px-4 rounded-xl font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-emerald-500 to-teal-500 text-[#0f2618] hover:from-emerald-400 hover:to-teal-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] disabled:opacity-50"
+          >
+            {loading ? "Saving…" : "Save Changes"}
+          </button>
         </div>
       </div>
     </div>
@@ -1212,10 +1231,10 @@ function Field({ label, val, onChange, placeholder = "", type = "text", rows, md
       <label htmlFor={id} className="block text-xs text-[#2d5a3f] mb-1 font-bold">{label}</label>
       {rows ? (
         <textarea id={id} value={val} onChange={e => onChange(e.target.value)} rows={rows}
-          className="w-full bg-gray-950 border border-[#1cac64]/20 focus:border-amber-500 focus:outline-none rounded-lg px-3 py-2 text-xs text-[#0f2618]" />
+          className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-3 py-2 text-xs text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all resize-none" />
       ) : (
         <input id={id} type={type} value={val} onChange={e => onChange(e.target.value)}
-          className="w-full bg-gray-950 border border-[#1cac64]/20 focus:border-amber-500 focus:outline-none rounded-lg px-3 py-2 text-xs text-[#0f2618]"
+          className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-3 py-2 text-xs text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
           placeholder={placeholder} />
       )}
     </div>
@@ -1591,14 +1610,18 @@ function CreateBoxModal({
 
   /* ── Render ─────────────────────────────────────────────────────────────── */
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl p-6 w-full max-w-2xl space-y-5 max-h-[90vh] overflow-auto border border-[#1cac64]/20 shadow-[0_0_60px_rgba(0,0,0,0.6)]">
+    <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="glass-panel w-full max-w-2xl space-y-5 max-h-[90vh] overflow-y-auto rounded-3xl p-6 shadow-2xl relative">
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 text-[#2d5a3f] hover:text-[#0f2618] transition-colors p-2 bg-[#1cac64]/8 rounded-full hover:bg-white/10"
+        >
+          ✕
+        </button>
 
-        {/* Header */}
-        <div className="flex justify-between items-center pb-2 border-b border-[#1cac64]/20">
-          <h3 className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Create New Box — {slug}</h3>
-          <button onClick={onClose} className="text-[#2d5a3f] text-sm hover:text-[#0f2618] p-1 hover:bg-[#c8edba] rounded">✕</button>
-        </div>
+        <h2 className="text-xl font-black text-[#0f2618] uppercase tracking-wider">
+          Create New Box — {slug}
+        </h2>
 
         {/* Basic fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1617,18 +1640,18 @@ function CreateBoxModal({
             {payOpts.length < 3 && (
               <button
                 onClick={() => setPayOpts(prev => [...prev, { id: nextPayId, mintKey: "", customMint: "", price: "0" }])}
-                className="text-[10px] px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/25 hover:bg-amber-500/20 transition font-semibold"
+                className="text-[10px] px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 border border-amber-500/25 hover:bg-amber-500/20 transition font-semibold"
               >+ Add Token ({payOpts.length}/3)</button>
             )}
           </div>
 
           {payOpts.map((po) => (
-            <div key={po.id} className="flex flex-col gap-1.5 p-2.5 bg-gray-950/80 border border-[#1cac64]/20/60 rounded-xl group relative">
+            <div key={po.id} className="flex flex-col gap-1.5 p-3 bg-[#ffffff]/40 border border-[#1cac64]/15 rounded-xl group relative">
               <div className="flex gap-2 items-center">
                 <select
                   value={po.mintKey}
                   onChange={e => updatePay(po.id, "mintKey", e.target.value)}
-                  className="flex-1 bg-[#d9f5cc] border border-[#1cac64]/20 rounded-lg px-2.5 py-1.5 text-xs text-[#1a3a2a] focus:outline-none focus:border-amber-500 transition"
+                  className="flex-1 bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-2.5 py-1.5 text-xs text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
                 >
                   {tokenOptions.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1639,12 +1662,12 @@ function CreateBoxModal({
                   type="number"
                   value={po.price}
                   onChange={e => updatePay(po.id, "price", e.target.value)}
-                  className="w-24 bg-[#d9f5cc] border border-[#1cac64]/20 rounded-lg px-2.5 py-1.5 text-xs text-[#0f2618] focus:outline-none focus:border-amber-500 transition"
+                  className="w-24 bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-2.5 py-1.5 text-xs text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
                 />
                 {payOpts.length > 1 && (
                   <button
                     onClick={() => setPayOpts(prev => prev.filter(p => p.id !== po.id))}
-                    className="text-[#4a7d5e] hover:text-red-400 text-sm transition p-1 rounded hover:bg-red-950/30"
+                    className="text-[#4a7d5e] hover:text-red-600 text-sm transition p-1 rounded hover:bg-red-500/10"
                     title="Remove"
                   >✕</button>
                 )}
@@ -1654,7 +1677,7 @@ function CreateBoxModal({
                   placeholder="Enter custom mint address (e.g. EPjFWdd…)"
                   value={po.customMint}
                   onChange={e => updatePay(po.id, "customMint", e.target.value)}
-                  className="bg-[#d9f5cc] border border-amber-500/20 focus:border-amber-500 focus:outline-none rounded-lg px-2.5 py-1 text-[11px] font-mono text-[#1a3a2a] transition"
+                  className="bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-2.5 py-1.5 text-xs font-mono text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
                 />
               )}
             </div>
@@ -1667,7 +1690,7 @@ function CreateBoxModal({
             <p className="text-xs font-bold text-[#2d5a3f] uppercase tracking-wider">🎁 Box Prizes &amp; Rewards <span className="text-[#4a7d5e] normal-case">(from vault)</span></p>
             <button
               onClick={() => setRewards(prev => [...prev, { id: nextRewardId, assetKey: rewardAssetOptions[0]?.value ?? "", amountPerWin: "1", totalCount: "1", winPct: "5" }])}
-              className="text-[10px] px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:bg-emerald-500/20 transition font-semibold"
+              className="text-[10px] px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 border border-emerald-500/25 hover:bg-emerald-500/20 transition font-semibold"
             >+ Add Reward</button>
           </div>
 
@@ -1680,14 +1703,14 @@ function CreateBoxModal({
             const isNFT = asset?.isNFT === true;
             const isNothing = rw.assetKey === "__NOTHING__";
             return (
-              <div key={rw.id} className="p-3 bg-gray-950/80 border border-[#1cac64]/20/60 rounded-xl space-y-2">
+              <div key={rw.id} className="p-3 bg-[#ffffff]/40 border border-[#1cac64]/15 rounded-xl space-y-2">
                 {/* Row 1: asset selector + avatar */}
                 <div className="flex gap-2 items-center">
                   {asset && <AssetAvatar asset={asset} />}
                   <select
                     value={rw.assetKey}
                     onChange={e => updateReward(rw.id, "assetKey", e.target.value)}
-                    className="flex-1 bg-[#d9f5cc] border border-[#1cac64]/20 rounded-lg px-2.5 py-1.5 text-xs text-[#1a3a2a] focus:outline-none focus:border-amber-500 transition"
+                    className="flex-1 bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-2.5 py-1.5 text-xs text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
                   >
                     <option value="">— Select Vault Asset —</option>
                     {rewardAssetOptions.map(opt => (
@@ -1696,7 +1719,7 @@ function CreateBoxModal({
                   </select>
                   <button
                     onClick={() => setRewards(prev => prev.filter(r => r.id !== rw.id))}
-                    className="text-[#4a7d5e] hover:text-red-400 text-sm transition p-1 rounded hover:bg-red-950/30"
+                    className="text-[#4a7d5e] hover:text-red-600 text-sm transition p-1 rounded hover:bg-red-500/10"
                     title="Remove reward"
                   >✕</button>
                 </div>
@@ -1709,7 +1732,7 @@ function CreateBoxModal({
                       value={isNothing ? "0" : isNFT ? "1" : rw.amountPerWin}
                       onChange={e => !isNFT && !isNothing && updateReward(rw.id, "amountPerWin", e.target.value)}
                       disabled={isNFT || isNothing}
-                      className="w-full bg-[#d9f5cc] border border-[#1cac64]/20 rounded-lg px-2 py-1 text-xs text-[#0f2618] focus:outline-none focus:border-amber-500 disabled:opacity-40 transition"
+                      className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-2 py-1 text-xs text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 disabled:opacity-40 transition-all"
                     />
                   </div>
                   <div>
@@ -1719,7 +1742,7 @@ function CreateBoxModal({
                       value={isNothing ? "999999" : isNFT ? "1" : rw.totalCount}
                       onChange={e => !isNFT && !isNothing && updateReward(rw.id, "totalCount", e.target.value)}
                       disabled={isNFT || isNothing}
-                      className="w-full bg-[#d9f5cc] border border-[#1cac64]/20 rounded-lg px-2 py-1 text-xs text-[#0f2618] focus:outline-none focus:border-amber-500 disabled:opacity-40 transition"
+                      className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-2 py-1 text-xs text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 disabled:opacity-40 transition-all"
                     />
                   </div>
                   <div>
@@ -1728,7 +1751,7 @@ function CreateBoxModal({
                       type="number"
                       value={rw.winPct}
                       onChange={e => updateReward(rw.id, "winPct", e.target.value)}
-                      className="w-full bg-[#d9f5cc] border border-[#1cac64]/20 rounded-lg px-2 py-1 text-xs text-[#0f2618] focus:outline-none focus:border-amber-500 transition"
+                      className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-2 py-1 text-xs text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
                       min="0" max="100" step="0.1"
                     />
                   </div>
@@ -1741,10 +1764,10 @@ function CreateBoxModal({
           {rewards.length > 0 && (
             <div className={`flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold ${
               cumulativeWinPct > 100
-                ? "bg-red-950/30 border-red-500/40 text-red-400"
+                ? "bg-red-500/10 border-red-500/20 text-red-700"
                 : cumulativeWinPct > 80
-                  ? "bg-amber-950/30 border-amber-500/40 text-amber-400"
-                  : "bg-emerald-950/20 border-emerald-500/20 text-emerald-400"
+                  ? "bg-amber-500/10 border-amber-500/20 text-amber-700"
+                  : "bg-emerald-500/10 border-emerald-500/20 text-emerald-700"
             }`}>
               <span>Cumulative Win Rate</span>
               <span className="font-mono text-sm">{cumulativeWinPct.toFixed(1)}% / 100%</span>
@@ -1753,16 +1776,16 @@ function CreateBoxModal({
         </div>
 
         {/* ── Error / step ── */}
-        {step && <p className="text-amber-300 text-xs p-2.5 bg-amber-950/30 border border-amber-600/30 rounded-lg animate-pulse">{step}</p>}
-        {err && <p className="text-red-400 text-xs p-3 bg-red-950/40 border border-red-700/50 rounded-lg">{err}</p>}
+        {step && <p className="text-amber-700 text-xs p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl animate-pulse">{step}</p>}
+        {err && <p className="text-red-700 text-xs p-3 bg-red-500/10 border border-red-500/20 rounded-xl">{err}</p>}
 
         {/* ── Actions ── */}
-        <div className="flex gap-2 pt-2 border-t border-[#1cac64]/20">
+        <div className="flex gap-3 pt-3 border-t border-[#1cac64]/15">
+          <button onClick={onClose} className="flex-1 py-3 px-4 border border-[#1cac64]/20 rounded-xl text-xs font-bold uppercase tracking-wider text-[#1a3a2a] bg-[#1cac64]/8 hover:bg-[#c8edba]/50 transition">Cancel</button>
           <button onClick={submit} disabled={loading || !name.trim()}
-            className="flex-1 py-2.5 bg-amber-500 text-black font-bold rounded-lg hover:bg-amber-400 disabled:opacity-40 transition">
+            className="flex-1 py-3 px-4 rounded-xl font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-emerald-500 to-teal-500 text-[#0f2618] hover:from-emerald-400 hover:to-teal-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] disabled:opacity-50">
             {loading ? (step || "Creating…") : (rewards.length > 0 ? `Create Box + ${rewards.length} Reward${rewards.length > 1 ? "s" : ""}` : "Create Box")}
           </button>
-          <button onClick={onClose} className="px-4 py-2.5 border border-[#1cac64]/20 rounded-lg text-sm text-[#2d5a3f] hover:text-[#0f2618] hover:bg-[#d9f5cc] transition">Cancel</button>
         </div>
       </div>
     </div>
@@ -1883,24 +1906,38 @@ function PrizeItemManager({
   }, [wallet, slug, id, mint, onDone]);
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl p-6 w-full max-w-md space-y-4 border border-amber-500/20 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-        <div className="flex justify-between items-center pb-2 border-b border-[#1cac64]/20">
-          <h3 className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Manage Prize — Box #{id}</h3>
-          <button onClick={onClose} className="text-[#2d5a3f] text-sm hover:text-[#0f2618] p-1 hover:bg-[#c8edba] rounded">✕</button>
-        </div>
+    <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="glass-panel w-full max-w-md rounded-3xl p-6 space-y-5 shadow-2xl relative">
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 text-[#2d5a3f] hover:text-[#0f2618] transition-colors p-2 bg-[#1cac64]/8 rounded-full hover:bg-white/10"
+        >
+          ✕
+        </button>
+
+        <h2 className="text-xl font-black text-[#0f2618] uppercase tracking-wider">
+          Manage Prize — Box #{id}
+        </h2>
 
         {/* Tab Selector */}
-        <div className="grid grid-cols-2 bg-gray-950 p-1 border border-[#1cac64]/20 rounded-lg">
+        <div className="grid grid-cols-2 bg-[#1cac64]/5 p-1 border border-[#1cac64]/15 rounded-xl">
           <button
             onClick={() => { setIsDepositMode(true); setSelectedAsset(null); setMint(""); }}
-            className={`py-1.5 text-xs font-bold rounded-md transition ${isDepositMode ? "bg-amber-500 text-black" : "text-[#2d5a3f] hover:text-[#0f2618]"}`}
+            className={`py-1.5 text-xs font-bold rounded-lg transition-all ${
+              isDepositMode
+                ? "bg-[#1cac64]/15 text-[#1cac64] border border-[#1cac64]/20 shadow-sm"
+                : "text-[#3d6b4e] hover:text-[#0f2618]"
+            }`}
           >
             Deposit Mode
           </button>
           <button
             onClick={() => { setIsDepositMode(false); setSelectedAsset(null); setMint(""); }}
-            className={`py-1.5 text-xs font-bold rounded-md transition ${!isDepositMode ? "bg-amber-500 text-black" : "text-[#2d5a3f] hover:text-[#0f2618]"}`}
+            className={`py-1.5 text-xs font-bold rounded-lg transition-all ${
+              !isDepositMode
+                ? "bg-[#1cac64]/15 text-[#1cac64] border border-[#1cac64]/20 shadow-sm"
+                : "text-[#3d6b4e] hover:text-[#0f2618]"
+            }`}
           >
             Withdraw Mode
           </button>
@@ -1909,7 +1946,7 @@ function PrizeItemManager({
         <div className="space-y-1 text-xs">
           <div className="text-[#3d6b4e] flex justify-between">
             <span>Prize Item PDA (idx=0):</span>
-            <span className="font-mono text-[#2d5a3f] break-all">{prizePda.toBase58().slice(0, 10)}…{prizePda.toBase58().slice(-10)}</span>
+            <span className="font-mono text-[#0f2618] break-all">{prizePda.toBase58().slice(0, 10)}…{prizePda.toBase58().slice(-10)}</span>
           </div>
         </div>
 
@@ -1918,7 +1955,7 @@ function PrizeItemManager({
           <label className="block text-xs text-[#2d5a3f] font-bold">Select Token/NFT from {isDepositMode ? "Wallet" : "Vault"}</label>
           <select
             onChange={e => handleSelectAsset(e.target.value)}
-            className="w-full bg-gray-950 border border-[#1cac64]/20 rounded-lg px-3 py-2 text-xs text-[#0f2618] focus:outline-none focus:border-amber-500"
+            className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-3 py-2 text-xs text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
           >
             {selectOptions.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -1933,7 +1970,7 @@ function PrizeItemManager({
             value={mint}
             onChange={e => setMint(e.target.value)}
             placeholder="EPjFWdd5AufqSSqeM2xzybapC8G4wEGGkZwyTDt1v..."
-            className="w-full bg-gray-950 border border-[#1cac64]/20 rounded-lg px-3 py-2 text-xs font-mono text-[#0f2618] focus:outline-none focus:border-amber-500"
+            className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-3 py-2 text-xs font-mono text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
           />
         </div>
 
@@ -1945,13 +1982,13 @@ function PrizeItemManager({
               type="number" 
               value={amount} 
               onChange={e => setAmount(e.target.value)}
-              className="w-full bg-gray-950 border border-[#1cac64]/20 rounded-lg px-3 py-2 text-xs text-[#0f2618] focus:outline-none focus:border-amber-500"
+              className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-3 py-2 text-xs text-[#0f2618] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
               placeholder="1"
             />
             {selectedAsset && (
               <button
                 onClick={() => setAmount(String(selectedAsset.uiAmount))}
-                className="absolute right-2 top-1.5 px-2 py-0.5 text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded hover:bg-amber-500 hover:text-black transition"
+                className="absolute right-2 top-1.5 px-2 py-0.5 text-[9px] bg-[#1cac64]/10 border border-[#1cac64]/20 text-[#1cac64] rounded hover:bg-[#1cac64]/20 transition-all"
               >
                 MAX
               </button>
@@ -1959,13 +1996,13 @@ function PrizeItemManager({
           </div>
         </div>
 
-        {actionErr && <p className="text-red-400 text-xs p-3 bg-red-950/40 border border-red-700/50 rounded-lg">{actionErr}</p>}
+        {actionErr && <p className="text-red-700 text-xs p-3 bg-red-500/10 border border-red-500/20 rounded-xl">{actionErr}</p>}
         
-        <div className="pt-2 border-t border-[#1cac64]/20">
+        <div className="pt-3 border-t border-[#1cac64]/15">
           {isDepositMode ? (
-            <button onClick={handleDeposit} disabled={loading} className="w-full py-2.5 bg-blue-600 text-[#0f2618] text-xs font-bold rounded-lg hover:bg-blue-500 disabled:opacity-40 shadow-lg transition">⬇ Deposit Prize into Box</button>
+            <button onClick={handleDeposit} disabled={loading} className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-[#0f2618] text-xs font-bold hover:from-emerald-400 hover:to-teal-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] disabled:opacity-50">⬇ Deposit Prize into Box</button>
           ) : (
-            <button onClick={handleWithdraw} disabled={loading} className="w-full py-2.5 bg-amber-500 text-black text-xs font-bold rounded-lg hover:bg-amber-400 disabled:opacity-40 shadow-lg transition">⬆ Withdraw Prize from Box</button>
+            <button onClick={handleWithdraw} disabled={loading} className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-xs font-bold hover:from-amber-400 hover:to-yellow-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] disabled:opacity-50">⬆ Withdraw Prize from Box</button>
           )}
         </div>
       </div>
@@ -2360,15 +2397,15 @@ function VaultManager({
   }, [wallet, slug, onRefreshAssets]);
 
   return (
-    <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4 backdrop-blur-md">
-      <div className="bg-gradient-to-b from-gray-900 via-gray-950 to-black rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-amber-500/20 shadow-[0_0_80px_rgba(245,158,11,0.15)] transition-all">
+    <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="glass-panel-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative">
         
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-5 border-b border-[#1cac64]/20 bg-[#d9f5cc]/40">
+        <div className="flex justify-between items-center px-6 py-5 border-b border-[#1cac64]/20 bg-[#ebfde3]/40">
           <div>
-            <h3 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200 flex items-center gap-2">
+            <h3 className="text-lg font-black text-[#0f2618] flex items-center gap-2">
               <span>💰 Premium Vault Manager</span>
-              <span className="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded-full font-semibold font-mono">
+              <span className="text-xs bg-[#1cac64]/10 text-[#1cac64] border border-[#1cac64]/20 px-2 py-0.5 rounded-full font-semibold font-mono">
                 {slug}
               </span>
             </h3>
@@ -2378,7 +2415,7 @@ function VaultManager({
             <button 
               onClick={onRefreshAssets}
               disabled={loadingAssets}
-              className={`p-2 rounded-lg border border-[#1cac64]/20 text-[#2d5a3f] hover:text-[#0f2618] hover:border-gray-700 transition duration-150 ${loadingAssets ? 'animate-spin' : ''}`}
+              className={`p-2 rounded-lg border border-[#1cac64]/20 text-[#2d5a3f] hover:text-[#0f2618] hover:border-[#1cac64]/50 transition duration-150 ${loadingAssets ? 'animate-spin' : ''}`}
               title="Refresh balances"
             >
               ↻
@@ -2390,14 +2427,14 @@ function VaultManager({
         {/* Inner Scrollable Layout */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Vault PDA and Status */}
-          <div className="p-4 rounded-xl bg-[#d9f5cc]/30 border border-[#1cac64]/20 flex flex-wrap items-center justify-between gap-4">
+          <div className="p-4 rounded-xl bg-[#ebfde3]/60 border border-[#1cac64]/15 flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
               <span className="text-[10px] uppercase tracking-wider text-[#3d6b4e] font-bold block">Vault PDA Treasury Address</span>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-sm text-amber-300 break-all">{vaultPk.toBase58()}</span>
+                <span className="font-mono text-sm text-[#0f2618] font-bold break-all">{vaultPk.toBase58()}</span>
                 <button
                   onClick={() => { navigator.clipboard?.writeText(vaultPk.toBase58()); toast.success("Vault PDA copied!"); }}
-                  className="text-[#2d5a3f] hover:text-amber-300 p-1 transition"
+                  className="text-[#2d5a3f] hover:text-[#1cac64] p-1 transition"
                   title="Copy Address"
                 >
                   📋
@@ -2408,14 +2445,14 @@ function VaultManager({
               {vaultExists === null ? (
                 <span className="text-xs text-[#3d6b4e] animate-pulse">Checking status…</span>
               ) : vaultExists ? (
-                <span className="text-xs px-3 py-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full font-semibold">
+                <span className="text-xs px-3 py-1 bg-green-500/10 text-green-700 border border-green-500/20 rounded-full font-semibold">
                   ✓ Vault Initialized
                 </span>
               ) : (
                 <button
                   onClick={handleInitVault}
                   disabled={txLoading}
-                  className="px-4 py-2 text-xs font-bold bg-amber-500 text-black rounded-lg hover:bg-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)] transition"
+                  className="px-4 py-2 text-xs font-bold bg-[#1cac64] text-white rounded-lg hover:bg-[#1cac64]/90 shadow-sm transition"
                 >
                   ⚡ Initialize Vault PDA
                 </button>
@@ -2424,18 +2461,18 @@ function VaultManager({
           </div>
 
           {actionErr && (
-            <div className="p-3 bg-red-950/40 border border-red-700/50 text-red-400 rounded-xl text-xs break-all">
+            <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-700 rounded-xl text-xs break-all">
               {actionErr}
             </div>
           )}
 
           {assetsError && (
-            <div className="p-3 bg-red-950/40 border border-red-700/50 text-red-400 rounded-xl text-xs break-all flex items-center justify-between">
+            <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-700 rounded-xl text-xs break-all flex items-center justify-between">
               <span>⚠️ Error loading on-chain assets: {assetsError}</span>
               <button 
                 onClick={onRefreshAssets} 
                 disabled={loadingAssets} 
-                className="underline font-bold text-red-300 hover:text-red-200 ml-2 shrink-0 disabled:opacity-40"
+                className="underline font-bold text-red-700 hover:text-red-500 ml-2 shrink-0 disabled:opacity-40"
               >
                 Retry
               </button>
@@ -2448,7 +2485,7 @@ function VaultManager({
             {/* Left Column: Admin Wallet */}
             <div className="space-y-4">
               <div className="flex justify-between items-center border-b border-[#1cac64]/20 pb-2">
-                <h4 className="font-bold text-[#1a3a2a] text-sm flex items-center gap-2">
+                <h4 className="font-bold text-[#0f2618] text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
                   Admin Wallet (Funding Source)
                 </h4>
@@ -2458,7 +2495,7 @@ function VaultManager({
               </div>
 
               {/* SOL Balance */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-gray-900 to-gray-950 border border-[#1cac64]/20/80 hover:border-gray-700/80 transition-all flex justify-between items-center shadow-lg">
+              <div className="p-4 rounded-xl bg-[#ffffff]/60 border border-[#1cac64]/15 hover:border-[#1cac64]/25 hover:bg-[#ffffff]/80 transition-all flex justify-between items-center shadow-md">
                 <div className="flex items-center gap-3">
                   <img 
                     src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" 
@@ -2479,7 +2516,7 @@ function VaultManager({
                       type: "deposit",
                       asset: { mint: PublicKey.default.toBase58(), isSol: true, name: "SOL", decimals: 9, maxAmount: walletSol || 0, image: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" }
                     })}
-                    className="px-3 py-1.5 text-xs font-bold bg-blue-600/10 border border-blue-500/20 hover:border-blue-500 hover:bg-blue-600/20 text-blue-400 rounded-lg transition"
+                    className="px-3 py-1.5 text-xs font-bold bg-[#1cac64]/10 border border-[#1cac64]/20 hover:border-[#1cac64] hover:bg-[#1cac64]/20 text-[#1cac64] rounded-lg transition"
                   >
                     Deposit ⬇
                   </button>
@@ -2502,7 +2539,7 @@ function VaultManager({
                             setSelectedWalletNfts(prev => Array.from(new Set([...prev, ...allMintIds])));
                           }
                         }}
-                        className="text-[9px] text-indigo-400 hover:text-indigo-300 font-semibold transition"
+                        className="text-[9px] text-[#1cac64] hover:text-[#1cac64]/80 font-semibold transition"
                       >
                         {walletNfts.every(n => selectedWalletNfts.includes(n.mint)) ? "Deselect All NFTs" : "Select All NFTs"}
                       </button>
@@ -2512,7 +2549,7 @@ function VaultManager({
                     <button
                       onClick={handleBulkDepositNfts}
                       disabled={txLoading}
-                      className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-[#0f2618] rounded shadow transition disabled:opacity-40"
+                      className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-[#0f2618] text-[10px] font-bold hover:from-emerald-400 hover:to-teal-400 transition cursor-pointer shadow-sm disabled:opacity-40"
                     >
                       Deposit Selected ({selectedWalletNfts.length}) ⬇
                     </button>
@@ -2525,22 +2562,22 @@ function VaultManager({
                 ) : (
                   <div className="grid grid-cols-1 gap-2 max-h-[220px] overflow-y-auto pr-1">
                     {walletAssets.map((asset: any) => (
-                      <div key={asset.ata} className={`p-3 rounded-lg bg-gray-950 border flex justify-between items-center transition ${asset.isNFT ? 'border-indigo-500/20 hover:border-indigo-500/40 bg-gradient-to-r from-gray-950 to-indigo-950/5' : 'border-gray-900 hover:border-[#1cac64]/20'}`}>
+                      <div key={asset.ata} className={`p-3 rounded-xl bg-[#ffffff]/40 border border-[#1cac64]/15 flex justify-between items-center transition hover:border-[#1cac64]/30 hover:bg-[#ffffff]/60`}>
                         <div className="flex items-center gap-2.5 min-w-0">
                           {asset.isNFT && (
                             <input
                               type="checkbox"
                               checked={selectedWalletNfts.includes(asset.mint)}
                               onChange={() => handleToggleWalletNft(asset.mint)}
-                              className="w-3.5 h-3.5 rounded border-[#1cac64]/20 bg-gray-950 text-indigo-500 focus:ring-indigo-500/20 focus:ring-offset-0 focus:outline-none"
+                              className="w-4 h-4 rounded border-[#1cac64]/20 bg-white text-[#1cac64] focus:ring-[#1cac64]/20 focus:ring-offset-0 focus:outline-none"
                             />
                           )}
                           <AssetAvatar asset={asset} />
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-xs text-[#1a3a2a] truncate">{asset.name}</span>
+                              <span className="font-semibold text-xs text-[#0f2618] truncate">{asset.name}</span>
                               {asset.isNFT && (
-                                <span className="text-[8px] px-1 py-0.2 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded font-semibold font-mono uppercase tracking-wider shrink-0">NFT</span>
+                                <span className="text-[8px] px-1 py-0.2 bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/30 rounded font-semibold font-mono uppercase tracking-wider shrink-0">NFT</span>
                               )}
                             </div>
                             <span className="font-mono text-[9px] text-[#4a7d5e] block truncate">{asset.mint}</span>
@@ -2554,7 +2591,7 @@ function VaultManager({
                                 type: "deposit",
                                 asset: { mint: asset.mint, isSol: false, name: asset.name, decimals: asset.decimals, maxAmount: asset.uiAmount, isNFT: asset.isNFT, image: asset.image }
                               })}
-                              className={`px-2 py-1 text-[10px] font-bold rounded transition ${asset.isNFT ? 'bg-indigo-600/10 border border-indigo-500/20 hover:border-indigo-500 hover:bg-indigo-600/20 text-indigo-400' : 'bg-blue-600/10 border border-blue-500/20 hover:border-blue-500 hover:bg-blue-600/20 text-blue-400'}`}
+                              className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-[#0f2618] text-[10px] font-bold hover:from-emerald-400 hover:to-teal-400 transition cursor-pointer shadow-sm"
                             >
                               Deposit ⬇
                             </button>
@@ -2570,17 +2607,17 @@ function VaultManager({
             {/* Right Column: Vault PDA */}
             <div className="space-y-4">
               <div className="flex justify-between items-center border-b border-[#1cac64]/20 pb-2">
-                <h4 className="font-bold text-[#1a3a2a] text-sm flex items-center gap-2">
+                <h4 className="font-bold text-[#0f2618] text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                   Vault PDA (Project Treasury)
                 </h4>
-                <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-mono font-bold">
+                <span className="text-xs bg-[#1cac64]/10 text-[#1cac64] border border-[#1cac64]/20 px-2 py-0.5 rounded-full font-mono font-bold">
                   {vaultExists ? "Ready" : "Inactive"}
                 </span>
               </div>
 
               {/* SOL Balance */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-gray-900 to-gray-950 border border-[#1cac64]/20/80 hover:border-gray-700/80 transition-all flex justify-between items-center shadow-lg">
+              <div className="p-4 rounded-xl bg-[#ffffff]/60 border border-[#1cac64]/15 hover:border-[#1cac64]/25 hover:bg-[#ffffff]/80 transition-all flex justify-between items-center shadow-md">
                 <div className="flex items-center gap-3">
                   <img 
                     src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" 
@@ -2589,7 +2626,7 @@ function VaultManager({
                   />
                   <div>
                     <span className="text-xs text-[#3d6b4e] block">Solana Vault</span>
-                    <span className="text-xl font-bold text-amber-400 font-mono mt-0.5 block">
+                    <span className="text-xl font-bold text-amber-600 font-mono mt-0.5 block">
                       {vaultSol !== null ? vaultSol.toFixed(4) : "0.0000"}{" "}
                       <span className="text-xs font-semibold text-[#2d5a3f]">SOL</span>
                     </span>
@@ -2601,7 +2638,7 @@ function VaultManager({
                       type: "withdraw",
                       asset: { mint: PublicKey.default.toBase58(), isSol: true, name: "SOL", decimals: 9, maxAmount: vaultSol, image: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" }
                     })}
-                    className="px-3 py-1.5 text-xs font-bold bg-amber-500/10 border border-amber-500/20 hover:border-amber-500 hover:bg-amber-500/20 text-amber-400 rounded-lg transition"
+                    className="px-3 py-1.5 text-xs font-bold bg-[#1cac64]/10 border border-[#1cac64]/20 hover:border-[#1cac64] hover:bg-[#1cac64]/20 text-[#1cac64] rounded-lg transition"
                   >
                     Withdraw ⬆
                   </button>
@@ -2624,7 +2661,7 @@ function VaultManager({
                             setSelectedVaultNfts(prev => Array.from(new Set([...prev, ...allMintIds])));
                           }
                         }}
-                        className="text-[9px] text-amber-400 hover:text-amber-300 font-semibold transition"
+                        className="text-[9px] text-[#1cac64] hover:text-[#1cac64]/80 font-semibold transition"
                       >
                         {vaultNfts.every(n => selectedVaultNfts.includes(n.mint)) ? "Deselect All NFTs" : "Select All NFTs"}
                       </button>
@@ -2634,7 +2671,7 @@ function VaultManager({
                     <button
                       onClick={handleBulkWithdrawNfts}
                       disabled={txLoading}
-                      className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black rounded shadow transition disabled:opacity-40"
+                      className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-[10px] font-bold hover:from-amber-400 hover:to-yellow-400 transition cursor-pointer shadow-sm disabled:opacity-40"
                     >
                       Withdraw Selected ({selectedVaultNfts.length}) ⬆
                     </button>
@@ -2647,22 +2684,22 @@ function VaultManager({
                 ) : (
                   <div className="grid grid-cols-1 gap-2 max-h-[220px] overflow-y-auto pr-1">
                     {vaultAssets.map((asset: any) => (
-                      <div key={asset.ata} className={`p-3 rounded-lg bg-gray-950 border flex justify-between items-center transition ${asset.isNFT ? 'border-amber-500/20 hover:border-amber-500/40 bg-gradient-to-r from-gray-950 to-amber-950/5' : 'border-gray-900 hover:border-[#1cac64]/20'}`}>
+                      <div key={asset.ata} className={`p-3 rounded-xl bg-[#ffffff]/40 border border-[#1cac64]/15 flex justify-between items-center transition hover:border-[#1cac64]/30 hover:bg-[#ffffff]/60`}>
                         <div className="flex items-center gap-2.5 min-w-0">
                           {asset.isNFT && (
                             <input
                               type="checkbox"
                               checked={selectedVaultNfts.includes(asset.mint)}
                               onChange={() => handleToggleVaultNft(asset.mint)}
-                              className="w-3.5 h-3.5 rounded border-gray-850 bg-gray-950 text-amber-500 focus:ring-amber-500/20 focus:ring-offset-0 focus:outline-none"
+                              className="w-4 h-4 rounded border-[#1cac64]/20 bg-white text-[#1cac64] focus:ring-[#1cac64]/20 focus:ring-offset-0 focus:outline-none"
                             />
                           )}
                           <AssetAvatar asset={asset} />
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-xs text-amber-400 truncate">{asset.name}</span>
+                              <span className="font-semibold text-xs text-[#0f2618] truncate">{asset.name}</span>
                               {asset.isNFT && (
-                                <span className="text-[8px] px-1 py-0.2 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded font-semibold font-mono uppercase tracking-wider shrink-0">NFT</span>
+                                <span className="text-[8px] px-1 py-0.2 bg-[#1cac64]/20 text-[#1cac64] border border-[#1cac64]/30 rounded font-semibold font-mono uppercase tracking-wider shrink-0">NFT</span>
                               )}
                             </div>
                             <span className="font-mono text-[9px] text-[#4a7d5e] block truncate">{asset.mint}</span>
@@ -2676,7 +2713,7 @@ function VaultManager({
                                 type: "withdraw",
                                 asset: { mint: asset.mint, isSol: false, name: asset.name, decimals: asset.decimals, maxAmount: asset.uiAmount, isNFT: asset.isNFT, image: asset.image }
                               })}
-                              className="px-2 py-1 text-[10px] font-bold bg-amber-500/10 border border-amber-500/20 hover:border-amber-500 hover:bg-amber-500/20 text-amber-400 rounded transition"
+                              className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-[10px] font-bold hover:from-amber-400 hover:to-yellow-400 transition cursor-pointer shadow-sm"
                             >
                               Withdraw ⬆
                             </button>
@@ -2685,7 +2722,7 @@ function VaultManager({
                             <button
                               onClick={() => handleCloseVaultAta(asset.mint)}
                               disabled={txLoading}
-                              className="px-2 py-1 text-[10px] font-bold bg-red-500/10 border border-red-500/20 hover:border-red-500 hover:bg-red-500/20 text-red-400 rounded transition disabled:opacity-40"
+                              className="px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 hover:border-red-500 hover:bg-red-500/20 text-red-700 text-[10px] font-bold transition disabled:opacity-50"
                               title={rentClaimMode === 1
                                 ? "Close empty token account and reclaim ~0.002 SOL rent to Platform Treasury"
                                 : "Close empty token account and reclaim ~0.002 SOL rent to Project Authority"
@@ -2705,13 +2742,13 @@ function VaultManager({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#1cac64]/20 bg-gray-950 flex justify-between items-center">
+        <div className="px-6 py-4 border-t border-[#1cac64]/15 bg-[#ebfde3]/40 flex justify-between items-center">
           <span className="text-[10px] text-[#3d6b4e]">
             Secure administrative control over Devnet. CPI and Native withdrawals allowed.
           </span>
           <button 
             onClick={onClose} 
-            className="px-4 py-2 border border-[#1cac64]/20 rounded-lg text-sm text-[#2d5a3f] hover:text-[#0f2618] hover:bg-[#d9f5cc] transition"
+            className="px-4 py-2.5 border border-[#1cac64]/20 rounded-lg text-sm text-[#2d5a3f] hover:text-[#0f2618] hover:bg-[#d9f5cc] transition font-semibold"
           >
             Close
           </button>
@@ -2721,31 +2758,31 @@ function VaultManager({
       {/* Slide-over Action Overlay / Sleek Modal */}
       {actionModal.asset && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#d9f5cc] border border-amber-500/30 rounded-xl p-6 w-full max-w-sm space-y-4 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative animate-in fade-in zoom-in-95 duration-150">
+          <div className="glass-panel border border-[#1cac64]/20 rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl relative animate-in fade-in zoom-in-95 duration-150">
             <button 
               onClick={() => { setActionModal({ type: "deposit", asset: null }); setAmountStr(""); setActionErr(""); }}
               className="absolute top-4 right-4 text-[#3d6b4e] hover:text-[#0f2618] transition"
             >
               ✕
             </button>
-            <h4 className="font-bold text-sm text-[#1a3a2a] flex items-center gap-2 capitalize">
+            <h4 className="font-bold text-sm text-[#0f2618] flex items-center gap-2 capitalize">
               {actionModal.type === "deposit" ? "⬇ Deposit" : "⬆ Withdraw"}&nbsp;
               {actionModal.asset.image && (
                 <img 
                   src={actionModal.asset.image} 
                   alt={actionModal.asset.name} 
-                  className="w-5 h-5 rounded-full object-cover border border-[#1cac64]/20 bg-gray-950 shrink-0"
+                  className="w-5 h-5 rounded-full object-cover border border-[#1cac64]/20 bg-gray-50 shrink-0"
                 />
               )}
-              <span className="text-amber-400">{actionModal.asset.name}</span>
+              <span className="text-[#1cac64]">{actionModal.asset.name}</span>
             </h4>
             {actionModal.asset.isNFT ? (
-              <div className="p-4 rounded-xl bg-gradient-to-b from-indigo-500/10 to-transparent border border-indigo-500/25 text-center space-y-2 shadow-inner">
+              <div className="p-4 rounded-xl bg-[#ebfde3]/60 border border-[#1cac64]/15 text-center space-y-2 shadow-inner">
                 {actionModal.asset.image ? (
                   <img 
                     src={actionModal.asset.image} 
                     alt={actionModal.asset.name} 
-                    className="w-24 h-24 rounded-lg object-cover mx-auto border border-indigo-500/30 shadow-md"
+                    className="w-24 h-24 rounded-lg object-cover mx-auto border border-[#1cac64]/20 shadow-md"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                       const fallback = document.getElementById('nft-modal-fallback');
@@ -2755,14 +2792,14 @@ function VaultManager({
                 ) : null}
                 <div 
                   id="nft-modal-fallback" 
-                  className="w-12 h-12 rounded-lg bg-indigo-500/20 border border-indigo-500/40 items-center justify-center text-2xl mx-auto shadow-md animate-pulse"
+                  className="w-12 h-12 rounded-lg bg-[#1cac64]/10 border border-[#1cac64]/20 items-center justify-center text-2xl mx-auto shadow-md animate-pulse"
                   style={{ display: actionModal.asset.image ? 'none' : 'flex' }}
                 >
                   🎨
                 </div>
                 <div className="font-bold text-xs text-[#0f2618] pt-1">{actionModal.asset.name}</div>
                 <div className="font-mono text-[9px] text-[#3d6b4e] break-all">{actionModal.asset.mint}</div>
-                <div className="text-[10px] text-indigo-300 bg-indigo-500/5 py-1 px-2 rounded-full inline-block font-medium border border-indigo-500/10">
+                <div className="text-[10px] text-[#1cac64] bg-[#1cac64]/5 py-1 px-2 rounded-full inline-block font-medium border border-[#1cac64]/10">
                   Non-Fungible Token (1 Unit)
                 </div>
               </div>
@@ -2770,7 +2807,7 @@ function VaultManager({
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-[#3d6b4e]">Available Max</span>
-                  <span className="font-mono text-[#1a3a2a] font-bold">{actionModal.asset.maxAmount} {actionModal.asset.name}</span>
+                  <span className="font-mono text-[#0f2618] font-bold">{actionModal.asset.maxAmount} {actionModal.asset.name}</span>
                 </div>
                 
                 <div className="relative">
@@ -2779,11 +2816,11 @@ function VaultManager({
                     placeholder="0.0"
                     value={amountStr}
                     onChange={e => setAmountStr(e.target.value)}
-                    className="w-full bg-gray-950 border border-[#1cac64]/20 rounded-lg px-3 py-2 text-sm text-[#0f2618] font-mono focus:border-amber-500 focus:outline-none"
+                    className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-3 py-2 text-sm text-[#0f2618] font-mono focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
                   />
                   <button
                     onClick={() => setAmountStr(String(actionModal.asset!.maxAmount))}
-                    className="absolute right-2 top-1.5 px-2 py-0.5 text-[10px] font-bold bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded hover:bg-amber-500 hover:text-black transition"
+                    className="absolute right-2 top-1.5 px-2 py-0.5 text-[10px] font-bold bg-[#1cac64]/10 border border-[#1cac64]/20 text-[#1cac64] rounded hover:bg-[#1cac64]/20 transition-all"
                   >
                     MAX
                   </button>
@@ -2795,7 +2832,7 @@ function VaultManager({
                     <button
                       key={pct}
                       onClick={() => setAmountStr(String((actionModal.asset!.maxAmount * pct).toFixed(4)))}
-                      className="py-1 text-[10px] bg-gray-950 border border-[#1cac64]/20/80 hover:border-amber-500/30 text-[#2d5a3f] hover:text-amber-300 rounded font-semibold transition"
+                      className="py-1.5 text-[10px] bg-[#ebfde3]/60 border border-[#1cac64]/15 hover:border-[#1cac64]/40 text-[#2d5a3f] hover:text-[#0f2618] rounded-xl font-semibold transition-all"
                     >
                       {pct * 100}%
                     </button>
@@ -2804,17 +2841,17 @@ function VaultManager({
               </div>
             )}
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-3 pt-3 border-t border-[#1cac64]/15">
               <button
                 onClick={() => { setActionModal({ type: "deposit", asset: null }); setAmountStr(""); setActionErr(""); }}
-                className="flex-1 py-2 border border-[#1cac64]/20 text-[#2d5a3f] hover:text-[#0f2618] rounded-lg text-xs font-semibold hover:bg-[#c8edba] transition"
+                className="flex-1 py-2.5 border border-[#1cac64]/20 text-[#2d5a3f] hover:text-[#0f2618] rounded-xl text-xs font-semibold hover:bg-[#c8edba] transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleExecuteAction}
                 disabled={txLoading || (!actionModal.asset.isNFT && (!amountStr || parseFloat(amountStr) <= 0))}
-                className="flex-1 py-2 bg-amber-500 text-black hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-xs font-bold shadow-lg transition"
+                className="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-[#0f2618] hover:from-emerald-400 hover:to-teal-400 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-xs font-bold shadow-lg transition-all"
               >
                 {txLoading ? "Processing…" : "Confirm"}
               </button>

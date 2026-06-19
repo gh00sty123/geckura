@@ -1324,7 +1324,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
         hover:border-[#1cac64]/20 transition-all duration-500 card-hover"
     >
       {/* Banner */}
-      <div className="relative h-36 overflow-hidden bg-gradient-to-br from-[#f4fef0] to-[#ebfde3]">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-[#f4fef0] to-[#ebfde3]">
         {box.bannerUri ? (
           <img src={resolveIpfsUrl(box.bannerUri)} alt={box.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
