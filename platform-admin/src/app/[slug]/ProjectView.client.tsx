@@ -1356,7 +1356,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
         hover:border-[#1cac64]/20 transition-all duration-500 card-hover"
     >
       {/* Banner */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-[#f4fef0] to-[#ebfde3]">
+      <div className="relative h-[108px] w-full overflow-hidden bg-gradient-to-br from-[#f4fef0] to-[#ebfde3]">
         {box.bannerUri ? (
           <img src={resolveIpfsUrl(box.bannerUri)} alt={box.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
@@ -2447,7 +2447,7 @@ function Skeleton() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3].map(i => (
             <div key={i} className="rounded-2xl overflow-hidden border border-[#1cac64]/8">
-              <div className="h-36 skeleton" />
+              <div className="h-[108px] skeleton" />
               <div className="p-5 space-y-3">
                 <div className="h-5 w-40 skeleton rounded" />
                 <div className="h-3 w-full skeleton rounded" />

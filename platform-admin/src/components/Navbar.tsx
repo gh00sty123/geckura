@@ -506,15 +506,26 @@ export default function Navbar({
                 <div className="flex items-center justify-between pb-6 border-b border-[#1cac64]/10 mb-6">
                   <div className="flex items-center gap-2.5">
                     {branding.logoUrl ? (
-                      <img
-                        src={branding.logoUrl}
-                        alt={branding.name}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
+                      <>
+                        <img
+                          src={branding.logoUrl}
+                          alt={branding.name}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <span className="text-sm font-semibold text-white">{branding.name}</span>
+                      </>
+                    ) : slug !== "geckurabox" ? (
                       <span className="text-base font-bold text-white tracking-tight">{branding.name}</span>
+                    ) : (
+                      <>
+                        <img
+                          src="/geckura-logo.jpg"
+                          alt="Geckura"
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <span className="text-sm font-bold text-white">GeckuraBox</span>
+                      </>
                     )}
-                    <span className="text-sm font-semibold text-white">{branding.name}</span>
                   </div>
                   <button
                     onClick={() => setMobileMenuOpen(false)}

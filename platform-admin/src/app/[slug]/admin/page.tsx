@@ -882,7 +882,7 @@ function ProjectBoxGrid({
 
           return (
             <div key={b.pubkey} className="bg-[#c8edba]/60 border border-gray-700 rounded-xl overflow-hidden hover:border-gray-500 transition">
-              {b.bannerUri && <img src={b.bannerUri} alt="" className="h-36 w-full object-cover" />}
+              {b.bannerUri && <img src={b.bannerUri} alt="" className="h-[108px] w-full object-cover" />}
               <div className="p-5 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="min-w-0">
