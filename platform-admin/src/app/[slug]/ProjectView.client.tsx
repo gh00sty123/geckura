@@ -1657,8 +1657,8 @@ const handleOpen = useCallback(async () => {
       setPhase("signing"); setErrMsg(""); setWonRewards(null);
       const bigIntReplacer = (key: any, value: any) => 
         typeof value === 'bigint' ? value.toString() : value;
+      const conn = new Connection(RPC, "confirmed");
       try {
-        const conn = new Connection(RPC, "confirmed");
         const boxConfigPk = new PublicKey(box.pubkey);
 
         /* Fetch Project account to read fee_wallet and tenant (authority) addresses required by buy_box */
@@ -2019,7 +2019,13 @@ const handleOpen = useCallback(async () => {
     } catch (e: unknown) {
       console.log("[OpenBox Error]", e);
       if (e instanceof SendTransactionError) {
-        console.error("[OpenBox SendTransactionError Logs]", e.logs);
+        try {
+          const logs = await e.getLogs(conn);
+          Object.defineProperty(e, "logs", { value: logs, configurable: true, writable: true });
+          console.error("[OpenBox SendTransactionError Logs]", logs);
+        } catch (logErr) {
+          console.error("Failed to retrieve SendTransactionError logs:", logErr);
+        }
       } else if (e && typeof (e as any).getLogs === "function") {
         try {
           console.error("[OpenBox Error Logs]", (e as any).getLogs());

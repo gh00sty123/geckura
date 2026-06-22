@@ -202,6 +202,7 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
     const isActive = raw[offset] !== 0; offset += 1;
     const bump = raw[offset]; offset += 1;
     const rentClaimMode = raw[offset]; offset += 1;
+    const feeWallet2 = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
 
     let name = slug.value;
     let description = "";
@@ -232,6 +233,7 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
       slug: slug.value,
       authority,
       feeWallet,
+      feeWallet2,
       feeLamports: feeLamports.value,
       isActive,
       solRankingPoints: solRankingPointsVal,
@@ -431,13 +433,25 @@ export async function sendIx(
   tx.feePayer = wallet.publicKey;
   tx.recentBlockhash = (await retryWithBackoff(() => conn.getLatestBlockhash(), "getLatestBlockhash(sendIx)")).blockhash;
 
-  const signed = await wallet.signTransaction(tx as any);
-  const sig = await retryWithBackoff(() => conn.sendRawTransaction(
-    signed.serialize(),
-    { skipPreflight: false, preflightCommitment: "confirmed" },
-  ), "sendRawTransaction(sendIx)");
-  await retryWithBackoff(() => conn.confirmTransaction(sig, "confirmed"), "confirmTransaction(sendIx)");
-  return sig;
+  try {
+    const signed = await wallet.signTransaction(tx as any);
+    const sig = await retryWithBackoff(() => conn.sendRawTransaction(
+      signed.serialize(),
+      { skipPreflight: false, preflightCommitment: "confirmed" },
+    ), "sendRawTransaction(sendIx)");
+    await retryWithBackoff(() => conn.confirmTransaction(sig, "confirmed"), "confirmTransaction(sendIx)");
+    return sig;
+  } catch (err) {
+    if (err instanceof SendTransactionError) {
+      try {
+        const logs = await err.getLogs(conn);
+        (err as any).logs = logs;
+      } catch (logErr) {
+        console.error("Failed to retrieve SendTransactionError logs in sendIx:", logErr);
+      }
+    }
+    throw err;
+  }
 }
 
 export async function sendTx(
@@ -452,13 +466,25 @@ export async function sendTx(
   tx.feePayer = wallet.publicKey;
   tx.recentBlockhash = (await retryWithBackoff(() => conn.getLatestBlockhash(), "getLatestBlockhash(sendTx)")).blockhash;
 
-  const signed = await wallet.signTransaction(tx as any);
-  const sig = await retryWithBackoff(() => conn.sendRawTransaction(
-    signed.serialize(),
-    { skipPreflight: false, preflightCommitment: "confirmed" },
-  ), "sendRawTransaction(sendTx)");
-  await retryWithBackoff(() => conn.confirmTransaction(sig, "confirmed"), "confirmTransaction(sendTx)");
-  return sig;
+  try {
+    const signed = await wallet.signTransaction(tx as any);
+    const sig = await retryWithBackoff(() => conn.sendRawTransaction(
+      signed.serialize(),
+      { skipPreflight: false, preflightCommitment: "confirmed" },
+    ), "sendRawTransaction(sendTx)");
+    await retryWithBackoff(() => conn.confirmTransaction(sig, "confirmed"), "confirmTransaction(sendTx)");
+    return sig;
+  } catch (err) {
+    if (err instanceof SendTransactionError) {
+      try {
+        const logs = await err.getLogs(conn);
+        (err as any).logs = logs;
+      } catch (logErr) {
+        console.error("Failed to retrieve SendTransactionError logs in sendTx:", logErr);
+      }
+    }
+    throw err;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -527,7 +553,7 @@ export async function retryWithBackoff<T>(fn: () => Promise<T>, label = ""): Pro
 }
 
 /** Fetch all Project accounts by discriminator scan */
-export async function fetchProjects(): Promise<{ pubkey: string; name: string; slug: string; description: string; isActive: boolean; logoUri?: string; bgUri?: string; themeColor?: string; rentClaimMode?: number; solRankingPoints?: number; tokenRankingPoints?: number }[]> {
+export async function fetchProjects(): Promise<{ pubkey: string; name: string; slug: string; description: string; isActive: boolean; logoUri?: string; bgUri?: string; themeColor?: string; rentClaimMode?: number; solRankingPoints?: number; tokenRankingPoints?: number; feeWallet2?: string }[]> {
   const conn = buildConn();
   const result: any[] = [];
   const accounts = await retryWithBackoff(() => conn.getProgramAccounts(PROGRAM_ID), "getProgramAccounts(fetchProjects)");
@@ -566,6 +592,7 @@ export async function fetchProjects(): Promise<{ pubkey: string; name: string; s
         rentClaimMode: d.rentClaimMode ?? 0,
         solRankingPoints: d.solRankingPoints,
         tokenRankingPoints: d.tokenRankingPoints,
+        feeWallet2: d.feeWallet2?.toBase58?.() || String(d.feeWallet2),
       });
     } catch { /* not Project */ }
   }

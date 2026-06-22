@@ -287,8 +287,8 @@ export const useAppStore = create<AppUIState>((set, get) => ({
   buyBoxNow: async (box: LiveBox, wallet: WalletContextState) => {
     if (!wallet.publicKey) { toast.error("Connect wallet first"); return; }
     toast.loading("Purchasing box…", { id: "buy-box" });
+    const conn = makeConn();
     try {
-      const conn = makeConn();
       const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
       const boxConfigPk = new PublicKey(box.pubkey);
       const receiptPk = PublicKey.findProgramAddressSync(
@@ -350,6 +350,14 @@ export const useAppStore = create<AppUIState>((set, get) => ({
       toast.success("Box purchased!", { id: "buy-box" });
       get().refetch();
     } catch (e: any) {
+      if (e instanceof SendTransactionError) {
+        try {
+          const logs = await e.getLogs(conn);
+          Object.defineProperty(e, "logs", { value: logs, configurable: true, writable: true });
+        } catch (logErr) {
+          console.error("Failed to retrieve SendTransactionError logs in buyBoxNow:", logErr);
+        }
+      }
       toast.error(parseSolanaError(e), { id: "buy-box" });
     }
   },
@@ -358,8 +366,8 @@ export const useAppStore = create<AppUIState>((set, get) => ({
   openBoxNow: async (box: LiveBox, wallet: WalletContextState) => {
     if (!wallet.publicKey) { toast.error("Connect wallet first"); return; }
     toast.loading("Opening box…", { id: "open-box" });
+    const conn = makeConn();
     try {
-      const conn = makeConn();
       const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
       const boxConfigPk = new PublicKey(box.pubkey);
       const receiptPk  = PublicKey.findProgramAddressSync(
@@ -491,6 +499,14 @@ export const useAppStore = create<AppUIState>((set, get) => ({
       toast.success("Open request submitted! Awaiting automatic reveal...", { id: "open-box" });
       get().refetch();
     } catch (e: any) {
+      if (e instanceof SendTransactionError) {
+        try {
+          const logs = await e.getLogs(conn);
+          Object.defineProperty(e, "logs", { value: logs, configurable: true, writable: true });
+        } catch (logErr) {
+          console.error("Failed to retrieve SendTransactionError logs in openBoxNow:", logErr);
+        }
+      }
       toast.error(parseSolanaError(e), { id: "open-box" });
     }
   },

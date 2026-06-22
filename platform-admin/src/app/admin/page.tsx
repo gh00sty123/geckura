@@ -37,6 +37,7 @@ function Overview() {
   const [err, setErr] = useState<string | null>(null);
   const [editProjectSlug, setEditProjectSlug] = useState<string | null>(null);
   const [editFeeWallet, setEditFeeWallet] = useState<string>("");
+  const [editFeeWallet2, setEditFeeWallet2] = useState<string>("");
   const [editFeeLamports, setEditFeeLamports] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [rentInfoMap, setRentInfoMap] = useState<Record<string, ProjectRentInfo>>({});
@@ -98,6 +99,7 @@ function Overview() {
             return {
               ...p,
               feeWallet: decoded.feeWallet.toBase58(),
+              feeWallet2: decoded.feeWallet2.toBase58(),
               feeLamports: decoded.feeLamports,
               authority: decoded.authority.toBase58(),
               pubkey: projectPda.toBase58(),
@@ -162,12 +164,13 @@ function Overview() {
     setSaving(true);
     try {
       const feeWallet = new PublicKey(editFeeWallet);
+      const feeWallet2 = new PublicKey(editFeeWallet2);
       const feeSol = parseFloat(editFeeLamports);
       if (isNaN(feeSol) || feeSol < 0) {
         throw new Error("Fee must be a non-negative number");
       }
       const feeLamports = Math.round(feeSol * 1e9);
-      await updateProjectFeesTx(wallet, slug, feeWallet, feeLamports);
+      await updateProjectFeesTx(wallet, slug, feeWallet, feeWallet2, feeLamports);
       setEditProjectSlug(null);
       toast.success("Fees updated successfully!");
       await refresh();
@@ -176,7 +179,7 @@ function Overview() {
     } finally {
       setSaving(false);
     }
-  }, [wallet, editFeeWallet, editFeeLamports, refresh]);
+  }, [wallet, editFeeWallet, editFeeWallet2, editFeeLamports, refresh]);
 
   const handleSweepBox = useCallback(async (slug: string, box: SweepableBox) => {
     if (!wallet.publicKey) return;
@@ -470,6 +473,14 @@ function Overview() {
                               />
                             </div>
                             <div>
+                              <label className="text-[10px] text-[#3d6b4e] uppercase font-bold mb-1 block">Fee Wallet 2</label>
+                              <input
+                                value={editFeeWallet2}
+                                onChange={(e) => setEditFeeWallet2(e.target.value)}
+                                className="w-full bg-[#1cac64]/8 border border-[#1cac64]/15 rounded-lg px-3 py-1.5 text-xs font-mono text-[#0f2618] focus:outline-none focus:border-indigo-500 transition-colors"
+                              />
+                            </div>
+                            <div>
                               <label className="text-[10px] text-[#3d6b4e] uppercase font-bold mb-1 block">Fee per Box (SOL)</label>
                               <input
                                 type="number"
@@ -507,6 +518,12 @@ function Overview() {
                               <span className="text-[#3d6b4e]">Fee Wallet</span>
                               <span className="font-mono text-indigo-300 truncate w-32 text-right">{p.feeWallet.slice(0, 4)}…{p.feeWallet.slice(-4)}</span>
                             </div>
+                            {p.feeWallet2 && p.feeWallet2 !== "11111111111111111111111111111111" && (
+                              <div className="flex justify-between items-center text-xs">
+                                <span className="text-[#3d6b4e]">Fee Wallet 2</span>
+                                <span className="font-mono text-indigo-300 truncate w-32 text-right">{p.feeWallet2.slice(0, 4)}…{p.feeWallet2.slice(-4)}</span>
+                              </div>
+                            )}
                             <div className="flex justify-between items-center text-xs">
                               <span className="text-[#3d6b4e]">Platform Fee</span>
                               <span className="font-mono text-emerald-400 font-bold">{((p.feeLamports ?? 0) / 1e9).toFixed(5)} SOL</span>
@@ -609,6 +626,7 @@ function Overview() {
                                 onClick={() => {
                                   setEditProjectSlug(p.slug);
                                   setEditFeeWallet(p.feeWallet);
+                                  setEditFeeWallet2(p.feeWallet2 || "");
                                   setEditFeeLamports(((p.feeLamports ?? 0) / 1e9).toString());
                                 }}
                                 className="flex-1 py-1.5 rounded-lg bg-white/[0.05] border border-white/[0.05] text-xs font-medium text-[#1a3a2a] hover:text-[#0f2618] hover:bg-white/10 transition flex items-center justify-center gap-1"
