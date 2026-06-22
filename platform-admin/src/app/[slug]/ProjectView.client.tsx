@@ -1130,23 +1130,25 @@ export default function ProjectView({ slug }: { slug: string }) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 bg-[#111]/50 rounded-2xl p-1 border border-[#1cac64]/10 mx-auto max-w-xl">
+        <div className="flex gap-2 mb-8 bg-black/85 rounded-2xl p-1.5 border border-white/5 mx-auto max-w-xl shadow-lg">
           <button
             onClick={() => setActiveTab("active")}
-            className={`flex-1 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
+            style={activeTab === "active" ? { backgroundColor: themeColor || "#1cac64", color: "#ffffff" } : {}}
+            className={`flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 cursor-pointer ${
               activeTab === "active"
-                ? "bg-[#1cac64]/15 text-[#1cac64] border border-[#1cac64]/20"
-                : "text-[#3d6b4e] hover:text-[#2d5a3f] hover:bg-[#1cac64]/4"
+                ? "shadow-[0_2px_10px_rgba(28,172,100,0.25)]"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
             }`}
           >
             Active Packs ({activeBoxes.length})
           </button>
           <button
             onClick={() => setActiveTab("expired")}
-            className={`flex-1 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
+            style={activeTab === "expired" ? { backgroundColor: themeColor || "#1cac64", color: "#ffffff" } : {}}
+            className={`flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 cursor-pointer ${
               activeTab === "expired"
-                ? "bg-gray-500/10 text-[#2d5a3f] border border-gray-500/20"
-                : "text-[#3d6b4e] hover:text-[#2d5a3f] hover:bg-[#1cac64]/4"
+                ? "shadow-[0_2px_10px_rgba(28,172,100,0.25)]"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
             }`}
           >
             Expired Packs ({endedBoxes.length})
