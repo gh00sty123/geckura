@@ -128,11 +128,11 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const slug = searchParams.get("slug");
+    const db = readDb();
     if (!slug) {
-      return NextResponse.json({ error: "Missing slug parameter" }, { status: 400 });
+      return NextResponse.json(db);
     }
 
-    const db = readDb();
     const records = db.filter(r => r.slug === slug);
     return NextResponse.json(records);
   } catch (err: any) {

@@ -646,6 +646,7 @@ export default function ProjectView({ slug }: { slug: string }) {
                   decodedProject.navbarColor = parsed.navbarColor || "";
                   decodedProject.textColor = parsed.textColor || "";
                   decodedProject.nothingRewardImage = parsed.nothingRewardImage || "";
+                  decodedProject.twitterUsername = parsed.twitterUsername || "";
                 } catch {}
               }
             }
@@ -819,6 +820,7 @@ export default function ProjectView({ slug }: { slug: string }) {
         navbarColor: (project.navbarColor as string) || null,
         textColor: (project.textColor as string) || null,
         nothingRewardImage: resolveIpfsUrl((project.nothingRewardImage as string | null | undefined)) || null,
+        twitterUsername: (project.twitterUsername as string) || null,
       });
 
       // Set page title
@@ -2298,6 +2300,40 @@ const handleOpen = useCallback(async () => {
                   <span className="text-[10px]">↗</span>
                 </a>
               </motion.div>
+            )}
+
+            {/* Share on X Button */}
+            {wonRewards && wonRewards.length > 0 && (
+              <motion.button
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.45 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  const rewardNames = wonRewards.map(r => {
+                    const cleanAmount = r.amount > 0 ? r.amount.toFixed(2).replace(/\.00$/, '') : '';
+                    return `${r.isNFT ? '1x' : cleanAmount ? cleanAmount : ''} ${r.name}`;
+                  }).join(", ");
+                  const shareUrl = window.location.href;
+                  const twitterHandle = branding.twitterUsername || "";
+                  const tagText = twitterHandle ? `@${twitterHandle.replace('@', '')} ` : "";
+                  const rewardImg = wonRewards[0]?.image && wonRewards[0]?.image !== "🎁" ? resolveIpfsUrl(wonRewards[0].image) : "";
+                  
+                  let tweetText = `I just won ${rewardNames} in a mystery box drop by ${branding.name || slug} on Geckura! 🦎🎁\n\n`;
+                  if (rewardImg) {
+                    tweetText += `Reward image: ${rewardImg}\n`;
+                  }
+                  tweetText += `Open yours here: ${shareUrl}\n\n${tagText}#Solana #MysteryBox @geckura`;
+                  
+                  const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+                  window.open(intentUrl, "_blank", "noopener,noreferrer");
+                }}
+                className="w-full py-3 rounded-xl bg-[#1da1f2] hover:bg-[#1a91da] text-white text-sm font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(29,161,242,0.3)] transition-all cursor-pointer"
+              >
+                <span>Share on X</span>
+                <span className="text-base">𝕏</span>
+              </motion.button>
             )}
 
             <motion.button

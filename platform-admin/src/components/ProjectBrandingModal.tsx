@@ -31,6 +31,7 @@ export function ProjectBrandingModal({
   const [solRankingPoints, setSolRankingPoints] = useState(String(slugProj?.solRankingPoints ?? "2"));
   const [tokenRankingPoints, setTokenRankingPoints] = useState(String(slugProj?.tokenRankingPoints ?? "1"));
   const [nothingRewardImage, setNothingRewardImage] = useState(slugProj?.nothingRewardImage || "");
+  const [twitterUsername, setTwitterUsername] = useState(slugProj?.twitterUsername || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,6 +57,7 @@ export function ProjectBrandingModal({
         solRankingPoints: parseInt(solRankingPoints),
         tokenRankingPoints: parseInt(tokenRankingPoints),
         nothingRewardImage,
+        twitterUsername,
       });
       toast.success("Project branding updated successfully!", { id: "branding" });
       onRefresh();
@@ -115,6 +117,18 @@ export function ProjectBrandingModal({
               className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all resize-none h-24"
               placeholder="Describe your project..."
             />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Project Twitter (X) Username</label>
+            <input
+              type="text"
+              value={twitterUsername}
+              onChange={e => setTwitterUsername(e.target.value)}
+              className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
+              placeholder="e.g. project_x"
+            />
+            <p className="text-[10px] text-[#3d6b4e] mt-1">Leave blank or enter your project X username (without the @ symbol) for post-win tweet sharing tagging.</p>
           </div>
 
           <div>

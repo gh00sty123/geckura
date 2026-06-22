@@ -7,21 +7,49 @@ import {
 } from "react-icons/fi";
 import { LuSwords, LuSparkles } from "react-icons/lu";
 import type { PackItem } from "@/lib/mockData";
+import { NETWORK } from "@/lib/env";
+
+interface TickerItem {
+  text: string;
+  sig?: string;
+}
 
 /* ══════════════════════════════════════════
    Ticker — infinite scrolling wins
 ══════════════════════════════════════════ */
-function Ticker({ items }: { items: string[] }) {
+function Ticker({ items }: { items: TickerItem[] }) {
   const doubled = [...items, ...items];
+  const isMainnet = NETWORK.toLowerCase().includes("mainnet");
+  const clusterParam = isMainnet ? "" : "?cluster=devnet";
+
   return (
     <div className="overflow-hidden">
       <div className="ticker-anim flex gap-10 whitespace-nowrap text-sm text-[#2d5a3f]">
-        {doubled.map((t, i) => (
-          <span key={i} className="flex items-center gap-2">
-            <FiStar className="text-[#1cac64] text-xs" />
-            {t}
-          </span>
-        ))}
+        {doubled.map((t, i) => {
+          const content = (
+            <span className="flex items-center gap-2">
+              <FiStar className="text-[#1cac64] text-xs shrink-0" />
+              {t.text}
+            </span>
+          );
+
+          if (t.sig) {
+            return (
+              <a
+                key={i}
+                href={`https://solscan.io/tx/${t.sig}${clusterParam}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline hover:text-[#1cac64] transition-colors cursor-pointer"
+                title="Verify transaction on Solscan"
+              >
+                {content}
+              </a>
+            );
+          }
+
+          return <span key={i}>{content}</span>;
+        })}
       </div>
     </div>
   );
@@ -36,15 +64,49 @@ export default function Hero({
   onOpenPack: (packName: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [liveWins, setLiveWins] = useState<TickerItem[]>([]);
 
-  const wins = [
-    "0xWizard won a Mythic Diamond Ape",
-    "GeckoGuru won a Legendary Geckura #0842",
-    "NeonFiona won an Epic Toxic Reptile",
-    "LunaStack won a Rare Neon Claw",
-    "ByteBaron won a Mythic Sacred Hex",
-    "MoonKid won a Legendary Plasma Spine",
+  useEffect(() => {
+    async function fetchWins() {
+      try {
+        const res = await fetch("/api/leaderboard");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            const sorted = data.sort((a, b) => b.timestamp - a.timestamp);
+            const formatted: TickerItem[] = sorted.map((record: any) => {
+              const userShort = record.user ? `${record.user.slice(0, 4)}...${record.user.slice(-4)}` : "User";
+              const text = record.isSolBox 
+                ? `${userShort} won SOL in /${record.slug}!` 
+                : `${userShort} opened a box in /${record.slug}!`;
+              return {
+                text,
+                sig: record.sig
+              };
+            });
+            setLiveWins(formatted);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch leaderboard wins in Hero:", err);
+      }
+    }
+    fetchWins();
+    
+    const interval = setInterval(fetchWins, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fallbackWins: TickerItem[] = [
+    { text: "0xWizard won a Mythic Diamond Ape" },
+    { text: "GeckoGuru won a Legendary Geckura #0842" },
+    { text: "NeonFiona won an Epic Toxic Reptile" },
+    { text: "LunaStack won a Rare Neon Claw" },
+    { text: "ByteBaron won a Mythic Sacred Hex" },
+    { text: "MoonKid won a Legendary Plasma Spine" },
   ];
+
+  const winsToDisplay = liveWins.length > 0 ? [...liveWins, ...fallbackWins] : fallbackWins;
 
   return (
     <section
@@ -187,7 +249,7 @@ export default function Hero({
           transition={{ delay: 0.6, duration: 0.5 }}
           className="w-full max-w-3xl mx-auto rounded-2xl bg-white/40 backdrop-blur-md border border-[#1cac64]/10 px-4 py-3"
         >
-          <Ticker items={wins} />
+          <Ticker items={winsToDisplay} />
         </motion.div>
 
         {/* ── Scroll hint ── */}

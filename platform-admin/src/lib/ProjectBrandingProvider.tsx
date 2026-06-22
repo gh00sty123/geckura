@@ -9,9 +9,10 @@ export type ProjectBrandingValue = {
   navbarColor: string | null;
   textColor: string | null;
   nothingRewardImage?: string | null;
+  twitterUsername?: string | null;
 };
 
-const defaultBrand: ProjectBrandingValue = { name: "Geckura", logoUrl: null, themeColor: null, navbarColor: null, textColor: null, nothingRewardImage: null };
+const defaultBrand: ProjectBrandingValue = { name: "Geckura", logoUrl: null, themeColor: null, navbarColor: null, textColor: null, nothingRewardImage: null, twitterUsername: null };
 
 interface BrandingContextValue extends ProjectBrandingValue {
   setBranding(b: ProjectBrandingValue): void;
@@ -38,8 +39,8 @@ export function ProjectBrandingProvider({ children }: { children: ReactNode }) {
 
 /** Read the current brand anywhere inside the provider tree. */
 export function useProjectBranding(): ProjectBrandingValue {
-  const { name, logoUrl, themeColor, navbarColor, textColor } = useContext(ProjectBrandingContext);
-  return { name, logoUrl, themeColor, navbarColor, textColor };
+  const { name, logoUrl, themeColor, navbarColor, textColor, nothingRewardImage, twitterUsername } = useContext(ProjectBrandingContext);
+  return { name, logoUrl, themeColor, navbarColor, textColor, nothingRewardImage, twitterUsername };
 }
 
 /** Update the brand from a page, effect, or callback. */
