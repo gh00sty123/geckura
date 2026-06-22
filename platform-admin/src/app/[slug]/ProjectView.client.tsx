@@ -1804,67 +1804,90 @@ const handleOpen = useCallback(async () => {
         console.log("[OpenBox Debug] prizeItems:", JSON.stringify(prizeItems, bigIntReplacer, 2));
         console.log("[OpenBox Debug] uniquePrizeMints:", uniquePrizeMints);
         
-        // 1. Add buy_box instruction to initialize the receipt and take payment
-        const buyIx = buildIx("buy_box", {
-          platform:      { pubkey: platformPubkey,             isSigner: false, isWritable: true  },
-          project:       { pubkey: projectPubkey,              isSigner: false, isWritable: false },
-          box_config:    { pubkey: boxConfigPubkey,            isSigner: false, isWritable: true  },
-          receipt:       { pubkey: receiptPk,                  isSigner: false, isWritable: true  },
-          user:          { pubkey: wallet.publicKey,           isSigner: true,  isWritable: false },
-          fee_wallet:    { pubkey: feeWalletPk,                isSigner: false, isWritable: true  },
-          fee_wallet_2:  { pubkey: feeWallet2Pk,               isSigner: false, isWritable: true  },
-          tenant_wallet: { pubkey: tenantPk,                   isSigner: false, isWritable: true  },
-          system_program: { pubkey: SystemProgram.programId,   isSigner: false, isWritable: false },
-        }, [slug, Number(realBoxId), qty]);
-        tx.add(buyIx);
-
-        // 2. Add request_open instruction for the total quantity
-        const openIx = buildIx("request_open", {
-          platform:       { pubkey: platformPubkey,             isSigner: false, isWritable: false },
-          project:        { pubkey: projectPubkey,              isSigner: false, isWritable: false },
-          box_config:     { pubkey: boxConfigPubkey,            isSigner: false, isWritable: false },
-          receipt:        { pubkey: receiptPk,                  isSigner: false, isWritable: true  },
-          user:           { pubkey: wallet.publicKey,           isSigner: true,  isWritable: false },
-          system_program: { pubkey: SystemProgram.programId,   isSigner: false, isWritable: false },
-        }, [slug, Number(realBoxId), qty]);
-        tx.add(openIx);
-
-        tx.feePayer = wallet.publicKey;
-        const { blockhash } = await retryWithBackoff(
-          () => conn.getLatestBlockhash(),
-          "getLatestBlockhash",
-        ) as { blockhash: string };
-        tx.recentBlockhash = blockhash;
-
-      // Fetch starting BoxReceipt data to detect when totalOpened increments
-      let startingTotalOpened = 0;
-      try {
-        const receiptAcc = await conn.getAccountInfo(receiptPk);
-        if (receiptAcc) {
-          const accountCoder = new BorshAccountsCoder(IDL as any);
-          const decodedReceipt: any = accountCoder.decode("BoxReceipt", receiptAcc.data);
-          startingTotalOpened = decodedReceipt.totalOpened ?? decodedReceipt.total_opened ?? 0;
+        // Fetch starting BoxReceipt data to detect when totalOpened increments and check for pending reveals
+        let startingTotalOpened = 0;
+        let hasPendingReveal = false;
+        try {
+          const receiptAcc = await conn.getAccountInfo(receiptPk);
+          if (receiptAcc) {
+            const accountCoder = new BorshAccountsCoder(IDL as any);
+            const decodedReceipt: any = accountCoder.decode("BoxReceipt", receiptAcc.data);
+            startingTotalOpened = decodedReceipt.totalOpened ?? decodedReceipt.total_opened ?? 0;
+            const pendingOpens = decodedReceipt.pendingOpens ?? decodedReceipt.pending_opens ?? 0;
+            if (pendingOpens > 0) {
+              hasPendingReveal = true;
+              console.log(`[OpenBox] Found existing pending reveal with ${pendingOpens} boxes. Resuming reveal...`);
+            }
+          }
+        } catch (e) {
+          console.warn("[OpenBox] Could not fetch starting receipt:", e);
         }
-      } catch (e) {
-        console.warn("[OpenBox] Could not fetch starting receipt:", e);
-      }
 
-      setPhase("confirming");
-      setConfirmMessage("Submitting transaction to wallet...");
-      const signed = await wallet.signTransaction(tx);
-      setConfirmMessage("Broadcasting transaction to Solana...");
-      const sig = await retryWithBackoff(
-        () => conn.sendRawTransaction(signed.serialize(), { skipPreflight: false, preflightCommitment: "confirmed" }),
-        "sendRawTransaction",
-      );
-      setConfirmMessage("Confirming transaction on-chain...");
-      await retryWithBackoff(
-        () => conn.confirmTransaction(sig, "confirmed"),
-        "confirmTransaction",
-      );
+        let sig = "";
 
-      // Wait for the keeper to execute reveal_open on-chain
-      setConfirmMessage("Waiting for random reveal on-chain...");
+        if (!hasPendingReveal) {
+          // 1. Add buy_box instruction to initialize the receipt and take payment
+          const buyIx = buildIx("buy_box", {
+            platform:      { pubkey: platformPubkey,             isSigner: false, isWritable: true  },
+            project:       { pubkey: projectPubkey,              isSigner: false, isWritable: false },
+            box_config:    { pubkey: boxConfigPubkey,            isSigner: false, isWritable: true  },
+            receipt:       { pubkey: receiptPk,                  isSigner: false, isWritable: true  },
+            user:          { pubkey: wallet.publicKey,           isSigner: true,  isWritable: false },
+            fee_wallet:    { pubkey: feeWalletPk,                isSigner: false, isWritable: true  },
+            fee_wallet_2:  { pubkey: feeWallet2Pk,               isSigner: false, isWritable: true  },
+            tenant_wallet: { pubkey: tenantPk,                   isSigner: false, isWritable: true  },
+            system_program: { pubkey: SystemProgram.programId,   isSigner: false, isWritable: false },
+          }, [slug, Number(realBoxId), qty]);
+          tx.add(buyIx);
+
+          // 2. Add request_open instruction for the total quantity
+          const openIx = buildIx("request_open", {
+            platform:       { pubkey: platformPubkey,             isSigner: false, isWritable: false },
+            project:        { pubkey: projectPubkey,              isSigner: false, isWritable: false },
+            box_config:     { pubkey: boxConfigPubkey,            isSigner: false, isWritable: false },
+            receipt:        { pubkey: receiptPk,                  isSigner: false, isWritable: true  },
+            user:           { pubkey: wallet.publicKey,           isSigner: true,  isWritable: false },
+            system_program: { pubkey: SystemProgram.programId,   isSigner: false, isWritable: false },
+          }, [slug, Number(realBoxId), qty]);
+          tx.add(openIx);
+
+          tx.feePayer = wallet.publicKey;
+          const { blockhash } = await retryWithBackoff(
+            () => conn.getLatestBlockhash(),
+            "getLatestBlockhash",
+          ) as { blockhash: string };
+          tx.recentBlockhash = blockhash;
+
+          setPhase("confirming");
+          setConfirmMessage("Submitting transaction to wallet...");
+          const signed = await wallet.signTransaction(tx);
+          setConfirmMessage("Broadcasting transaction to Solana...");
+          sig = await retryWithBackoff(
+            () => conn.sendRawTransaction(signed.serialize(), { skipPreflight: false, preflightCommitment: "confirmed" }),
+            "sendRawTransaction",
+          );
+          setConfirmMessage("Confirming transaction on-chain...");
+          await retryWithBackoff(
+            () => conn.confirmTransaction(sig, "confirmed"),
+            "confirmTransaction",
+          );
+        } else {
+          // We have a pending reveal. Let's find the last transaction signature for the receipt
+          try {
+            const signatures = await conn.getSignaturesForAddress(receiptPk, { limit: 1 });
+            if (signatures.length > 0) {
+              sig = signatures[0].signature;
+            }
+          } catch (e) {
+            console.warn("[OpenBox] Could not fetch last signature for pending receipt:", e);
+          }
+          if (!sig) {
+            sig = "RESUMED_PENDING";
+          }
+        }
+
+        // Wait for the keeper to execute reveal_open on-chain
+        setConfirmMessage("Waiting for random reveal on-chain...");
 
       let logs: string[] = [];
       let revealSig = "";
@@ -2102,7 +2125,8 @@ const handleOpen = useCallback(async () => {
       console.log("[OpenBox] Setting wonRewards (JSON):", JSON.stringify(rewardsList, bigIntReplacer, 2));
       
       setWonRewards(rewardsList);
-      setTxSig(sig as string);
+      const finalSig = revealSig || sig;
+      setTxSig(finalSig);
 
       // Record leaderboard off-chain in background (do not block UI on failure)
       fetch("/api/leaderboard", {
@@ -2110,7 +2134,7 @@ const handleOpen = useCallback(async () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           slug,
-          sig: sig as string,
+          sig: finalSig,
           user: wallet.publicKey.toBase58(),
           boxConfig: boxConfigPubkey.toBase58(),
           isSolBox: isPaySol,
