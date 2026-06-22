@@ -894,7 +894,7 @@ export default function ProjectView({ slug }: { slug: string }) {
 
       // Set favicon dynamically
       if (logoUri) {
-        updateFavicon(logoUri);
+        updateFavicon(logoUri, (project.navbarColor as string) || null);
       }
     }
   }, [project, slug, setBranding]);

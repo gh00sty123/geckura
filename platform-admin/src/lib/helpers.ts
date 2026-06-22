@@ -134,9 +134,21 @@ export function resolveIpfsUrl(url: string | null | undefined): string {
   return trimmed;
 }
 
-export function updateFavicon(logoVal: string | null | undefined) {
+export function updateFavicon(logoVal: string | null | undefined, navbarColor?: string | null) {
   if (typeof window === "undefined") return;
   const resolvedLogo = logoVal ? resolveIpfsUrl(logoVal) : null;
+
+  // Update browser theme-color to match the navbar
+  if (navbarColor) {
+    let meta = document.querySelector("meta[name='theme-color']") as HTMLMetaElement;
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "theme-color";
+      document.head.appendChild(meta);
+    }
+    meta.content = navbarColor;
+  }
+
   if (!resolvedLogo) return;
 
   // Find all existing favicon link tags and remove them

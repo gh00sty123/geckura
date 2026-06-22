@@ -331,7 +331,7 @@ function Inner({ slug }: { slug: string }) {
 
     // Set favicon dynamically
     if (logoUrl) {
-      updateFavicon(logoUrl);
+      updateFavicon(logoUrl, slugProj?.navbarColor);
     }
   }, [slugProj, setProjectBranding, slug]);
 

@@ -74,7 +74,7 @@ export default function ProjectLeaderboardPage() {
           if (parsed.name) setProjectTitle(parsed.name);
           if (parsed.bgUri) setBgUri(parsed.bgUri);
           
-          updateFavicon(logoVal);
+          updateFavicon(logoVal, parsed.navbarColor || null);
           setBranding({
             name: nameVal,
             logoUrl: resolveIpfsUrl(logoVal) || null,
@@ -143,8 +143,7 @@ export default function ProjectLeaderboardPage() {
             setSolRankingPoints(proj?.solRankingPoints || 2);
             setTokenRankingPoints(proj?.tokenRankingPoints || 1);
             if (bgVal) setBgUri(bgVal);
-
-            updateFavicon(logoVal);
+            updateFavicon(logoVal, navColor || null);
             setBranding({
               name: nameVal,
               logoUrl: resolveIpfsUrl(logoVal) || null,
@@ -183,8 +182,7 @@ export default function ProjectLeaderboardPage() {
             }
             setProjectTitle(nameVal);
             if (bgVal) setBgUri(bgVal);
-
-            updateFavicon(logoVal);
+            updateFavicon(logoVal, navColor || null);
             setBranding({
               name: nameVal,
               logoUrl: resolveIpfsUrl(logoVal) || null,
@@ -225,7 +223,7 @@ export default function ProjectLeaderboardPage() {
           setProjectTitle(nameVal);
           if (bgVal) setBgUri(bgVal);
 
-          updateFavicon(logoVal);
+          updateFavicon(logoVal, navColor || null);
           setBranding({
             name: nameVal,
             logoUrl: resolveIpfsUrl(logoVal) || null,
