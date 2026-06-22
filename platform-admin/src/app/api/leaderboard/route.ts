@@ -1,69 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import crypto from "crypto";
 import IDL from "@/lib/idl.json";
+import { supabase } from "@/lib/supabase";
 
-const DB_PATH = path.join(process.cwd(), "src/lib/leaderboard_db.json");
 const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
-
-interface LeaderboardRecord {
-  slug: string;
-  sig: string;
-  user: string;
-  boxConfig: string;
-  timestamp: number;
-  isSolBox: boolean;
-}
-
-// Simple write lock to prevent concurrency race conditions
-let isWriting = false;
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-async function acquireWriteLock() {
-  while (isWriting) {
-    await delay(50);
-  }
-  isWriting = true;
-}
-
-function releaseWriteLock() {
-  isWriting = false;
-}
-
-// Read database records
-function readDb(): LeaderboardRecord[] {
-  try {
-    if (!fs.existsSync(DB_PATH)) {
-      return [];
-    }
-    const data = fs.readFileSync(DB_PATH, "utf8");
-    if (!data.trim()) return [];
-    return JSON.parse(data);
-  } catch (err) {
-    console.error("Error reading leaderboard database:", err);
-    return [];
-  }
-}
-
-// Write database records with lock
-async function writeDb(data: LeaderboardRecord[]) {
-  await acquireWriteLock();
-  try {
-    const dir = path.dirname(DB_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf8");
-  } catch (err) {
-    console.error("Error writing leaderboard database:", err);
-  } finally {
-    releaseWriteLock();
-  }
-}
 
 // Fetch project authority from Solana blockchain
 const getProjectAuthority = async (slug: string): Promise<string | null> => {
@@ -128,13 +71,32 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const slug = searchParams.get("slug");
-    const db = readDb();
-    if (!slug) {
-      return NextResponse.json(db);
+    
+    let query = supabase
+      .from("leaderboard")
+      .select("*")
+      .order("timestamp", { ascending: false });
+      
+    if (slug) {
+      query = query.eq("slug", slug);
     }
 
-    const records = db.filter(r => r.slug === slug);
-    return NextResponse.json(records);
+    const { data: records, error } = await query;
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // Map database columns to match client expected JSON schema (camelCase compatibility if needed, or keeping them original)
+    const formattedRecords = (records || []).map(r => ({
+      slug: r.slug,
+      sig: r.sig,
+      user: r.user,
+      boxConfig: r.box_config,
+      timestamp: Number(r.timestamp),
+      isSolBox: r.is_sol_box
+    }));
+
+    return NextResponse.json(formattedRecords);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -199,29 +161,32 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized: Signer is not the project authority" }, { status: 403 });
       }
       
-      const db = readDb();
-      let added = 0;
+      const recordsToInsert = [];
       for (const item of body) {
         const { slug: itemSlug, sig, user, boxConfig, isSolBox, timestamp: itemTimestamp } = item;
         if (itemSlug === slug && sig && user && boxConfig) {
-          const exists = db.some(r => r.sig === sig);
-          if (!exists) {
-            db.push({
-              slug,
-              sig,
-              user,
-              boxConfig,
-              timestamp: itemTimestamp || Math.floor(Date.now() / 1000),
-              isSolBox: !!isSolBox
-            });
-            added++;
-          }
+          recordsToInsert.push({
+            slug,
+            sig,
+            user,
+            box_config: boxConfig,
+            timestamp: itemTimestamp || Math.floor(Date.now() / 1000),
+            is_sol_box: !!isSolBox
+          });
         }
       }
-      if (added > 0) {
-        await writeDb(db);
+      
+      if (recordsToInsert.length > 0) {
+        const { error: upsertErr } = await supabase
+          .from("leaderboard")
+          .upsert(recordsToInsert, { onConflict: "sig", ignoreDuplicates: true });
+          
+        if (upsertErr) {
+          return NextResponse.json({ error: upsertErr.message }, { status: 500 });
+        }
       }
-      return NextResponse.json({ success: true, added });
+      
+      return NextResponse.json({ success: true, added: recordsToInsert.length });
     } else {
       // Single log record (from User purchase flow)
       const { slug, sig, user, boxConfig, isSolBox, timestamp } = body;
@@ -235,19 +200,21 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized: On-chain transaction verification failed" }, { status: 403 });
       }
 
-      const db = readDb();
-      const exists = db.some(r => r.sig === sig);
-      if (!exists) {
-        db.push({
+      const { error: upsertErr } = await supabase
+        .from("leaderboard")
+        .upsert({
           slug,
           sig,
           user,
-          boxConfig,
+          box_config: boxConfig,
           timestamp: timestamp || Math.floor(Date.now() / 1000),
-          isSolBox: !!isSolBox
-        });
-        await writeDb(db);
+          is_sol_box: !!isSolBox
+        }, { onConflict: "sig", ignoreDuplicates: true });
+
+      if (upsertErr) {
+        return NextResponse.json({ error: upsertErr.message }, { status: 500 });
       }
+
       return NextResponse.json({ success: true });
     }
   } catch (err: any) {

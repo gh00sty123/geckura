@@ -518,24 +518,85 @@ export const updateProjectBrandingTx = async (
     twitterLink?: string;
   }
 ) => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(
-      `project_branding_${params.slug}`,
-      JSON.stringify({
-        name: params.name,
-        logoUri: params.logoUri,
-        bgUri: params.bgUri,
-        description: params.description,
-        themeColor: params.themeColor,
-        navbarColor: params.navbarColor || "",
-        textColor: params.textColor || "",
-        nothingRewardImage: params.nothingRewardImage || "",
-        solRankingPoints: params.solRankingPoints,
-        tokenRankingPoints: params.tokenRankingPoints,
-        twitterUsername: params.twitterUsername || "",
-        twitterLink: params.twitterLink || "",
-      })
-    );
+  if (!wallet.publicKey || !wallet.signMessage) {
+    throw new Error("Wallet must be connected and support message signing.");
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const messageStr = `Update branding for ${params.slug} at ${timestamp}`;
+  const messageBytes = new TextEncoder().encode(messageStr);
+  const signatureBytes = await wallet.signMessage(messageBytes);
+  const signatureB64 = Buffer.from(signatureBytes).toString("base64");
+
+  const res = await fetch("/api/branding", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Branding-Signature": signatureB64,
+      "X-Branding-Signer": wallet.publicKey.toBase58(),
+      "X-Branding-Timestamp": String(timestamp),
+    },
+    body: JSON.stringify({
+      slug: params.slug,
+      name: params.name,
+      logoUri: params.logoUri,
+      bgUri: params.bgUri,
+      description: params.description,
+      themeColor: params.themeColor,
+      navbarColor: params.navbarColor || "",
+      textColor: params.textColor || "",
+      nothingRewardImage: params.nothingRewardImage || "",
+      twitterUsername: params.twitterUsername || "",
+      twitterLink: params.twitterLink || "",
+    }),
+  });
+
+  if (!res.ok) {
+    const errJson = await res.json().catch(() => ({}));
+    throw new Error(errJson.error || `Server responded with status ${res.status}`);
+  }
+};
+
+export const updateBoxBrandingTx = async (
+  wallet: WalletState,
+  params: {
+    slug: string;
+    boxId: number;
+    name: string;
+    description: string;
+    bannerUri: string;
+  }
+) => {
+  if (!wallet.publicKey || !wallet.signMessage) {
+    throw new Error("Wallet must be connected and support message signing.");
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const messageStr = `Update box branding for ${params.slug} box ${params.boxId} at ${timestamp}`;
+  const messageBytes = new TextEncoder().encode(messageStr);
+  const signatureBytes = await wallet.signMessage(messageBytes);
+  const signatureB64 = Buffer.from(signatureBytes).toString("base64");
+
+  const res = await fetch("/api/branding/box", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Branding-Signature": signatureB64,
+      "X-Branding-Signer": wallet.publicKey.toBase58(),
+      "X-Branding-Timestamp": String(timestamp),
+    },
+    body: JSON.stringify({
+      slug: params.slug,
+      boxId: params.boxId,
+      name: params.name,
+      description: params.description,
+      bannerUri: params.bannerUri,
+    }),
+  });
+
+  if (!res.ok) {
+    const errJson = await res.json().catch(() => ({}));
+    throw new Error(errJson.error || `Server responded with status ${res.status}`);
   }
 };
 

@@ -1091,6 +1091,19 @@ function EditModal({
         endTime:   datetimeLocalToUnix(endStr),
       });
 
+      try {
+        const { updateBoxBrandingTx } = await import("@/lib/actions");
+        await updateBoxBrandingTx(wallet, {
+          slug,
+          boxId: id,
+          name: name.trim(),
+          description: desc.trim(),
+          bannerUri: banner.trim(),
+        });
+      } catch (err) {
+        console.error("Failed to update box branding in Supabase:", err);
+      }
+
       if (typeof window !== "undefined") {
         localStorage.setItem(
           `box_branding_${slug}_${id}`,
@@ -1606,6 +1619,19 @@ function CreateBoxModal({
         prizes: prizesParams,
       });
       toast.success(`Box "${name.trim()}" created successfully with rewards!`);
+
+      try {
+        const { updateBoxBrandingTx } = await import("@/lib/actions");
+        await updateBoxBrandingTx(wallet, {
+          slug,
+          boxId: nextId,
+          name: name.trim(),
+          description: desc.trim(),
+          bannerUri: banner.trim(),
+        });
+      } catch (err) {
+        console.error("Failed to update box branding in Supabase:", err);
+      }
 
       if (typeof window !== "undefined") {
         localStorage.setItem(

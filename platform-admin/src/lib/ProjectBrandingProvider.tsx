@@ -1,5 +1,4 @@
 "use client";
-
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 
 export type ProjectBrandingValue = {
@@ -11,9 +10,22 @@ export type ProjectBrandingValue = {
   nothingRewardImage?: string | null;
   twitterUsername?: string | null;
   twitterLink?: string | null;
+  magicEdenLink?: string | null;
+  discordLink?: string | null;
 };
 
-const defaultBrand: ProjectBrandingValue = { name: "Geckura", logoUrl: null, themeColor: null, navbarColor: null, textColor: null, nothingRewardImage: null, twitterUsername: null, twitterLink: null };
+const defaultBrand: ProjectBrandingValue = {
+  name: "Geckura",
+  logoUrl: null,
+  themeColor: null,
+  navbarColor: null,
+  textColor: null,
+  nothingRewardImage: null,
+  twitterUsername: null,
+  twitterLink: null,
+  magicEdenLink: null,
+  discordLink: null
+};
 
 interface BrandingContextValue extends ProjectBrandingValue {
   setBranding(b: ProjectBrandingValue): void;
@@ -40,8 +52,30 @@ export function ProjectBrandingProvider({ children }: { children: ReactNode }) {
 
 /** Read the current brand anywhere inside the provider tree. */
 export function useProjectBranding(): ProjectBrandingValue {
-  const { name, logoUrl, themeColor, navbarColor, textColor, nothingRewardImage, twitterUsername, twitterLink } = useContext(ProjectBrandingContext);
-  return { name, logoUrl, themeColor, navbarColor, textColor, nothingRewardImage, twitterUsername, twitterLink };
+  const {
+    name,
+    logoUrl,
+    themeColor,
+    navbarColor,
+    textColor,
+    nothingRewardImage,
+    twitterUsername,
+    twitterLink,
+    magicEdenLink,
+    discordLink
+  } = useContext(ProjectBrandingContext);
+  return {
+    name,
+    logoUrl,
+    themeColor,
+    navbarColor,
+    textColor,
+    nothingRewardImage,
+    twitterUsername,
+    twitterLink,
+    magicEdenLink,
+    discordLink
+  };
 }
 
 /** Update the brand from a page, effect, or callback. */

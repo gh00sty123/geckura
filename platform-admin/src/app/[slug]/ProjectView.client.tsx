@@ -612,6 +612,20 @@ export default function ProjectView({ slug }: { slug: string }) {
     setLoading(true);
     setProgressMsg("Retrieving authority settings...");
     try {
+      // 1. Fetch branding from Supabase via API route
+      let supabaseBranding: any = null;
+      try {
+        const res = await fetch(`/api/branding?slug=${slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.project) {
+            supabaseBranding = data.project;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch Supabase branding:", err);
+      }
+
       const conn = new Connection(RPC, "confirmed");
       const [projectPDA] = PublicKey.findProgramAddressSync(
         [Buffer.from("project"), Buffer.from(slug)], PGID,
@@ -634,7 +648,20 @@ export default function ProjectView({ slug }: { slug: string }) {
             decodedProject.bgUri = decodedProject.bgUri || "";
             decodedProject.themeColor = decodedProject.themeColor || "";
 
-            if (typeof window !== "undefined") {
+            if (supabaseBranding) {
+              decodedProject.name = decodedProject.name || supabaseBranding.name || "";
+              decodedProject.description = decodedProject.description || supabaseBranding.description || "";
+              decodedProject.logoUri = decodedProject.logoUri || supabaseBranding.logo_uri || "";
+              decodedProject.bgUri = decodedProject.bgUri || supabaseBranding.bg_uri || "";
+              decodedProject.themeColor = decodedProject.themeColor || supabaseBranding.theme_color || "";
+              decodedProject.navbarColor = supabaseBranding.navbar_color || "";
+              decodedProject.textColor = supabaseBranding.text_color || "";
+              decodedProject.nothingRewardImage = supabaseBranding.nothing_reward_image || "";
+              decodedProject.twitterUsername = supabaseBranding.twitter_username || "";
+              decodedProject.magicEdenLink = supabaseBranding.magic_eden_link || "";
+              decodedProject.discordLink = supabaseBranding.discord_link || "";
+              decodedProject.twitterLink = supabaseBranding.twitter_link || "";
+            } else if (typeof window !== "undefined") {
               const localBranding = localStorage.getItem(`project_branding_${slug}`);
               if (localBranding) {
                 try {
@@ -661,7 +688,20 @@ export default function ProjectView({ slug }: { slug: string }) {
         } catch (e) { 
           console.warn("[ProjectView] Failed to decode Project account:", e);
           const fallback: any = { name: slug };
-          if (typeof window !== "undefined") {
+          if (supabaseBranding) {
+            fallback.name = supabaseBranding.name || fallback.name;
+            fallback.description = supabaseBranding.description || "";
+            fallback.logoUri = supabaseBranding.logo_uri || "";
+            fallback.bgUri = supabaseBranding.bg_uri || "";
+            fallback.themeColor = supabaseBranding.theme_color || "";
+            fallback.navbarColor = supabaseBranding.navbar_color || "";
+            fallback.textColor = supabaseBranding.text_color || "";
+            fallback.nothingRewardImage = supabaseBranding.nothing_reward_image || "";
+            fallback.twitterUsername = supabaseBranding.twitter_username || "";
+            fallback.magicEdenLink = supabaseBranding.magic_eden_link || "";
+            fallback.discordLink = supabaseBranding.discord_link || "";
+            fallback.twitterLink = supabaseBranding.twitter_link || "";
+          } else if (typeof window !== "undefined") {
             const localBranding = localStorage.getItem(`project_branding_${slug}`);
             if (localBranding) {
               try {
@@ -674,7 +714,20 @@ export default function ProjectView({ slug }: { slug: string }) {
         }
       } else {
         const fallback: any = { name: slug };
-        if (typeof window !== "undefined") {
+        if (supabaseBranding) {
+          fallback.name = supabaseBranding.name || fallback.name;
+          fallback.description = supabaseBranding.description || "";
+          fallback.logoUri = supabaseBranding.logo_uri || "";
+          fallback.bgUri = supabaseBranding.bg_uri || "";
+          fallback.themeColor = supabaseBranding.theme_color || "";
+          fallback.navbarColor = supabaseBranding.navbar_color || "";
+          fallback.textColor = supabaseBranding.text_color || "";
+          fallback.nothingRewardImage = supabaseBranding.nothing_reward_image || "";
+          fallback.twitterUsername = supabaseBranding.twitter_username || "";
+          fallback.magicEdenLink = supabaseBranding.magic_eden_link || "";
+          fallback.discordLink = supabaseBranding.discord_link || "";
+          fallback.twitterLink = supabaseBranding.twitter_link || "";
+        } else if (typeof window !== "undefined") {
           const localBranding = localStorage.getItem(`project_branding_${slug}`);
           if (localBranding) {
             try {
@@ -699,7 +752,13 @@ export default function ProjectView({ slug }: { slug: string }) {
             let boxName = `Box #${boxId}`;
             let boxDesc = "Mystery box from the Geckura ecosystem.";
             let boxBanner = null;
-            if (typeof window !== "undefined") {
+
+            const sbBox = supabaseBranding?.boxes?.find((bx: any) => bx.box_id === boxId);
+            if (sbBox) {
+              boxName = sbBox.name || boxName;
+              boxDesc = sbBox.description || boxDesc;
+              boxBanner = sbBox.banner_uri || boxBanner;
+            } else if (typeof window !== "undefined") {
               const localBox = localStorage.getItem(`box_branding_${slug}_${boxId}`);
               if (localBox) {
                 try {
