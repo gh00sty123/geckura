@@ -1563,6 +1563,7 @@ function OpenBoxModal({ box, slug, onClose, vaultAssets, tokenMetaMap, project }
   const [phase, setPhase]   = useState<"select" | "signing" | "confirming" | "success" | "error">("select");
   const [txSig, setTxSig]   = useState("");
   const [errMsg, setErrMsg] = useState("");
+  const [confirmMessage, setConfirmMessage] = useState("Transaction submitted. Confirming on Solana…");
   const hasSetSuccess = useRef(false); // Track if we've set success state
   const wonRewardsRef = useRef<any[] | null>(null); // REF to store wonRewards permanently!
   const [wonRewardsState, setWonRewardsState] = useState<Array<{
@@ -1835,164 +1836,223 @@ const handleOpen = useCallback(async () => {
         ) as { blockhash: string };
         tx.recentBlockhash = blockhash;
 
+      // Fetch starting BoxReceipt data to detect when totalOpened increments
+      let startingTotalOpened = 0;
+      try {
+        const receiptAcc = await conn.getAccountInfo(receiptPk);
+        if (receiptAcc) {
+          const accountCoder = new BorshAccountsCoder(IDL as any);
+          const decodedReceipt: any = accountCoder.decode("BoxReceipt", receiptAcc.data);
+          startingTotalOpened = decodedReceipt.totalOpened ?? decodedReceipt.total_opened ?? 0;
+        }
+      } catch (e) {
+        console.warn("[OpenBox] Could not fetch starting receipt:", e);
+      }
+
       setPhase("confirming");
+      setConfirmMessage("Submitting transaction to wallet...");
       const signed = await wallet.signTransaction(tx);
+      setConfirmMessage("Broadcasting transaction to Solana...");
       const sig = await retryWithBackoff(
         () => conn.sendRawTransaction(signed.serialize(), { skipPreflight: false, preflightCommitment: "confirmed" }),
         "sendRawTransaction",
       );
+      setConfirmMessage("Confirming transaction on-chain...");
       await retryWithBackoff(
         () => conn.confirmTransaction(sig, "confirmed"),
         "confirmTransaction",
       );
 
-      // Wait a brief moment and fetch full tx logs to parse Anchor events
-      let txDetails: any = null;
-      for (let attempt = 0; attempt < 5; attempt++) {
+      // Wait for the keeper to execute reveal_open on-chain
+      setConfirmMessage("Waiting for random reveal on-chain...");
+      
+      let revealSig = "";
+      const startTime = Date.now();
+      const timeoutMs = 45000; // 45 seconds timeout
+      let revealed = false;
+
+      while (Date.now() - startTime < timeoutMs) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
         try {
-          txDetails = await conn.getTransaction(sig as string, {
-            commitment: "confirmed",
-            maxSupportedTransactionVersion: 0
-          });
-          if (txDetails) break;
-        } catch {}
-          await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-
-      const logs = txDetails?.meta?.logMessages || [];
-      const eventCoder = new BorshEventCoder(IDL as any);
-      const fullCoder = new BorshCoder(IDL as any);
-
-      let parsedEvents: any[] = [];
-      try {
-        const parser = new EventParser(PGID, fullCoder);
-        parsedEvents = Array.from(parser.parseLogs(logs))
-          .filter(e => e.name === "BoxOpenEvent")
-          .map(e => e.data);
-      } catch (err) {
-        console.warn("EventParser failed, trying manual fallback:", err);
-      }
-
-      if (parsedEvents.length === 0) {
-        for (const log of logs) {
-          if (log.includes("Program data:")) {
-            try {
-              const dataIndex = log.indexOf("Program data:");
-              const eventLog = log.slice(dataIndex);
-              const ev = eventCoder.decode(eventLog);
-              if (ev && ev.name === "BoxOpenEvent") {
-                parsedEvents.push(ev.data);
-              }
-            } catch {}
+          const receiptAcc = await conn.getAccountInfo(receiptPk);
+          if (receiptAcc) {
+            const accountCoder = new BorshAccountsCoder(IDL as any);
+            const decodedReceipt: any = accountCoder.decode("BoxReceipt", receiptAcc.data);
+            const currentTotalOpened = decodedReceipt.totalOpened ?? decodedReceipt.total_opened ?? 0;
+            const pendingOpens = decodedReceipt.pendingOpens ?? decodedReceipt.pending_opens ?? 0;
+            
+            console.log(`[OpenBox Polling] pendingOpens: ${pendingOpens}, totalOpened: ${currentTotalOpened}`);
+            
+            if (pendingOpens === 0 && currentTotalOpened > startingTotalOpened) {
+              revealed = true;
+              break;
+            }
           }
+        } catch (e) {
+          console.warn("[OpenBox Polling] Error checking receipt:", e);
         }
       }
 
-      console.log("[MysteryBox] txLogs:", logs);
-      console.log("[MysteryBox] parsedEvents count:", parsedEvents.length);
-      console.log("[MysteryBox] parsedEvents:", JSON.stringify(parsedEvents, bigIntReplacer, 2));
-
       const rewardsList: any[] = [];
-      for (const wonEvent of parsedEvents) {
-        console.log("[MysteryBox] Processing wonEvent:", JSON.stringify(wonEvent, bigIntReplacer, 2));
-        const wonVal = wonEvent.won ?? wonEvent.Won;
-        if (wonVal) {
-          const pType = wonEvent.prize_type ?? wonEvent.prizeType;
-          let isSol = false;
-          let isNft = false;
-          let isToken = false;
-          
-          if (typeof pType === 'number') {
-            isSol = pType === 0;
-            isToken = pType === 1;
-            isNft = pType === 2;
-          } else if (pType && typeof pType === 'object') {
-            const keys = Object.keys(pType).map(k => k.toLowerCase());
-            isSol = keys.includes('sol');
-            isToken = keys.includes('spltoken') || keys.includes('token');
-            isNft = keys.includes('nft');
-          }
 
-          const amountWonRaw = wonEvent.amount_won ?? wonEvent.amountWon;
-          console.log("[OpenBox] amountWonRaw:", amountWonRaw);
-          
-          let amountWon: number;
-          if (typeof amountWonRaw === 'string' && /^[0-9a-fA-F]+$/.test(amountWonRaw)) {
-            // It's a hex string! Parse as little-endian hex to number!
-            amountWon = parseInt(amountWonRaw, 16);
-          } else if (amountWonRaw?.toNumber) {
-            amountWon = amountWonRaw.toNumber();
-          } else {
-            amountWon = Number(amountWonRaw ?? 0);
-          }
-          
-          console.log("[OpenBox] amountWon:", amountWon);
-          
-          const tokenMintRaw = wonEvent.token_mint ?? wonEvent.tokenMint;
-          const mintStr = tokenMintRaw?.toBase58?.() ?? "";
-          
-          if (isSol) {
-            const solReward = {
-              name: amountWon <= 0 ? "Nothing" : "Solana (SOL)",
-              amount: amountWon / 1e9,
-              image: amountWon <= 0 ? "🎁" : "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
-              isSol: true,
-              isNFT: false,
-              symbol: "SOL"
-            };
-            console.log("[OpenBox] Pushing SOL reward to rewardsList:", solReward);
-            rewardsList.push(solReward);
-          } else {
-            const matchingAsset = vaultAssets.find(a => a.mint === mintStr);
-            if (matchingAsset) {
-              rewardsList.push({
-                name: matchingAsset.name,
-                amount: amountWon / Math.pow(10, matchingAsset.decimals),
-                image: matchingAsset.image || "🎁",
-                isNFT: matchingAsset.isNFT || isNft,
-                isSol: false,
-                symbol: matchingAsset.symbol || matchingAsset.name.slice(0, 5).toUpperCase()
-              });
-            } else {
-              let fetchedMeta: Partial<AssetInfo> = {};
+      if (!revealed) {
+        console.warn("[OpenBox] Polling timed out. Falling back to default success state.");
+      } else {
+        // Fetch the latest transaction for the receipt PDA to extract logs
+        try {
+          setConfirmMessage("Fetching box reward details...");
+          const signatures = await conn.getSignaturesForAddress(receiptPk, { limit: 1 });
+          if (signatures.length > 0) {
+            revealSig = signatures[0].signature;
+            console.log("[OpenBox] Found reveal transaction signature:", revealSig);
+            
+            let revealTxDetails: any = null;
+            for (let attempt = 0; attempt < 5; attempt++) {
               try {
-                fetchedMeta = await fetchAssetMetadata(mintStr, RPC);
+                revealTxDetails = await conn.getTransaction(revealSig, {
+                  commitment: "confirmed",
+                  maxSupportedTransactionVersion: 0
+                });
+                if (revealTxDetails) break;
+              } catch {}
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            if (revealTxDetails) {
+              const logs = revealTxDetails.meta?.logMessages || [];
+              const eventCoder = new BorshEventCoder(IDL as any);
+              const fullCoder = new BorshCoder(IDL as any);
+              
+              let parsedEvents: any[] = [];
+              try {
+                const parser = new EventParser(PGID, fullCoder);
+                parsedEvents = Array.from(parser.parseLogs(logs))
+                  .filter(e => e.name === "BoxOpenEvent")
+                  .map(e => e.data);
               } catch (err) {
-                console.warn("Failed to fetch individual asset metadata:", err);
+                console.warn("EventParser failed, trying manual fallback:", err);
               }
               
-              const name = fetchedMeta.name || (isNft ? `NFT (${mintStr.slice(0, 4)}…${mintStr.slice(-4)})` : mintStr.startsWith("EPjF") ? "USDC" : `Token (${mintStr.slice(0, 4)}…${mintStr.slice(-4)})`);
-              const decimals = fetchedMeta.decimals ?? (mintStr.startsWith("EPjF") ? 6 : 9);
-              const isAssetNFT = fetchedMeta.isNFT ?? isNft;
-              const image = fetchedMeta.image || (mintStr.startsWith("EPjF")
-                ? "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2xzybapC8G4wEGGkZwyTDt1v/logo.png"
-                : "🎁");
-              const symbol = fetchedMeta.symbol || (mintStr.startsWith("EPjF") ? "USDC" : name.slice(0, 5).toUpperCase());
-                
-              rewardsList.push({
-                name,
-                amount: amountWon / Math.pow(10, decimals),
-                image,
-                isNFT: isAssetNFT,
-                isSol: false,
-                symbol
-              });
+              if (parsedEvents.length === 0) {
+                for (const log of logs) {
+                  if (log.includes("Program data:")) {
+                    try {
+                      const dataIndex = log.indexOf("Program data:");
+                      const eventLog = log.slice(dataIndex);
+                      const ev = eventCoder.decode(eventLog);
+                      if (ev && ev.name === "BoxOpenEvent") {
+                        parsedEvents.push(ev.data);
+                      }
+                    } catch {}
+                  }
+                }
+              }
+              
+              console.log("[OpenBox] Parsed reveal events:", parsedEvents);
+              
+              for (const wonEvent of parsedEvents) {
+                console.log("[MysteryBox] Processing wonEvent:", JSON.stringify(wonEvent, bigIntReplacer, 2));
+                const wonVal = wonEvent.won ?? wonEvent.Won;
+                if (wonVal) {
+                  const pType = wonEvent.prize_type ?? wonEvent.prizeType;
+                  let isSol = false;
+                  let isNft = false;
+                  let isToken = false;
+                  
+                  if (typeof pType === 'number') {
+                    isSol = pType === 0;
+                    isToken = pType === 1;
+                    isNft = pType === 2;
+                  } else if (pType && typeof pType === 'object') {
+                    const keys = Object.keys(pType).map(k => k.toLowerCase());
+                    isSol = keys.includes('sol');
+                    isToken = keys.includes('spltoken') || keys.includes('token');
+                    isNft = keys.includes('nft');
+                  }
+                  
+                  const amountWonRaw = wonEvent.amount_won ?? wonEvent.amountWon;
+                  console.log("[OpenBox] amountWonRaw:", amountWonRaw);
+                  
+                  let amountWon: number;
+                  if (typeof amountWonRaw === 'string' && /^[0-9a-fA-F]+$/.test(amountWonRaw)) {
+                    amountWon = parseInt(amountWonRaw, 16);
+                  } else if (amountWonRaw?.toNumber) {
+                    amountWon = amountWonRaw.toNumber();
+                  } else {
+                    amountWon = Number(amountWonRaw ?? 0);
+                  }
+                  
+                  console.log("[OpenBox] amountWon:", amountWon);
+                  
+                  const tokenMintRaw = wonEvent.token_mint ?? wonEvent.tokenMint;
+                  const mintStr = tokenMintRaw?.toBase58?.() ?? "";
+                  
+                  if (isSol) {
+                    const solReward = {
+                      name: amountWon <= 0 ? "Nothing" : "Solana (SOL)",
+                      amount: amountWon / 1e9,
+                      image: amountWon <= 0 ? "🎁" : "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+                      isSol: true,
+                      isNFT: false,
+                      symbol: "SOL"
+                    };
+                    rewardsList.push(solReward);
+                  } else {
+                    const matchingAsset = vaultAssets.find(a => a.mint === mintStr);
+                    if (matchingAsset) {
+                      rewardsList.push({
+                        name: matchingAsset.name,
+                        amount: amountWon / Math.pow(10, matchingAsset.decimals),
+                        image: matchingAsset.image || "🎁",
+                        isNFT: matchingAsset.isNFT || isNft,
+                        isSol: false,
+                        symbol: matchingAsset.symbol || matchingAsset.name.slice(0, 5).toUpperCase()
+                      });
+                    } else {
+                      let fetchedMeta: Partial<AssetInfo> = {};
+                      try {
+                        fetchedMeta = await fetchAssetMetadata(mintStr, RPC);
+                      } catch (err) {
+                        console.warn("Failed to fetch individual asset metadata:", err);
+                      }
+                      
+                      const name = fetchedMeta.name || (isNft ? `NFT (${mintStr.slice(0, 4)}…${mintStr.slice(-4)})` : mintStr.startsWith("EPjF") ? "USDC" : `Token (${mintStr.slice(0, 4)}…${mintStr.slice(-4)})`);
+                      const decimals = fetchedMeta.decimals ?? (mintStr.startsWith("EPjF") ? 6 : 9);
+                      const isAssetNFT = fetchedMeta.isNFT ?? isNft;
+                      const image = fetchedMeta.image || (mintStr.startsWith("EPjF")
+                        ? "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2xzybapC8G4wEGGkZwyTDt1v/logo.png"
+                        : "🎁");
+                      const symbol = fetchedMeta.symbol || (mintStr.startsWith("EPjF") ? "USDC" : name.slice(0, 5).toUpperCase());
+                      
+                      rewardsList.push({
+                        name,
+                        amount: amountWon / Math.pow(10, decimals),
+                        image,
+                        isNFT: isAssetNFT,
+                        isSol: false,
+                        symbol
+                      });
+                    }
+                  }
+                } else {
+                  rewardsList.push({
+                    name: "Better luck next time!",
+                    amount: 0,
+                    image: "🎁",
+                    isSol: false,
+                    isNFT: false
+                  });
+                }
+              }
             }
           }
-        } else {
-          rewardsList.push({
-            name: "Better luck next time!",
-            amount: 0,
-            image: "🎁",
-            isSol: false,
-            isNFT: false
-          });
+        } catch (e) {
+          console.error("[OpenBox] Failed to fetch won rewards details:", e);
         }
       }
 
       console.log("[OpenBox] Setting wonRewards (JSON):", JSON.stringify(rewardsList, bigIntReplacer, 2));
       
-      // Set wonRewards first, no flushSync
       setWonRewards(rewardsList);
       setTxSig(sig as string);
 
@@ -2286,7 +2346,7 @@ const handleOpen = useCallback(async () => {
               <p className="text-xs text-[#3d6b4e] mt-2 max-w-xs">
                 {phase === "signing"
                   ? "Please approve the transaction in your wallet."
-                  : "Transaction submitted. Confirming on Solana…"}
+                  : confirmMessage}
               </p>
             </div>
 
