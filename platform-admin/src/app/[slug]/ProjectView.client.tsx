@@ -1865,90 +1865,139 @@ const handleOpen = useCallback(async () => {
 
       // Wait for the keeper to execute reveal_open on-chain
       setConfirmMessage("Waiting for random reveal on-chain...");
-      
+
+      let logs: string[] = [];
       let revealSig = "";
-      const startTime = Date.now();
-      const timeoutMs = 45000; // 45 seconds timeout
       let revealed = false;
 
-      while (Date.now() - startTime < timeoutMs) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        try {
-          const receiptAcc = await conn.getAccountInfo(receiptPk);
-          if (receiptAcc) {
-            const accountCoder = new BorshAccountsCoder(IDL as any);
-            const decodedReceipt: any = accountCoder.decode("BoxReceipt", receiptAcc.data);
-            const currentTotalOpened = decodedReceipt.totalOpened ?? decodedReceipt.total_opened ?? 0;
-            const pendingOpens = decodedReceipt.pendingOpens ?? decodedReceipt.pending_opens ?? 0;
-            
-            console.log(`[OpenBox Polling] pendingOpens: ${pendingOpens}, totalOpened: ${currentTotalOpened}`);
-            
-            if (pendingOpens === 0 && currentTotalOpened > startingTotalOpened) {
-              revealed = true;
-              break;
+      // Try calling the serverless reveal API first
+      try {
+        console.log("[OpenBox] Invoking serverless reveal API /api/reveal...");
+        const response = await fetch("/api/reveal", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            slug,
+            boxId: Number(realBoxId),
+            receipt: receiptPk.toBase58()
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            console.log("[OpenBox] Serverless reveal succeeded:", result);
+            if (result.logs) {
+              logs = result.logs;
             }
+            if (result.signature) {
+              revealSig = result.signature;
+            }
+            revealed = true;
+          } else {
+            console.warn("[OpenBox] Serverless reveal API returned failure status:", result);
           }
-        } catch (e) {
-          console.warn("[OpenBox Polling] Error checking receipt:", e);
+        } else {
+          console.warn("[OpenBox] Serverless reveal API HTTP error:", response.status, response.statusText);
+        }
+      } catch (apiErr) {
+        console.error("[OpenBox] Error invoking serverless reveal API:", apiErr);
+      }
+
+      // If serverless reveal did not succeed, run the client-side polling fallback
+      if (!revealed) {
+        console.log("[OpenBox] Falling back to on-chain polling loop...");
+        const startTime = Date.now();
+        const timeoutMs = 45000; // 45 seconds timeout
+
+        while (Date.now() - startTime < timeoutMs) {
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          try {
+            const receiptAcc = await conn.getAccountInfo(receiptPk);
+            if (receiptAcc) {
+              const accountCoder = new BorshAccountsCoder(IDL as any);
+              const decodedReceipt: any = accountCoder.decode("BoxReceipt", receiptAcc.data);
+              const currentTotalOpened = decodedReceipt.totalOpened ?? decodedReceipt.total_opened ?? 0;
+              const pendingOpens = decodedReceipt.pendingOpens ?? decodedReceipt.pending_opens ?? 0;
+              
+              console.log(`[OpenBox Polling] pendingOpens: ${pendingOpens}, totalOpened: ${currentTotalOpened}`);
+              
+              if (pendingOpens === 0 && currentTotalOpened > startingTotalOpened) {
+                revealed = true;
+                break;
+              }
+            }
+          } catch (e) {
+            console.warn("[OpenBox Polling] Error checking receipt:", e);
+          }
         }
       }
 
       const rewardsList: any[] = [];
 
       if (!revealed) {
-        console.warn("[OpenBox] Polling timed out. Falling back to default success state.");
+        console.warn("[OpenBox] Polling/Reveal timed out. Falling back to default success state.");
       } else {
-        // Fetch the latest transaction for the receipt PDA to extract logs
+        // If we don't have logs yet (because we polled on-chain), fetch the latest transaction details
+        if (logs.length === 0) {
+          try {
+            setConfirmMessage("Fetching box reward details...");
+            const signatures = await conn.getSignaturesForAddress(receiptPk, { limit: 1 });
+            if (signatures.length > 0) {
+              revealSig = signatures[0].signature;
+              console.log("[OpenBox] Found reveal transaction signature:", revealSig);
+              
+              let revealTxDetails: any = null;
+              for (let attempt = 0; attempt < 5; attempt++) {
+                try {
+                  revealTxDetails = await conn.getTransaction(revealSig, {
+                    commitment: "confirmed",
+                    maxSupportedTransactionVersion: 0
+                  });
+                  if (revealTxDetails) break;
+                } catch {}
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+              if (revealTxDetails?.meta) {
+                logs = revealTxDetails.meta.logMessages || [];
+              }
+            }
+          } catch (e) {
+            console.error("[OpenBox] Failed to fetch reveal transaction logs:", e);
+          }
+        }
+
         try {
-          setConfirmMessage("Fetching box reward details...");
-          const signatures = await conn.getSignaturesForAddress(receiptPk, { limit: 1 });
-          if (signatures.length > 0) {
-            revealSig = signatures[0].signature;
-            console.log("[OpenBox] Found reveal transaction signature:", revealSig);
+          if (logs.length > 0) {
+            const eventCoder = new BorshEventCoder(IDL as any);
+            const fullCoder = new BorshCoder(IDL as any);
             
-            let revealTxDetails: any = null;
-            for (let attempt = 0; attempt < 5; attempt++) {
-              try {
-                revealTxDetails = await conn.getTransaction(revealSig, {
-                  commitment: "confirmed",
-                  maxSupportedTransactionVersion: 0
-                });
-                if (revealTxDetails) break;
-              } catch {}
-              await new Promise(resolve => setTimeout(resolve, 1000));
+            let parsedEvents: any[] = [];
+            try {
+              const parser = new EventParser(PGID, fullCoder);
+              parsedEvents = Array.from(parser.parseLogs(logs))
+                .filter(e => e.name === "BoxOpenEvent")
+                .map(e => e.data);
+            } catch (err) {
+              console.warn("EventParser failed, trying manual fallback:", err);
             }
             
-            if (revealTxDetails) {
-              const logs = revealTxDetails.meta?.logMessages || [];
-              const eventCoder = new BorshEventCoder(IDL as any);
-              const fullCoder = new BorshCoder(IDL as any);
-              
-              let parsedEvents: any[] = [];
-              try {
-                const parser = new EventParser(PGID, fullCoder);
-                parsedEvents = Array.from(parser.parseLogs(logs))
-                  .filter(e => e.name === "BoxOpenEvent")
-                  .map(e => e.data);
-              } catch (err) {
-                console.warn("EventParser failed, trying manual fallback:", err);
-              }
-              
-              if (parsedEvents.length === 0) {
-                for (const log of logs) {
-                  if (log.includes("Program data:")) {
-                    try {
-                      const dataIndex = log.indexOf("Program data:");
-                      const eventLog = log.slice(dataIndex);
-                      const ev = eventCoder.decode(eventLog);
-                      if (ev && ev.name === "BoxOpenEvent") {
-                        parsedEvents.push(ev.data);
-                      }
-                    } catch {}
-                  }
+            if (parsedEvents.length === 0) {
+              for (const log of logs) {
+                if (log.includes("Program data:")) {
+                  try {
+                    const dataIndex = log.indexOf("Program data:");
+                    const eventLog = log.slice(dataIndex);
+                    const ev = eventCoder.decode(eventLog);
+                    if (ev && ev.name === "BoxOpenEvent") {
+                      parsedEvents.push(ev.data);
+                    }
+                  } catch {}
                 }
               }
-              
-              console.log("[OpenBox] Parsed reveal events:", parsedEvents);
+            }
+            
+            console.log("[OpenBox] Parsed reveal events:", parsedEvents);
               
               for (const wonEvent of parsedEvents) {
                 console.log("[MysteryBox] Processing wonEvent:", JSON.stringify(wonEvent, bigIntReplacer, 2));
@@ -2043,7 +2092,6 @@ const handleOpen = useCallback(async () => {
                     isNFT: false
                   });
                 }
-              }
             }
           }
         } catch (e) {
