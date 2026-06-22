@@ -1,5 +1,13 @@
 "use client";
 
+import { Buffer } from "buffer";
+if (typeof window !== "undefined" && !window.Buffer) {
+  window.Buffer = Buffer;
+}
+if (typeof globalThis !== "undefined" && !globalThis.Buffer) {
+  globalThis.Buffer = Buffer;
+}
+
 import { useCallback, useEffect, useState, useMemo, useRef, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -1788,7 +1796,7 @@ const handleOpen = useCallback(async () => {
         // Pre-create user ATAs for ALL possible prize mints
         for (const mintStr of uniquePrizeMints) {
           const mint = new PublicKey(mintStr);
-          const userAta = getAssociatedTokenAddressSync(mint, wallet.publicKey);
+          const userAta = getAssociatedTokenAddressSync(mint, wallet.publicKey, true);
           const userAtaInfo = await conn.getAccountInfo(userAta);
           if (!userAtaInfo) {
             console.log(`[OpenBox] User ATA for ${mintStr.slice(0, 8)}… does not exist, adding create instruction...`);

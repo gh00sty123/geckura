@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Buffer } from "buffer";
+if (typeof globalThis !== "undefined" && !globalThis.Buffer) {
+  globalThis.Buffer = Buffer;
+}
 import { Connection, Keypair, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
@@ -179,11 +183,13 @@ export async function POST(req: NextRequest) {
     for (const prize of boxPrizes) {
       const idx = prize.index;
       if (idx < 20) {
-        const claimed = boxConfig.claimedPrizes[idx];
-        const rem = prize.totalCount - claimed;
+        const claimed = (boxConfig.claimedPrizes ?? boxConfig.claimed_prizes)?.[idx] ?? 0;
+        const totalCount = prize.totalCount ?? prize.total_count ?? 0;
+        const winPercentage = prize.winPercentage ?? prize.win_percentage ?? 0;
+        const rem = totalCount - claimed;
         if (rem > 0) {
-          totalWeight += BigInt(prize.winPercentage);
-          if (prize.winPercentage === 100) {
+          totalWeight += BigInt(winPercentage);
+          if (winPercentage === 100) {
             guaranteedPrize = prize;
           }
         }
@@ -199,10 +205,12 @@ export async function POST(req: NextRequest) {
       for (const prize of boxPrizes) {
         const idx = prize.index;
         if (idx < 20) {
-          const claimed = boxConfig.claimedPrizes[idx];
-          const rem = prize.totalCount - claimed;
+          const claimed = (boxConfig.claimedPrizes ?? boxConfig.claimed_prizes)?.[idx] ?? 0;
+          const totalCount = prize.totalCount ?? prize.total_count ?? 0;
+          const winPercentage = prize.winPercentage ?? prize.win_percentage ?? 0;
+          const rem = totalCount - claimed;
           if (rem > 0) {
-            cumulative += BigInt(prize.winPercentage);
+            cumulative += BigInt(winPercentage);
             if (prizeRoll < cumulative) {
               isWinner = true;
               wonPrize = prize;
@@ -230,11 +238,20 @@ export async function POST(req: NextRequest) {
         else if (prizeTypeRaw === 2) prizeType = "nft";
       }
 
+      console.log("[RevealAPI] Checking prizeType:", prizeType);
       if (prizeType === "spltoken" || prizeType === "nft") {
-        const mint = wonPrize.tokenMint ?? wonPrize.token_mint;
-        vaultTokenAccount = getAssociatedTokenAddressSync(mint, vaultPda, true);
-        userTokenAccount = getAssociatedTokenAddressSync(mint, new PublicKey(decodedReceipt.user));
-        tokenProgram = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+        const mintRaw = wonPrize.tokenMint ?? wonPrize.token_mint;
+        if (mintRaw) {
+          const mintPk = new PublicKey(mintRaw);
+          const vaultPk = new PublicKey(vaultPda);
+          const userPk = new PublicKey(decodedReceipt.user);
+          console.log("[RevealAPI] Debug tokenMint/token_mint:", mintPk.toBase58());
+          console.log("[RevealAPI] Debug vaultPda:", vaultPk.toBase58());
+          console.log("[RevealAPI] Debug user:", userPk.toBase58());
+          vaultTokenAccount = getAssociatedTokenAddressSync(mintPk, vaultPk, true);
+          userTokenAccount = getAssociatedTokenAddressSync(mintPk, userPk, true);
+          tokenProgram = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+        }
       }
     }
 
@@ -311,7 +328,7 @@ export async function POST(req: NextRequest) {
       logs
     });
   } catch (err: any) {
-    console.error("[RevealAPI] Error processing reveal_open:", err);
-    return NextResponse.json({ error: err.message || String(err) }, { status: 500 });
+    console.log("[RevealAPI] Error processing reveal_open stack:", err.stack || err);
+    return NextResponse.json({ error: err.message || String(err), stack: err.stack }, { status: 500 });
   }
 }
