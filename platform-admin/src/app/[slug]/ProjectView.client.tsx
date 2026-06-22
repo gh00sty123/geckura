@@ -1880,6 +1880,8 @@ const handleOpen = useCallback(async () => {
             "confirmTransaction",
           );
         } else {
+          setPhase("confirming");
+          setConfirmMessage("Resuming pending box opening...");
           // We have a pending reveal. Let's find the last transaction signature for the receipt
           try {
             const signatures = await conn.getSignaturesForAddress(receiptPk, { limit: 1 });
