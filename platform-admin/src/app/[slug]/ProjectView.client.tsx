@@ -1420,7 +1420,6 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
             <span className="text-5xl opacity-20 group-hover:opacity-30 transition-opacity duration-500">🎁</span>
           </div>
         )}
-        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#111]/80 to-transparent" />
 
         {/* Status badge */}
         <div className="absolute top-3 left-3">
@@ -1457,17 +1456,17 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
 
       {/* Content */}
       <div className="flex-1 p-5 flex flex-col">
-        <h3 className="text-base font-bold text-[#0f2618] leading-snug group-hover:text-[#1cac64] transition-colors duration-300">
+        <h3 className="text-base font-bold text-white leading-snug group-hover:text-[#1cac64] transition-colors duration-300">
           {box.name || `Pack #${box.boxId}`}
         </h3>
         {box.description && (
-          <p className="text-xs text-[#3d6b4e] mt-1 line-clamp-2 leading-relaxed">{box.description}</p>
+          <p className="text-xs text-[#a3d9b7] mt-1 line-clamp-2 leading-relaxed">{box.description}</p>
         )}
 
         {/* Progress bar */}
         <div className="mt-4">
           <div className="flex justify-between text-[11px] mb-1.5">
-            <span className="text-[#3d6b4e]">{sold} / {sup} opened</span>
+            <span className="text-[#a3d9b7]/80">{sold} / {sup} opened</span>
             <span className={`font-mono font-semibold ${remaining <= 10 && active ? "text-amber-400" : remaining === 0 ? "text-red-400" : "text-[#1cac64]"}`}>
               {remaining > 0 ? `${remaining} left` : "Sold out"}
             </span>
@@ -1487,13 +1486,13 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
           {/* Accepted payment tokens */}
           {payOptions.length > 0 && (
             <div className="flex-1">
-              <p className="text-[9px] text-[#3d6b4e] font-bold uppercase tracking-wider mb-1">Accepted Currencies</p>
+              <p className="text-[9px] text-[#a3d9b7]/80 font-bold uppercase tracking-wider mb-1">Accepted Currencies</p>
               <div className="flex flex-wrap gap-1.5">
                 {payOptions.map((opt, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 bg-[#1cac64]/3 border border-[#1cac64]/10 rounded-xl px-2 py-0.5 hover:border-[#1cac64]/30 hover:bg-[#1cac64]/5 transition duration-300">
+                  <div key={idx} className="flex items-center gap-1.5 bg-[#1cac64]/10 border border-[#1cac64]/20 rounded-xl px-2 py-0.5 hover:border-[#1cac64]/40 hover:bg-[#1cac64]/20 transition duration-300">
                     <img src={resolveIpfsUrl(opt.image)} alt={opt.symbol} className="h-3 w-3 object-contain rounded-full border border-[#1cac64]/12" />
-                    <span className="text-[9px] font-mono font-bold text-[#1a3a2a]">
-                      {(opt.price / Math.pow(10, opt.decimals)).toFixed(2)} <span className="text-[#3d6b4e] font-sans font-normal">{opt.symbol}</span>
+                    <span className="text-[9px] font-mono font-bold text-white">
+                      {(opt.price / Math.pow(10, opt.decimals)).toFixed(2)} <span className="text-[#a3d9b7] font-sans font-normal">{opt.symbol}</span>
                     </span>
                   </div>
                 ))}
@@ -1504,7 +1503,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
           {/* CTA Button */}
           <div>
             {!connected ? (
-              <span className="text-[10px] text-[#3d6b4e] bg-[#1cac64]/4 border border-[#1cac64]/10 px-3 py-2 rounded-xl whitespace-nowrap">
+              <span className="text-[10px] text-[#a3d9b7] bg-[#1cac64]/10 border border-[#1cac64]/20 px-3 py-2 rounded-xl whitespace-nowrap">
                 Connect wallet
               </span>
             ) : active && remaining > 0 && hasStarted ? (
