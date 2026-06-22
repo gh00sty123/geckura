@@ -12,7 +12,7 @@ import { useSetProjectBranding, useProjectBranding } from "@/lib/ProjectBranding
 import { TwitterXIcon } from "@/components/SocialIcons";
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction, createTransferInstruction } from "@solana/spl-token";
 import toast from "react-hot-toast";
-import { resolveIpfsUrl } from "@/lib/helpers";
+import { resolveIpfsUrl, updateFavicon } from "@/lib/helpers";
 import { BorshAccountsCoder, BorshCoder, BorshEventCoder, EventParser } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
 
@@ -894,13 +894,7 @@ export default function ProjectView({ slug }: { slug: string }) {
 
       // Set favicon dynamically
       if (logoUri) {
-        let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
-        if (!link) {
-          link = document.createElement("link");
-          link.rel = "shortcut icon";
-          document.getElementsByTagName("head")[0].appendChild(link);
-        }
-        link.href = logoUri;
+        updateFavicon(logoUri);
       }
     }
   }, [project, slug, setBranding]);

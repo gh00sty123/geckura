@@ -9,7 +9,7 @@ import { FiAward, FiClock, FiShield, FiTrendingUp, FiUser, FiActivity } from "re
 import Link from "next/link";
 import { retryWithBackoff, fetchProjects, PROGRAM_ID as PGID } from "@/lib/program-ix";
 import IDL from "@/lib/idl.json";
-import { resolveIpfsUrl } from "@/lib/helpers";
+import { resolveIpfsUrl, updateFavicon } from "@/lib/helpers";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import { useSetProjectBranding } from "@/lib/ProjectBrandingProvider";
 
@@ -57,18 +57,7 @@ export default function ProjectLeaderboardPage() {
     return `${pubkey.slice(0, 4)}…${pubkey.slice(-4)}`;
   };
 
-  const updateFavicon = (logoVal: string) => {
-    const resolvedLogo = resolveIpfsUrl(logoVal);
-    if (resolvedLogo && typeof window !== "undefined") {
-      let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement("link");
-        link.rel = "shortcut icon";
-        document.getElementsByTagName("head")[0].appendChild(link);
-      }
-      link.href = resolvedLogo;
-    }
-  };
+
 
   // Check branding from localStorage immediately on mount
   useEffect(() => {

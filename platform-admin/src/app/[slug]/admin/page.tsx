@@ -12,7 +12,7 @@ import { useSetProjectBranding } from "@/lib/ProjectBrandingProvider";
 import toast from "react-hot-toast";
 import { ImageUpload } from "@/components/ImageUpload";
 import { ProjectBrandingModal } from "@/components/ProjectBrandingModal";
-import { resolveIpfsUrl } from "@/lib/helpers";
+import { resolveIpfsUrl, updateFavicon } from "@/lib/helpers";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
 import { NETWORK } from "@/lib/env";
@@ -331,13 +331,7 @@ function Inner({ slug }: { slug: string }) {
 
     // Set favicon dynamically
     if (logoUrl) {
-      let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement("link");
-        link.rel = "shortcut icon";
-        document.getElementsByTagName("head")[0].appendChild(link);
-      }
-      link.href = logoUrl;
+      updateFavicon(logoUrl);
     }
   }, [slugProj, setProjectBranding, slug]);
 
@@ -403,12 +397,39 @@ function Inner({ slug }: { slug: string }) {
       const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
       const [pk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
 
+      // Fetch branding from Supabase via API route
+      let supabaseBranding: any = null;
+      try {
+        const res = await fetch(`/api/branding?slug=${slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.project) {
+            supabaseBranding = data.project;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch Supabase branding:", err);
+      }
+
       const acc = await retryWithBackoff(() => conn.getAccountInfo(pk), "getAccountInfo(project)");
       if (acc) {
         try {
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           const decoded = decodeAccount<any>("Project", acc.data);
-          if (typeof window !== "undefined" && decoded.slug) {
+          if (supabaseBranding) {
+            decoded.name = decoded.name || supabaseBranding.name || "";
+            decoded.description = decoded.description || supabaseBranding.description || "";
+            decoded.logoUri = decoded.logoUri || supabaseBranding.logo_uri || "";
+            decoded.bgUri = decoded.bgUri || supabaseBranding.bg_uri || "";
+            decoded.themeColor = decoded.themeColor || supabaseBranding.theme_color || "";
+            decoded.navbarColor = supabaseBranding.navbar_color || "";
+            decoded.textColor = supabaseBranding.text_color || "";
+            decoded.nothingRewardImage = supabaseBranding.nothing_reward_image || "";
+            decoded.twitterUsername = supabaseBranding.twitter_username || "";
+            decoded.magicEdenLink = supabaseBranding.magic_eden_link || "";
+            decoded.discordLink = supabaseBranding.discord_link || "";
+            decoded.twitterLink = supabaseBranding.twitter_link || "";
+          } else if (typeof window !== "undefined" && decoded.slug) {
             const localBranding = localStorage.getItem(`project_branding_${decoded.slug}`);
             if (localBranding) {
               try {
@@ -442,7 +463,15 @@ function Inner({ slug }: { slug: string }) {
             let boxName = `Box #${boxId}`;
             let boxDesc = "";
             let boxBanner = null;
-            if (typeof window !== "undefined") {
+
+            if (supabaseBranding && supabaseBranding.boxes) {
+              const sbBox = supabaseBranding.boxes.find((bx: any) => bx.box_id === boxId);
+              if (sbBox) {
+                boxName = sbBox.name || boxName;
+                boxDesc = sbBox.description || "";
+                boxBanner = sbBox.banner_uri || null;
+              }
+            } else if (typeof window !== "undefined") {
               const localBox = localStorage.getItem(`box_branding_${slug}_${boxId}`);
               if (localBox) {
                 try {

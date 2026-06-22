@@ -133,3 +133,21 @@ export function resolveIpfsUrl(url: string | null | undefined): string {
   }
   return trimmed;
 }
+
+export function updateFavicon(logoVal: string | null | undefined) {
+  if (typeof window === "undefined") return;
+  const resolvedLogo = logoVal ? resolveIpfsUrl(logoVal) : null;
+  if (!resolvedLogo) return;
+
+  // Find all existing favicon link tags and remove them
+  const existingLinks = document.querySelectorAll("link[rel*='icon']");
+  existingLinks.forEach(el => el.remove());
+
+  // Create a brand new favicon link tag to force the browser to update
+  const link = document.createElement("link");
+  link.rel = "icon";
+  link.type = resolvedLogo.endsWith(".ico") ? "image/x-icon" : "image/png";
+  link.href = resolvedLogo;
+  document.head.appendChild(link);
+}
+
