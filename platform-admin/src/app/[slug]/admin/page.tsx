@@ -15,6 +15,7 @@ import { ProjectBrandingModal } from "@/components/ProjectBrandingModal";
 import { resolveIpfsUrl } from "@/lib/helpers";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
+import { NETWORK } from "@/lib/env";
 
 const TREASURY_WALLET = new PublicKey("FBPFAtDxCwPEKb5kUp779TdFQU3hyPmfjT2LwtrkKscq");
 
@@ -996,9 +997,10 @@ function EditModal({
   const [err, setErr]          = useState("");
 
   const tokenOptions = useMemo(() => {
+    const isMainnet = NETWORK.toLowerCase().includes("mainnet");
     const opts = [
       { value: "SOL", label: "Solana (SOL)" },
-      { value: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", label: "USDC (Devnet)" },
+      { value: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", label: `USDC (${isMainnet ? "Mainnet" : "Devnet"})` },
     ];
     const seen = new Set(opts.map(o => o.value));
     walletAssets.filter(t => !t.isNFT).forEach(t => {
@@ -1373,9 +1375,10 @@ function CreateBoxModal({
   const nextPayId = useMemo(() => (payOpts.length > 0 ? Math.max(...payOpts.map(p => p.id)) + 1 : 0), [payOpts]);
 
   const tokenOptions = useMemo(() => {
+    const isMainnet = NETWORK.toLowerCase().includes("mainnet");
     const opts = [
       { value: "SOL", label: "◎ Solana (SOL)" },
-      { value: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", label: "💲 USDC (Devnet)" },
+      { value: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", label: `💲 USDC (${isMainnet ? "Mainnet" : "Devnet"})` },
     ];
     const seen = new Set(opts.map(o => o.value));
     walletAssets.filter((t: any) => !t.isNFT).forEach((t: any) => {
@@ -2744,7 +2747,7 @@ function VaultManager({
         {/* Footer */}
         <div className="px-6 py-4 border-t border-[#1cac64]/15 bg-[#ebfde3]/40 flex justify-between items-center">
           <span className="text-[10px] text-[#3d6b4e]">
-            Secure administrative control over Devnet. CPI and Native withdrawals allowed.
+            Secure administrative control over {NETWORK.toLowerCase().includes("mainnet") ? "Mainnet" : "Devnet"}. CPI and Native withdrawals allowed.
           </span>
           <button 
             onClick={onClose} 

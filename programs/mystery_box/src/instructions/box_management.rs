@@ -163,10 +163,14 @@ pub fn close_box(ctx: Context<CloseBox>, _slug: String, _box_id: u64) -> Result<
     let now = clock.unix_timestamp;
 
     let signer_key = ctx.accounts.signer.key();
-    require!(
-        signer_key == project.authority || signer_key == platform.authority,
-        MysteryBoxError::Unauthorized
-    );
+    crate::state::validate_close_authority(
+        signer_key,
+        project.authority,
+        platform.authority,
+        project.rent_claim_mode,
+        platform.treasury,
+        ctx.accounts.rent_destination.key(),
+    )?;
 
     require!(
         box_config.status == BoxStatus::Ended || now > box_config.end_time,
@@ -175,21 +179,6 @@ pub fn close_box(ctx: Context<CloseBox>, _slug: String, _box_id: u64) -> Result<
     require!(
         box_config.sold == box_config.total_opened,
         MysteryBoxError::BoxHasPendingReceipts
-    );
-
-    let expected_dest = if signer_key == project.authority {
-        project.authority
-    } else {
-        if project.rent_claim_mode == 1 {
-            platform.treasury
-        } else {
-            project.authority
-        }
-    };
-    require_keys_eq!(
-        ctx.accounts.rent_destination.key(),
-        expected_dest,
-        MysteryBoxError::Unauthorized
     );
 
     Ok(())

@@ -1,5 +1,6 @@
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { buildIx, sendIx, sendTx, platformPDA, projectPDA, boxPDA, vaultPDA, ixCloseBox, ixClosePrizeItem, ixCloseProject, PROGRAM_ID, buildConn, retryWithBackoff, decodeAccount } from "@/lib/program-ix";
+import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { WalletContextState } from "@solana/wallet-adapter-react";
 
 // Constants for token and associated token programs
@@ -454,6 +455,22 @@ export const withdrawVaultTokenTx = async (
     ATA_PROG
   )[0];
 
+  const conn = buildConn();
+  const tx = new Transaction();
+
+  // Create authority ATA if not exists
+  const signerAtaInfo = await conn.getAccountInfo(signerAta);
+  if (!signerAtaInfo) {
+    tx.add(
+      createAssociatedTokenAccountInstruction(
+        wallet.publicKey!,
+        signerAta,
+        wallet.publicKey!,
+        params.tokenMint
+      )
+    );
+  }
+
   const ix = buildIx("withdraw_vault_token", {
     project: { pubkey: projectPda, isSigner: false, isWritable: false },
     vault: { pubkey: vaultPda, isSigner: false, isWritable: true },
@@ -468,9 +485,9 @@ export const withdrawVaultTokenTx = async (
     params.slug,
     params.amount
   ]);
+  tx.add(ix);
 
-
-  await sendIx(ix, wallet);
+  await sendTx(tx, wallet);
 };
 
 export const closeVaultTokenAccountTx = async (

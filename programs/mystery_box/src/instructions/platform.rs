@@ -160,13 +160,9 @@ pub fn close_project(ctx: Context<CloseProject>, _slug: String) -> Result<()> {
  }
 
 fn validate_slug(slug: &str) -> Result<()> {
-    require!(!slug.is_empty(), MysteryBoxError::InvalidSlug);
-    require!(slug.len() <= 30, MysteryBoxError::InvalidSlug);
-    for &b in slug.as_bytes() {
-        require!(
-            b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-',
-            MysteryBoxError::InvalidSlug
-        );
-    }
+    require!(
+        !slug.is_empty() && slug.len() <= 30 && slug.as_bytes().iter().all(|&b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-'),
+        MysteryBoxError::InvalidSlug
+    );
     Ok(())
 }

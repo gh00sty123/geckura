@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { NETWORK, PROGRAM_ID } from "@/lib/env";
 
 export function Sidebar() {
   const pathname = usePathname();
 
   const isActive = (path: string) => pathname === path || pathname?.startsWith(path + "/");
+
+  const isMainnet = NETWORK.toLowerCase().includes("mainnet");
+  const networkLabel = isMainnet ? "Mainnet" : "Devnet";
+  const shortId = PROGRAM_ID ? `${PROGRAM_ID.slice(0, 6)}...${PROGRAM_ID.slice(-4)}` : "";
 
   return (
     <aside className="w-56 shrink-0 border-r border-[#1cac64]/20 min-h-screen flex flex-col">
@@ -22,9 +27,10 @@ export function Sidebar() {
           Projects
         </Link>
       </nav>
-      <div className="p-3 border-t border-[#1cac64]/20 text-xs text-[#4a7d5e]">
-        Devnet · Bs4JjQ...
+      <div className="p-3 border-t border-[#1cac64]/20 text-xs text-[#4a7d5e] font-mono">
+        {networkLabel} · {shortId}
       </div>
     </aside>
   );
 }
+

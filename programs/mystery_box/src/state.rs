@@ -191,3 +191,24 @@ pub struct BoxOpenEvent {
     pub amount_won: u64,
     pub timestamp: i64,
 }
+
+pub fn validate_close_authority(
+    signer_key: Pubkey,
+    project_authority: Pubkey,
+    platform_authority: Pubkey,
+    rent_claim_mode: u8,
+    platform_treasury: Pubkey,
+    rent_destination: Pubkey,
+) -> Result<()> {
+    require!(
+        signer_key == project_authority || signer_key == platform_authority,
+        crate::errors::MysteryBoxError::Unauthorized
+    );
+    let expected_dest = if signer_key == platform_authority && rent_claim_mode == 1 {
+        platform_treasury
+    } else {
+        project_authority
+    };
+    require_keys_eq!(rent_destination, expected_dest, crate::errors::MysteryBoxError::Unauthorized);
+    Ok(())
+}

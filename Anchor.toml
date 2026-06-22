@@ -3,11 +3,15 @@ name = "mystery_box"
 version = "0.1.0"
 anchor_version = "1.0.1"
 
+[programs.localnet]
+mystery_box = "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"
+
 [provider]
-# IMPORTANT: Set your RPC URL here. Never commit API keys to git.
-# Override with: anchor --provider.cluster <URL>
-cluster = "https://api.devnet.solana.com"
+cluster = "localnet"
 wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 
 [hooks]
 pre-build = "cargo build --lib --profile release --target sbf-solana-solana"

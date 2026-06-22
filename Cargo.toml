@@ -5,7 +5,7 @@ members = [
 resolver = "2"
 
 [profile.release]
-overflow-checks = true
+overflow-checks = false
 opt-level = "z"
 lto = true
 codegen-units = 1

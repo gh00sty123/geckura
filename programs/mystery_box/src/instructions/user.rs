@@ -2,7 +2,10 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::sysvar::SysvarId;
 use anchor_lang::system_program;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
-use sha2::{Digest, Sha256};
+
+extern "C" {
+    fn sol_sha256(vals: *const u8, val_len: u64, hash_result: *mut u8) -> u64;
+}
 
 use crate::errors::MysteryBoxError;
 use crate::state::{
@@ -307,23 +310,29 @@ pub fn reveal_open(
     hash_input[96..104].copy_from_slice(&receipt.nonce.to_le_bytes());
     hash_input[104..112].copy_from_slice(&receipt.request_slot.to_le_bytes());
 
-    let mut hasher = Sha256::new();
-    hasher.update(&hash_input);
-    let hash_result = hasher.finalize();
+    let mut hash_result = [0u8; 32];
+    let slices = [&hash_input[..]];
+    unsafe {
+        sol_sha256(
+            slices.as_ptr() as *const u8,
+            slices.len() as u64,
+            hash_result.as_mut_ptr(),
+        );
+    }
     let random_u64 = u64::from_le_bytes(hash_result[0..8].try_into().unwrap());
 
     let mut is_winner = false;
-    let mut won_prize: Option<crate::state::PrizeItem> = None;
-
     let mut total_weight = 0u64;
-    let mut guaranteed_prize: Option<crate::state::PrizeItem> = None;
+    let mut guaranteed_prize_index: Option<usize> = None;
 
-    // Load and validate dynamic PrizeItem accounts passed as remaining accounts
     let remaining_accounts = ctx.remaining_accounts;
-    for account_info in remaining_accounts.iter() {
+    let mut valid_prize_indices = [0u8; 32];
+    let mut valid_prize_weights = [0u8; 32];
+    let mut valid_count = 0;
+
+    for (i, account_info) in remaining_accounts.iter().enumerate() {
         let prize_item = crate::state::PrizeItem::try_deserialize(&mut &**account_info.try_borrow_data()?)?;
 
-        // Validate PDA derivation of the PrizeItem
         let derived_pda = Pubkey::create_program_address(
             &[
                 crate::state::PRIZE_SEED,
@@ -344,7 +353,12 @@ pub fn reveal_open(
             if rem > 0 {
                 total_weight = total_weight.saturating_add(prize_item.win_percentage as u64);
                 if prize_item.win_percentage == 100 {
-                    guaranteed_prize = Some(prize_item);
+                    guaranteed_prize_index = Some(i);
+                }
+                if valid_count < 32 {
+                    valid_prize_indices[valid_count] = i as u8;
+                    valid_prize_weights[valid_count] = prize_item.win_percentage;
+                    valid_count += 1;
                 }
             }
         }
@@ -355,34 +369,28 @@ pub fn reveal_open(
     let mut token_mint = Pubkey::default();
     let mut prize_index: u8 = 0;
 
-    // First check if there's a guaranteed 100% win prize!
-    if let Some(prize) = guaranteed_prize {
+    let mut winning_account_index: Option<usize> = None;
+
+    if let Some(i) = guaranteed_prize_index {
         is_winner = true;
-        won_prize = Some(prize);
+        winning_account_index = Some(i);
     } else if total_weight > 0 {
         let prize_roll = random_u64 % total_weight;
         let mut cumulative = 0u64;
 
-        for account_info in remaining_accounts.iter() {
-            let prize_item = crate::state::PrizeItem::try_deserialize(&mut &**account_info.try_borrow_data()?)?;
-            let idx = prize_item.index as usize;
-            if idx < 20 {
-                let claimed = box_config.claimed_prizes[idx];
-                let rem = prize_item.total_count.saturating_sub(claimed);
-                if rem > 0 {
-                    cumulative = cumulative.saturating_add(prize_item.win_percentage as u64);
-                    if prize_roll < cumulative {
-                        is_winner = true; // ALWAYS win if you pick a prize!
-                        won_prize = Some(prize_item);
-                        break;
-                    }
-                }
+        for k in 0..valid_count {
+            cumulative = cumulative.saturating_add(valid_prize_weights[k] as u64);
+            if prize_roll < cumulative {
+                is_winner = true;
+                winning_account_index = Some(valid_prize_indices[k] as usize);
+                break;
             }
         }
     }
 
-    if is_winner && won_prize.is_some() {
-        let prize = won_prize.unwrap();
+    if is_winner && winning_account_index.is_some() {
+        let winning_acc_info = &remaining_accounts[winning_account_index.unwrap()];
+        let prize = crate::state::PrizeItem::try_deserialize(&mut &**winning_acc_info.try_borrow_data()?)?;
         prize_type = prize.prize_type;
         token_mint = prize.token_mint;
         prize_index = prize.index;

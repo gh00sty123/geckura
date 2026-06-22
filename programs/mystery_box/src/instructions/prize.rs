@@ -93,8 +93,7 @@ pub struct DepositPrize<'info> {
     )]
     pub tenant_token_account: Account<'info, TokenAccount>,
     #[account(
-        init_if_needed,
-        payer = tenant,
+        mut,
         associated_token::mint = token_mint,
         associated_token::authority = vault
     )]
@@ -327,9 +326,8 @@ pub fn withdraw_vault_sol(ctx: Context<WithdrawVaultSol>, _slug: String, amount:
     let authority_acc = &mut ctx.accounts.authority.to_account_info();
 
     let vault_lamports = vault_acc.lamports();
-    // Ensure vault remains rent-exempt after withdrawal
-    let rent = Rent::get()?;
-    let min_balance = rent.minimum_balance(vault_acc.data_len());
+    // Ensure vault remains rent-exempt after withdrawal (Rent-exempt minimum for 41 bytes)
+    let min_balance = 1_176_240;
     require!(
         vault_lamports.checked_sub(amount).unwrap_or(0) >= min_balance,
         MysteryBoxError::InsufficientFunds
@@ -373,8 +371,7 @@ pub struct WithdrawVaultToken<'info> {
     )]
     pub vault_token_account: Account<'info, TokenAccount>,
     #[account(
-        init_if_needed,
-        payer = authority,
+        mut,
         associated_token::mint = token_mint,
         associated_token::authority = authority
     )]
@@ -459,31 +456,19 @@ pub fn close_prize_item(
     let now = clock.unix_timestamp;
 
     let signer_key = ctx.accounts.signer.key();
-    require!(
-        signer_key == project.authority || signer_key == platform.authority,
-        MysteryBoxError::Unauthorized
-    );
+    crate::state::validate_close_authority(
+        signer_key,
+        project.authority,
+        platform.authority,
+        project.rent_claim_mode,
+        platform.treasury,
+        ctx.accounts.rent_destination.key(),
+    )?;
 
     // Ensure box is ended or sold out
     require!(
         box_config.status == BoxStatus::Ended || now > box_config.end_time || box_config.sold >= box_config.supply,
         MysteryBoxError::BoxNotEnded
-    );
-
-    // Validate rent destination:
-    let expected_dest = if signer_key == project.authority {
-        project.authority
-    } else {
-        if project.rent_claim_mode == 1 {
-            platform.treasury
-        } else {
-            project.authority
-        }
-    };
-    require_keys_eq!(
-        ctx.accounts.rent_destination.key(),
-        expected_dest,
-        MysteryBoxError::Unauthorized
     );
 
     Ok(())
