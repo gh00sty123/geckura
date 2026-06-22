@@ -1162,7 +1162,7 @@ export default function ProjectView({ slug }: { slug: string }) {
             <p className="text-[#4a7d5e] text-xs mt-1">Check back soon!</p>
           </motion.div>
         ) : (
-          <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${activeTab === "expired" ? "opacity-60" : ""}`}>
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 ${activeTab === "expired" ? "opacity-60" : ""}`}>
             {currentBoxes.map((b, i) => (
               <BoxCard 
                 key={b.pubkey} 
@@ -1414,9 +1414,9 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
       <div className="relative w-full overflow-hidden bg-gradient-to-br from-[#f4fef0] to-[#ebfde3]">
         {box.bannerUri ? (
           <img src={resolveIpfsUrl(box.bannerUri)} alt={box.name}
-            className="w-full h-auto min-h-[120px] max-h-[220px] object-contain group-hover:scale-105 transition-transform duration-700 ease-out" />
+            className="w-full h-auto min-h-[150px] max-h-[275px] object-contain group-hover:scale-105 transition-transform duration-700 ease-out" />
         ) : (
-          <div className="w-full h-[120px] flex items-center justify-center">
+          <div className="w-full h-[150px] flex items-center justify-center">
             <span className="text-5xl opacity-20 group-hover:opacity-30 transition-opacity duration-500">🎁</span>
           </div>
         )}
