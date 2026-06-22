@@ -3,13 +3,21 @@
 import { create } from "zustand";
 import { retryWithBackoff, fetchProjects, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, boxPDA } from "@/lib/program-ix";
 import { WalletContextState } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, PublicKey, SystemProgram, Transaction, SendTransactionError } from "@solana/web3.js";
 import toast from "react-hot-toast";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 
 function parseSolanaError(err: any): string {
+  if (err instanceof SendTransactionError) {
+    console.error("[SendTransactionError] Detailed Logs:", err.logs);
+  } else if (err && typeof err.getLogs === "function") {
+    try {
+      console.error("[Solana Error] Detailed Logs:", err.logs || (err as any).getLogs?.());
+    } catch {}
+  }
+
   const msg = err?.message || "";
   let logs = err?.logs || err?.metadata?.logs || err?.err?.logs || [];
   if ((!logs || logs.length === 0) && err && typeof err.getLogs === "function") {
@@ -25,6 +33,9 @@ function parseSolanaError(err: any): string {
       }
       if (log.includes("Transfer: insufficient lamports") || log.includes("insufficient lamports")) {
         return "Insufficient SOL balance to pay for transaction fees or box price.";
+      }
+      if (log.includes("insufficient funds for rent") || log.includes("insufficient balance for rent")) {
+        return "Insufficient SOL balance for rent-exempt minimum of new accounts.";
       }
     }
   }
@@ -81,6 +92,9 @@ function parseSolanaError(err: any): string {
   }
   if (msg.includes("Attempt to debit an account but found no record of a prior credit")) {
     return "Insufficient SOL balance to pay for transaction fees or box price.";
+  }
+  if (msg.includes("insufficient funds for rent") || msg.includes("insufficient balance for rent")) {
+    return "Insufficient SOL balance for rent-exempt minimum of new accounts.";
   }
 
   return msg || "Transaction failed. Please try again.";

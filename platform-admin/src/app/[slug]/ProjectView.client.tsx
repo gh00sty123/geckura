@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, useMemo, useRef, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { PublicKey, Connection, SystemProgram, Transaction } from "@solana/web3.js";
+import { PublicKey, Connection, SystemProgram, Transaction, SendTransactionError } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { retryWithBackoff, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, boxPDA } from "@/lib/program-ix";
@@ -82,6 +82,14 @@ function Ticker({ items }: { items: string[] }) {
 }
 
 function parseSolanaError(err: any): string {
+  if (err instanceof SendTransactionError) {
+    console.error("[SendTransactionError] Detailed Logs:", err.logs);
+  } else if (err && typeof err.getLogs === "function") {
+    try {
+      console.error("[Solana Error] Detailed Logs:", err.logs || (err as any).getLogs?.());
+    } catch {}
+  }
+
   const msg = err?.message || "";
   
   // Try to find the Anchor custom error message in transaction logs
@@ -99,6 +107,9 @@ function parseSolanaError(err: any): string {
       }
       if (log.includes("Transfer: insufficient lamports") || log.includes("insufficient lamports")) {
         return "Insufficient SOL balance to pay for transaction fees or box price.";
+      }
+      if (log.includes("insufficient funds for rent") || log.includes("insufficient balance for rent")) {
+        return "Insufficient SOL balance for rent-exempt minimum of new accounts.";
       }
     }
   }
@@ -161,6 +172,9 @@ function parseSolanaError(err: any): string {
   // Native fee balance error
   if (msg.includes("Attempt to debit an account but found no record of a prior credit")) {
     return "Insufficient SOL balance to pay for transaction fees or box price.";
+  }
+  if (msg.includes("insufficient funds for rent") || msg.includes("insufficient balance for rent")) {
+    return "Insufficient SOL balance for rent-exempt minimum of new accounts.";
   }
 
   return msg || "Transaction failed. Please try again.";
@@ -2004,6 +2018,13 @@ const handleOpen = useCallback(async () => {
       }, 100);
     } catch (e: unknown) {
       console.log("[OpenBox Error]", e);
+      if (e instanceof SendTransactionError) {
+        console.error("[OpenBox SendTransactionError Logs]", e.logs);
+      } else if (e && typeof (e as any).getLogs === "function") {
+        try {
+          console.error("[OpenBox Error Logs]", (e as any).getLogs());
+        } catch {}
+      }
       console.log("[OpenBox Error Details]", JSON.stringify(e, null, 2));
       const msg = parseSolanaError(e);
       setErrMsg(msg);

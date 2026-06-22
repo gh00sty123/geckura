@@ -1,6 +1,6 @@
 "use client";
 
-import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction, SendTransactionError } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import * as borsh from "borsh";
 import IDL from "@/lib/idl.json";
@@ -681,6 +681,14 @@ export function datetimeLocalToUnix(value: string): number {
 export function getSolanaErrorDetails(err: any): string {
   if (!err) return "Unknown error";
 
+  if (err instanceof SendTransactionError) {
+    console.error("[SendTransactionError] Detailed Logs:", err.logs);
+  } else if (err && typeof err.getLogs === "function") {
+    try {
+      console.error("[Solana Error] Detailed Logs:", err.logs || err.getLogs());
+    } catch {}
+  }
+
   let msg = err.detail?.message || err.message || String(err);
 
   // Clean up user rejection/cancellation messages
@@ -720,7 +728,14 @@ export function getSolanaErrorDetails(err: any): string {
       if (log.includes("Transfer: insufficient lamports") || log.includes("insufficient lamports")) {
         return "Insufficient SOL balance to pay for transaction fees or box price.";
       }
+      if (log.includes("insufficient funds for rent") || log.includes("insufficient balance for rent")) {
+        return "Insufficient SOL balance for rent-exempt minimum of new accounts.";
+      }
     }
+  }
+
+  if (msg.includes("insufficient funds for rent") || msg.includes("insufficient balance for rent")) {
+    return "Insufficient SOL balance for rent-exempt minimum of new accounts.";
   }
 
   if (logs && logs.length > 0) {
