@@ -70,6 +70,7 @@ function AdminLeaderboardPageInner({ slug }: { slug: string }) {
               decoded.bgUri = parsed.bgUri || decoded.bgUri;
               decoded.themeColor = parsed.themeColor || decoded.themeColor;
               decoded.nothingRewardImage = parsed.nothingRewardImage || decoded.nothingRewardImage;
+              decoded.twitterLink = parsed.twitterLink || "";
             } catch {}
           }
         }

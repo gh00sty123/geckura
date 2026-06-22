@@ -6,10 +6,12 @@ import toast from "react-hot-toast";
 import {
   FiBell, FiChevronDown,
   FiCopy, FiExternalLink, FiLogOut, FiCreditCard, FiAward, FiPackage, FiGift,
+  FiMenu, FiX
 } from "react-icons/fi";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useProjectBranding } from "@/lib/ProjectBrandingProvider";
+import { TwitterXIcon } from "@/components/SocialIcons";
 import Image from "next/image";
 import { Connection } from "@solana/web3.js";
 import Link from "next/link";
@@ -33,6 +35,7 @@ export default function Navbar({
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen]     = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [solBalance, setSolBalance]   = useState<string | null>(propBalance ?? null);
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef   = useRef<HTMLDivElement>(null);
@@ -256,7 +259,7 @@ export default function Navbar({
 
           {/* ── Navigation Links (CENTERED!) ── */}
           {!isAdminPage ? (
-            <div className="flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-6">
               {pathname === "/" ? (
                 <>
                   <a
@@ -303,7 +306,7 @@ export default function Navbar({
             </div>
           ) : (
             pathname !== "/admin" && pathname !== "/admin/new" && (
-              <div className="flex items-center gap-6">
+              <div className="hidden md:flex items-center gap-6">
                 {pathname.endsWith("/admin") ? (
                   <>
                     <button
@@ -352,118 +355,370 @@ export default function Navbar({
 
 
 
-          {/* ══════════════════════════════════════════════════════
-             UNIFIED PROFILE + WALLET BUTTON
-             One button: avatar, address, balance, dropdown.
-          ══════════════════════════════════════════════════════ */}
-          {connected && walletAddress ? (
-            <div className="relative" ref={profileRef}>
-              <motion.button
-                onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-2xl bg-[#1cac64]/80 border border-[#1cac64]/15
-                  hover:bg-white/70 hover-theme-border transition-all cursor-pointer"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                {/* Avatar */}
-                <div className="h-8 w-8 rounded-full flex items-center justify-center
-                  text-[13px] font-black shrink-0 theme-avatar-gradient">
-                  {fullAddress ? fullAddress.slice(0, 1).toUpperCase() : "G"}
-                </div>
+          {/* Desktop Wallet Connect / Profile */}
+          <div className="hidden md:block">
+            {connected && walletAddress ? (
+              <div className="relative" ref={profileRef}>
+                <motion.button
+                  onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-2xl bg-[#1cac64]/80 border border-[#1cac64]/15
+                    hover:bg-white/70 hover-theme-border transition-all cursor-pointer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  {/* Avatar */}
+                  <div className="h-8 w-8 rounded-full flex items-center justify-center
+                    text-[13px] font-black shrink-0 theme-avatar-gradient">
+                    {fullAddress ? fullAddress.slice(0, 1).toUpperCase() : "G"}
+                  </div>
 
-                {/* Address + Balance */}
-                <div className="hidden sm:flex flex-col items-start leading-none">
-                  <span className="text-xs font-semibold text-[#1a3a2a]">{walletAddress}</span>
-                  {solBalance && (
-                    <span className="text-[10px] font-mono text-theme-muted mt-0.5">◎ {solBalance} SOL</span>
-                  )}
-                </div>
+                  {/* Address + Balance */}
+                  <div className="hidden sm:flex flex-col items-start leading-none">
+                    <span className="text-xs font-semibold text-[#1a3a2a]">{walletAddress}</span>
+                    {solBalance && (
+                      <span className="text-[10px] font-mono text-theme-muted mt-0.5">◎ {solBalance} SOL</span>
+                    )}
+                  </div>
 
-                <FiChevronDown className={`text-xs text-[#3d6b4e] transition-transform duration-200 ml-0.5 ${profileOpen ? "rotate-180" : ""}`} />
-              </motion.button>
+                  <FiChevronDown className={`text-xs text-[#3d6b4e] transition-transform duration-200 ml-0.5 ${profileOpen ? "rotate-180" : ""}`} />
+                </motion.button>
 
-              {/* ── Profile Dropdown ── */}
-              <AnimatePresence>
-                {profileOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                    className="absolute right-0 top-[calc(100%+8px)] w-72 glass-panel-lg rounded-2xl overflow-hidden shadow-2xl"
-                  >
-                    {/* Header card */}
-                    <div className="p-4 theme-gradient-header border-b border-[#1cac64]/10">
-                      <div className="flex items-center gap-3">
-                        <div className="h-11 w-11 rounded-full flex items-center justify-center
-                          text-[17px] font-black shrink-0 theme-avatar-gradient">
-                          {fullAddress ? fullAddress.slice(0, 1).toUpperCase() : "G"}
+                {/* ── Profile Dropdown ── */}
+                <AnimatePresence>
+                  {profileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                      className="absolute right-0 top-[calc(100%+8px)] w-72 glass-panel-lg rounded-2xl overflow-hidden shadow-2xl"
+                    >
+                      {/* Header card */}
+                      <div className="p-4 theme-gradient-header border-b border-[#1cac64]/10">
+                        <div className="flex items-center gap-3">
+                          <div className="h-11 w-11 rounded-full flex items-center justify-center
+                            text-[17px] font-black shrink-0 theme-avatar-gradient">
+                            {fullAddress ? fullAddress.slice(0, 1).toUpperCase() : "G"}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-[#1a3a2a] truncate">{walletAddress}</p>
+                            <p className="text-[10px] text-[#6b9b7a] font-mono truncate mt-0.5">{fullAddress}</p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[#1a3a2a] truncate">{walletAddress}</p>
-                          <p className="text-[10px] text-[#6b9b7a] font-mono truncate mt-0.5">{fullAddress}</p>
-                        </div>
+
+                        {/* Balance card */}
+                        {solBalance && (
+                          <div className="mt-3 flex items-center gap-2 p-2.5 rounded-xl bg-theme-tint border">
+                            <FiCreditCard className="text-theme text-sm shrink-0" />
+                            <span className="text-sm font-bold text-theme font-mono">◎ {solBalance}</span>
+                            <span className="text-[10px] text-theme-muted font-semibold">SOL</span>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Balance card */}
-                      {solBalance && (
-                        <div className="mt-3 flex items-center gap-2 p-2.5 rounded-xl bg-theme-tint border">
-                          <FiCreditCard className="text-theme text-sm shrink-0" />
-                          <span className="text-sm font-bold text-theme font-mono">◎ {solBalance}</span>
-                          <span className="text-[10px] text-theme-muted font-semibold">SOL</span>
-                        </div>
-                      )}
-                    </div>
+                      {/* Actions */}
+                      <div className="p-1.5">
+                        <button
+                          onClick={handleCopyAddress}
+                          className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-[#3d6b4e]
+                            hover:text-[#1a3a2a] hover:bg-[#1cac64]/5 transition-colors cursor-pointer"
+                        >
+                          <FiCopy className="text-sm text-[#6b9b7a]" />
+                          Copy Address
+                        </button>
+                        <button
+                          onClick={handleViewExplorer}
+                          className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-[#3d6b4e]
+                            hover:text-[#1a3a2a] hover:bg-[#1cac64]/5 transition-colors cursor-pointer"
+                        >
+                          <FiExternalLink className="text-sm text-[#6b9b7a]" />
+                          View on Explorer
+                        </button>
 
-                    {/* Actions */}
-                    <div className="p-1.5">
-                      <button
-                        onClick={handleCopyAddress}
-                        className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-[#3d6b4e]
-                          hover:text-[#1a3a2a] hover:bg-[#1cac64]/5 transition-colors cursor-pointer"
-                      >
-                        <FiCopy className="text-sm text-[#6b9b7a]" />
-                        Copy Address
-                      </button>
-                      <button
-                        onClick={handleViewExplorer}
-                        className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-[#3d6b4e]
-                          hover:text-[#1a3a2a] hover:bg-[#1cac64]/5 transition-colors cursor-pointer"
-                      >
-                        <FiExternalLink className="text-sm text-[#6b9b7a]" />
-                        View on Explorer
-                      </button>
+                        {/* Divider */}
+                        <div className="h-px bg-[#1cac64]/10 my-1" />
 
-                      {/* Divider */}
-                      <div className="h-px bg-[#1cac64]/10 my-1" />
+                        <button
+                          onClick={handleDisconnect}
+                          className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-red-400
+                            hover:bg-red-500/10 transition-colors cursor-pointer"
+                        >
+                          <FiLogOut className="text-sm" />
+                          Disconnect Wallet
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : mounted ? (
+              <WalletMultiButton />
+            ) : (
+              <button
+                className="wallet-adapter-button wallet-adapter-button-trigger"
+                disabled
+                type="button"
+              >
+                Select Wallet
+              </button>
+            )}
+          </div>
 
-                      <button
-                        onClick={handleDisconnect}
-                        className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs text-red-400
-                          hover:bg-red-500/10 transition-colors cursor-pointer"
-                      >
-                        <FiLogOut className="text-sm" />
-                        Disconnect Wallet
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ) : mounted ? (
-            <WalletMultiButton />
-          ) : (
+          {/* Mobile Hamburger Button */}
+          <div className="md:hidden flex items-center">
             <button
-              className="wallet-adapter-button wallet-adapter-button-trigger"
-              disabled
-              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center bg-[#ebfde3]/80"
+              style={{
+                borderColor: `${themeColor}25`,
+                color: themeColor,
+              }}
             >
-              Select Wallet
+              {mobileMenuOpen ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}
             </button>
-          )}
+          </div>
 
         </div>
       </nav>
+
+      {/* Mobile Drawer Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            {/* Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+            />
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 right-0 z-50 w-full sm:w-85 bg-black/95 backdrop-blur-2xl border-l border-[#1cac64]/15 p-6 flex flex-col justify-between md:hidden"
+            >
+              <div>
+                {/* Header */}
+                <div className="flex items-center justify-between pb-6 border-b border-[#1cac64]/10 mb-6">
+                  <div className="flex items-center gap-2.5">
+                    {branding.logoUrl ? (
+                      <img
+                        src={branding.logoUrl}
+                        alt={branding.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-base font-bold text-white tracking-tight">{branding.name}</span>
+                    )}
+                    <span className="text-sm font-semibold text-white">{branding.name}</span>
+                  </div>
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 rounded-full hover:bg-white/10 text-white transition-colors cursor-pointer"
+                  >
+                    <FiX className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Navigation Links */}
+                <div className="flex flex-col gap-4 mb-8">
+                  {!isAdminPage ? (
+                    pathname === "/" ? (
+                      <>
+                        <a
+                          href="#projects-directory"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            document.getElementById("projects-directory")?.scrollIntoView({ behavior: "smooth" });
+                          }}
+                          className="text-base font-bold uppercase tracking-wider text-gray-300 hover:text-white transition-colors py-2 cursor-pointer"
+                        >
+                          Projects
+                        </a>
+                        <a
+                          href="#pricing"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
+                          }}
+                          className="text-base font-bold uppercase tracking-wider text-gray-300 hover:text-white transition-colors py-2 cursor-pointer"
+                        >
+                          Pricing
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href={slug === "geckurabox" ? "/" : `/${slug}`}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`text-base font-bold uppercase tracking-wider transition-colors py-2 ${
+                            pathname === `/${slug}` || pathname === "/" ? "text-[#1cac64]" : "text-gray-300 hover:text-white"
+                          }`}
+                          style={pathname === `/${slug}` || pathname === "/" ? { color: themeColor } : {}}
+                        >
+                          Packs
+                        </Link>
+                        <Link
+                          href={`/${slug}/leaderboard`}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`text-base font-bold uppercase tracking-wider transition-colors py-2 ${
+                            pathname?.includes("/leaderboard") ? "text-[#1cac64]" : "text-gray-300 hover:text-white"
+                          }`}
+                          style={pathname?.includes("/leaderboard") ? { color: themeColor } : {}}
+                        >
+                          Leaderboard
+                        </Link>
+                      </>
+                    )
+                  ) : (
+                    pathname !== "/admin" && pathname !== "/admin/new" && (
+                      <>
+                        {pathname.endsWith("/admin") ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                setMobileMenuOpen(false);
+                                window.dispatchEvent(new CustomEvent('open-project-branding'));
+                              }}
+                              className="text-left text-base font-bold uppercase tracking-wider text-gray-300 hover:text-white transition-colors py-2 cursor-pointer"
+                            >
+                              Branding
+                            </button>
+                            <button
+                              onClick={() => {
+                                setMobileMenuOpen(false);
+                                window.dispatchEvent(new CustomEvent('open-vault-manager'));
+                              }}
+                              className="text-left text-base font-bold uppercase tracking-wider text-gray-300 hover:text-white transition-colors py-2 cursor-pointer"
+                            >
+                              Vault Manager
+                            </button>
+                            <button
+                              onClick={() => {
+                                setMobileMenuOpen(false);
+                                window.dispatchEvent(new CustomEvent('open-create-box'));
+                              }}
+                              className="text-left text-base font-bold uppercase tracking-wider text-gray-300 hover:text-white transition-colors py-2 cursor-pointer"
+                            >
+                              Create Box
+                            </button>
+                          </>
+                        ) : (
+                          <Link
+                            href={`/${slug}/admin`}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="text-base font-bold uppercase tracking-wider text-gray-300 hover:text-white transition-colors py-2"
+                          >
+                            Back to Admin
+                          </Link>
+                        )}
+                        <Link
+                          href={`/${slug}/admin/leaderboard`}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`text-base font-bold uppercase tracking-wider transition-colors py-2 ${
+                            pathname?.includes("/admin/leaderboard") ? "text-[#1cac64]" : "text-gray-300 hover:text-white"
+                          }`}
+                          style={pathname?.includes("/admin/leaderboard") ? { color: themeColor } : {}}
+                        >
+                          Leaderboard
+                        </Link>
+                      </>
+                    )
+                  )}
+                </div>
+
+                {/* Wallet Profile Area */}
+                <div className="pt-6 border-t border-[#1cac64]/10">
+                  {connected && walletAddress ? (
+                    <div className="space-y-4">
+                      {/* Mini profile details */}
+                      <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-black shrink-0 theme-avatar-gradient">
+                            {fullAddress ? fullAddress.slice(0, 1).toUpperCase() : "G"}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold text-white truncate">{walletAddress}</p>
+                            <p className="text-[10px] text-gray-400 font-mono truncate">{fullAddress}</p>
+                          </div>
+                        </div>
+
+                        {solBalance && (
+                          <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.04] border border-white/5">
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Balance</span>
+                            <span className="text-xs font-mono font-bold text-[#1cac64]" style={{ color: themeColor }}>◎ {solBalance} SOL</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Profile Actions */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={handleCopyAddress}
+                          className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/5 text-[11px] font-bold text-gray-200 transition-colors cursor-pointer"
+                        >
+                          <FiCopy className="text-xs" /> Copy
+                        </button>
+                        <button
+                          onClick={handleViewExplorer}
+                          className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/5 text-[11px] font-bold text-gray-200 transition-colors cursor-pointer"
+                        >
+                          <FiExternalLink className="text-xs" /> Explorer
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          handleDisconnect();
+                        }}
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-bold text-red-400 transition-colors cursor-pointer"
+                      >
+                        <FiLogOut className="text-sm" /> Disconnect Wallet
+                      </button>
+                    </div>
+                  ) : mounted ? (
+                    <div className="flex justify-center w-full">
+                      <WalletMultiButton className="!w-full !justify-center" />
+                    </div>
+                  ) : (
+                    <button
+                      className="w-full py-3 px-4 rounded-xl bg-gray-800 text-gray-500 text-xs font-bold"
+                      disabled
+                    >
+                      Select Wallet
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Drawer Footer with social links */}
+              <div className="pt-6 border-t border-[#1cac64]/10 flex flex-col items-center gap-4">
+                {branding.twitterLink && (
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={branding.twitterLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-[#1cac64] hover:text-white text-sky-400 transition-all flex items-center justify-center cursor-pointer"
+                      title="Twitter (X)"
+                    >
+                      <TwitterXIcon className="w-4 h-4" />
+                    </a>
+                  </div>
+                )}
+                <span className="text-[10px] text-gray-500 uppercase tracking-widest">Powered by Geckura</span>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }

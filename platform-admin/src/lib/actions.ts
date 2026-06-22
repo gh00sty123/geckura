@@ -515,6 +515,7 @@ export const updateProjectBrandingTx = async (
     tokenRankingPoints: number;
     nothingRewardImage?: string;
     twitterUsername?: string;
+    twitterLink?: string;
   }
 ) => {
   if (typeof window !== "undefined") {
@@ -532,6 +533,7 @@ export const updateProjectBrandingTx = async (
         solRankingPoints: params.solRankingPoints,
         tokenRankingPoints: params.tokenRankingPoints,
         twitterUsername: params.twitterUsername || "",
+        twitterLink: params.twitterLink || "",
       })
     );
   }

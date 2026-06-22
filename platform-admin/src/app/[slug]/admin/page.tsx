@@ -307,10 +307,23 @@ function Inner({ slug }: { slug: string }) {
         name: slugProj.name,
         logoUrl: logoUrl,
         themeColor: slugProj.themeColor || null,
+        navbarColor: slugProj.navbarColor || null,
+        textColor: slugProj.textColor || null,
         nothingRewardImage: slugProj.nothingRewardImage || null,
+        twitterUsername: slugProj.twitterUsername || null,
+        twitterLink: slugProj.twitterLink || null,
       });
     } else {
-      setProjectBranding({ name: slug, logoUrl: null, themeColor: null, nothingRewardImage: null });
+      setProjectBranding({
+        name: slug,
+        logoUrl: null,
+        themeColor: null,
+        navbarColor: null,
+        textColor: null,
+        nothingRewardImage: null,
+        twitterUsername: null,
+        twitterLink: null,
+      });
     }
 
     // Set page title
@@ -406,6 +419,7 @@ function Inner({ slug }: { slug: string }) {
                 decoded.bgUri = parsed.bgUri || decoded.bgUri;
                 decoded.themeColor = parsed.themeColor || decoded.themeColor;
                 decoded.nothingRewardImage = parsed.nothingRewardImage || decoded.nothingRewardImage;
+                decoded.twitterLink = parsed.twitterLink || "";
               } catch {}
             }
           }

@@ -90,7 +90,11 @@ export default function ProjectLeaderboardPage() {
             name: nameVal,
             logoUrl: resolveIpfsUrl(logoVal) || null,
             themeColor: themeVal || null,
+            navbarColor: parsed.navbarColor || null,
+            textColor: parsed.textColor || null,
             nothingRewardImage: parsed.nothingRewardImage || null,
+            twitterUsername: parsed.twitterUsername || null,
+            twitterLink: parsed.twitterLink || null,
           });
           document.title = `${nameVal} | Leaderboard`;
         } catch {}
@@ -124,6 +128,12 @@ export default function ProjectLeaderboardPage() {
             let bgVal = "";
             let logoVal = proj?.logoUri || "";
             let themeVal = proj?.themeColor || "";
+            let navColor = "";
+            let txtColor = "";
+            let mEden = "";
+            let disc = "";
+            let twLink = "";
+            let twUser = "";
             if (typeof window !== "undefined") {
               const localBranding = localStorage.getItem(`project_branding_${slug}`);
               if (localBranding) {
@@ -133,6 +143,10 @@ export default function ProjectLeaderboardPage() {
                   bgVal = parsed.bgUri || "";
                   logoVal = parsed.logoUri || logoVal;
                   themeVal = parsed.themeColor || themeVal;
+                  navColor = parsed.navbarColor || "";
+                  txtColor = parsed.textColor || "";
+                  twLink = parsed.twitterLink || "";
+                  twUser = parsed.twitterUsername || "";
                 } catch {}
               }
             }
@@ -146,7 +160,11 @@ export default function ProjectLeaderboardPage() {
               name: nameVal,
               logoUrl: resolveIpfsUrl(logoVal) || null,
               themeColor: themeVal || null,
+              navbarColor: navColor || null,
+              textColor: txtColor || null,
               nothingRewardImage: proj?.nothingRewardImage || null,
+              twitterUsername: twUser || null,
+              twitterLink: twLink || null,
             });
             document.title = `${nameVal} | Leaderboard`;
           } else if (active) {
@@ -154,6 +172,10 @@ export default function ProjectLeaderboardPage() {
             let bgVal = "";
             let logoVal = "";
             let themeVal = "";
+            let navColor = "";
+            let txtColor = "";
+            let twLink = "";
+            let twUser = "";
             if (typeof window !== "undefined") {
               const localBranding = localStorage.getItem(`project_branding_${slug}`);
               if (localBranding) {
@@ -163,6 +185,10 @@ export default function ProjectLeaderboardPage() {
                   bgVal = parsed.bgUri || "";
                   logoVal = parsed.logoUri || "";
                   themeVal = parsed.themeColor || "";
+                  navColor = parsed.navbarColor || "";
+                  txtColor = parsed.textColor || "";
+                  twLink = parsed.twitterLink || "";
+                  twUser = parsed.twitterUsername || "";
                 } catch {}
               }
             }
@@ -174,6 +200,10 @@ export default function ProjectLeaderboardPage() {
               name: nameVal,
               logoUrl: resolveIpfsUrl(logoVal) || null,
               themeColor: themeVal || null,
+              navbarColor: navColor || null,
+              textColor: txtColor || null,
+              twitterUsername: twUser || null,
+              twitterLink: twLink || null,
             });
             document.title = `${nameVal} | Leaderboard`;
           }
@@ -183,6 +213,10 @@ export default function ProjectLeaderboardPage() {
           let bgVal = "";
           let logoVal = "";
           let themeVal = "";
+          let navColor = "";
+          let txtColor = "";
+          let twLink = "";
+          let twUser = "";
           if (typeof window !== "undefined") {
             const localBranding = localStorage.getItem(`project_branding_${slug}`);
             if (localBranding) {
@@ -192,6 +226,10 @@ export default function ProjectLeaderboardPage() {
                 bgVal = parsed.bgUri || "";
                 logoVal = parsed.logoUri || "";
                 themeVal = parsed.themeColor || "";
+                navColor = parsed.navbarColor || "";
+                txtColor = parsed.textColor || "";
+                twLink = parsed.twitterLink || "";
+                twUser = parsed.twitterUsername || "";
               } catch {}
             }
           }
@@ -203,6 +241,10 @@ export default function ProjectLeaderboardPage() {
             name: nameVal,
             logoUrl: resolveIpfsUrl(logoVal) || null,
             themeColor: themeVal || null,
+            navbarColor: navColor || null,
+            textColor: txtColor || null,
+            twitterUsername: twUser || null,
+            twitterLink: twLink || null,
           });
           document.title = `${nameVal} | Leaderboard`;
         }

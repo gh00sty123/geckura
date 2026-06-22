@@ -9,6 +9,7 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { retryWithBackoff, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, boxPDA } from "@/lib/program-ix";
 import { type LiveBox, useAppStore } from "@/lib/store";
 import { useSetProjectBranding, useProjectBranding } from "@/lib/ProjectBrandingProvider";
+import { TwitterXIcon } from "@/components/SocialIcons";
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction, createTransferInstruction } from "@solana/spl-token";
 import toast from "react-hot-toast";
 import { resolveIpfsUrl } from "@/lib/helpers";
@@ -647,6 +648,9 @@ export default function ProjectView({ slug }: { slug: string }) {
                   decodedProject.textColor = parsed.textColor || "";
                   decodedProject.nothingRewardImage = parsed.nothingRewardImage || "";
                   decodedProject.twitterUsername = parsed.twitterUsername || "";
+                  decodedProject.magicEdenLink = parsed.magicEdenLink || "";
+                  decodedProject.discordLink = parsed.discordLink || "";
+                  decodedProject.twitterLink = parsed.twitterLink || "";
                 } catch {}
               }
             }
@@ -821,6 +825,9 @@ export default function ProjectView({ slug }: { slug: string }) {
         textColor: (project.textColor as string) || null,
         nothingRewardImage: resolveIpfsUrl((project.nothingRewardImage as string | null | undefined)) || null,
         twitterUsername: (project.twitterUsername as string) || null,
+        magicEdenLink: (project.magicEdenLink as string) || null,
+        discordLink: (project.discordLink as string) || null,
+        twitterLink: (project.twitterLink as string) || null,
       });
 
       // Set page title
@@ -853,6 +860,9 @@ export default function ProjectView({ slug }: { slug: string }) {
   const bgUri   = resolveIpfsUrl((project.bgUri || project.bannerUri) as string | undefined) || undefined;
   const title   = (project.name as string) || slug;
   const desc    = (project.description as string) || "";
+  const magicEdenLink = project.magicEdenLink as string | undefined;
+  const discordLink = project.discordLink as string | undefined;
+  const twitterLink = project.twitterLink as string | undefined;
 
   if (!mounted) return <Skeleton />;
 
@@ -1027,6 +1037,26 @@ export default function ProjectView({ slug }: { slug: string }) {
               >
                 {desc}
               </motion.p>
+            )}
+
+            {/* Social Links Row */}
+            {twitterLink && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="flex items-center gap-4 justify-center"
+              >
+                <a
+                  href={twitterLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-black/50 border border-[#1cac64]/20 rounded-2xl text-[#ebfde3] hover:text-white hover:border-[#1cac64] hover:shadow-[0_0_15px_rgba(28,172,100,0.3)] transition-all transform hover:-translate-y-1 cursor-pointer flex items-center justify-center"
+                  title="Twitter (X)"
+                >
+                  <TwitterXIcon className="w-5 h-5 text-sky-400 hover:text-white" />
+                </a>
+              </motion.div>
             )}
           </div>
         </div>

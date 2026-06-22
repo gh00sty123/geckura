@@ -32,6 +32,7 @@ export function ProjectBrandingModal({
   const [tokenRankingPoints, setTokenRankingPoints] = useState(String(slugProj?.tokenRankingPoints ?? "1"));
   const [nothingRewardImage, setNothingRewardImage] = useState(slugProj?.nothingRewardImage || "");
   const [twitterUsername, setTwitterUsername] = useState(slugProj?.twitterUsername || "");
+  const [twitterLink, setTwitterLink] = useState(slugProj?.twitterLink || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,6 +59,7 @@ export function ProjectBrandingModal({
         tokenRankingPoints: parseInt(tokenRankingPoints),
         nothingRewardImage,
         twitterUsername,
+        twitterLink,
       });
       toast.success("Project branding updated successfully!", { id: "branding" });
       onRefresh();
@@ -129,6 +131,21 @@ export function ProjectBrandingModal({
               placeholder="e.g. project_x"
             />
             <p className="text-[10px] text-[#3d6b4e] mt-1">Leave blank or enter your project X username (without the @ symbol) for post-win tweet sharing tagging.</p>
+          </div>
+
+          <div className="bg-[#1cac64]/8 border border-[#1cac64]/15 rounded-xl p-5 space-y-4">
+            <h3 className="text-sm font-bold text-[#1a3a2a] uppercase tracking-wider">Social Links Configuration (Navbar & Storefront Icons)</h3>
+            <div>
+              <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Twitter (X) Profile Link</label>
+              <input
+                type="text"
+                value={twitterLink}
+                onChange={e => setTwitterLink(e.target.value)}
+                className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all"
+                placeholder="https://x.com/..."
+              />
+              <p className="text-[10px] text-[#3d6b4e] mt-1">Direct URL to your Twitter (X) profile.</p>
+            </div>
           </div>
 
           <div>
