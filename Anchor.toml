@@ -4,7 +4,10 @@ version = "0.1.0"
 anchor_version = "1.0.1"
 
 [programs.localnet]
-mystery_box = "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"
+mystery_box = "4GwYrYmaEQqGH3B69kiaxHsjJS5XbK5a3m1ttt5cajqJ"
+
+[programs.devnet]
+mystery_box = "4GwYrYmaEQqGH3B69kiaxHsjJS5XbK5a3m1ttt5cajqJ"
 
 [provider]
 cluster = "localnet"

@@ -1,5 +1,5 @@
 {
-  "address": "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4",
+  "address": "4GwYrYmaEQqGH3B69kiaxHsjJS5XbK5a3m1ttt5cajqJ",
   "metadata": {
     "name": "mystery_box",
     "version": "0.1.0",
@@ -1196,6 +1196,192 @@
         {
           "name": "slug",
           "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "open_box",
+      "discriminator": [
+        225,
+        220,
+        10,
+        104,
+        173,
+        151,
+        214,
+        199
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "box_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  120
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              },
+              {
+                "kind": "arg",
+                "path": "box_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "receipt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  101,
+                  105,
+                  112,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "account",
+                "path": "box_config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "fee_wallet",
+          "writable": true
+        },
+        {
+          "name": "fee_wallet_2",
+          "writable": true
+        },
+        {
+          "name": "tenant_wallet",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "slot_hashes",
+          "address": "SysvarS1otHashes111111111111111111111111111"
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "user_token_account",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "token_program",
+          "optional": true,
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "box_id",
+          "type": "u64"
+        },
+        {
+          "name": "quantity",
+          "type": "u8"
         }
       ]
     },
@@ -2443,123 +2629,99 @@
   "errors": [
     {
       "code": 6000,
-      "name": "Unauthorized",
-      "msg": "The signer is not authorized to perform this action."
+      "name": "Unauthorized"
     },
     {
       "code": 6001,
-      "name": "PlatformPaused",
-      "msg": "The platform is paused."
+      "name": "PlatformPaused"
     },
     {
       "code": 6002,
-      "name": "ProjectInactive",
-      "msg": "The project is inactive."
+      "name": "ProjectInactive"
     },
     {
       "code": 6003,
-      "name": "BoxNotActive",
-      "msg": "The box is not active."
+      "name": "BoxNotActive"
     },
     {
       "code": 6004,
-      "name": "BoxSoldOut",
-      "msg": "The box is sold out."
+      "name": "BoxSoldOut"
     },
     {
       "code": 6005,
-      "name": "BoxAlreadyEnded",
-      "msg": "The box sale has already ended."
+      "name": "BoxAlreadyEnded"
     },
     {
       "code": 6006,
-      "name": "InsufficientPayment",
-      "msg": "The payment amount is insufficient."
+      "name": "InsufficientPayment"
     },
     {
       "code": 6007,
-      "name": "InvalidPrizeType",
-      "msg": "Prize type does not match the prize item configuration."
+      "name": "InvalidPrizeType"
     },
     {
       "code": 6008,
-      "name": "InvalidMint",
-      "msg": "Token mint does not match the prize item configuration."
+      "name": "InvalidMint"
     },
     {
       "code": 6009,
-      "name": "DepositMismatch",
-      "msg": "Deposit amount does not match the required total."
+      "name": "DepositMismatch"
     },
     {
       "code": 6010,
-      "name": "BoxNotEnded",
-      "msg": "Box is still active or has not ended yet."
+      "name": "BoxNotEnded"
     },
     {
       "code": 6011,
-      "name": "NoPrizeClaimsRemaining",
-      "msg": "Prize item has no remaining claims."
+      "name": "NoPrizeClaimsRemaining"
     },
     {
       "code": 6012,
-      "name": "BoxHasPendingReceipts",
-      "msg": "Box has unopened purchases and cannot be closed."
+      "name": "BoxHasPendingReceipts"
     },
     {
       "code": 6013,
-      "name": "InvalidSlug",
-      "msg": "Slug can only contain lowercase letters, numbers, and hyphens."
+      "name": "InvalidSlug"
     },
     {
       "code": 6014,
-      "name": "InsufficientFunds",
-      "msg": "Insufficient funds in the vault."
+      "name": "InsufficientFunds"
     },
     {
       "code": 6015,
-      "name": "MathOverflow",
-      "msg": "Math overflow error."
+      "name": "MathOverflow"
     },
     {
       "code": 6016,
-      "name": "TokenAccountNotEmpty",
-      "msg": "Token account is not empty. Withdraw all tokens before closing."
+      "name": "TokenAccountNotEmpty"
     },
     {
       "code": 6017,
-      "name": "InvalidWinPercentage",
-      "msg": "Win percentage must be between 0 and 100."
+      "name": "InvalidWinPercentage"
     },
     {
       "code": 6018,
-      "name": "AlreadyPendingReveal",
-      "msg": "There is already a pending open request."
+      "name": "AlreadyPendingReveal"
     },
     {
       "code": 6019,
-      "name": "NoPendingReveal",
-      "msg": "No pending open request found."
+      "name": "NoPendingReveal"
     },
     {
       "code": 6020,
-      "name": "SameSlotReveal",
-      "msg": "Reveal must happen in a later block/slot than request."
+      "name": "SameSlotReveal"
     },
     {
       "code": 6021,
-      "name": "SlotHashNotFound",
-      "msg": "Blockhash for the request slot not found."
+      "name": "SlotHashNotFound"
     },
     {
       "code": 6022,
-      "name": "RequestExpired",
-      "msg": "Open request has expired (older than 512 blocks)."
+      "name": "RequestExpired"
     },
     {
       "code": 6023,
-      "name": "NoPurchasedBoxes",
-      "msg": "No purchased boxes available to open."
+      "name": "NoPurchasedBoxes"
     }
   ],
   "types": [

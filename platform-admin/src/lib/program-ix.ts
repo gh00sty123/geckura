@@ -824,4 +824,40 @@ export function ixCloseProject(
   }, [slug]);
 }
 
+export function ixOpenBox(
+  platform: PublicKey,
+  project: PublicKey,
+  boxConfig: PublicKey,
+  receipt: PublicKey,
+  vault: PublicKey,
+  user: PublicKey,
+  feeWallet: PublicKey,
+  feeWallet2: PublicKey,
+  tenantWallet: PublicKey,
+  slug: string,
+  boxId: number,
+  quantity: number,
+  vaultTokenAccount?: PublicKey,
+  userTokenAccount?: PublicKey,
+  tokenProgram?: PublicKey,
+  remainingAccounts?: { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }[]
+): TransactionInstruction {
+  return buildIx("open_box", {
+    platform:       { pubkey: platform,      isSigner: false, isWritable: false },
+    project:        { pubkey: project,       isSigner: false, isWritable: false },
+    box_config:     { pubkey: boxConfig,     isSigner: false, isWritable: true  },
+    receipt:        { pubkey: receipt,       isSigner: false, isWritable: true  },
+    vault:          { pubkey: vault,         isSigner: false, isWritable: true  },
+    user:           { pubkey: user,          isSigner: true,  isWritable: false },
+    fee_wallet:     { pubkey: feeWallet,     isSigner: false, isWritable: true  },
+    fee_wallet_2:   { pubkey: feeWallet2,    isSigner: false, isWritable: true  },
+    tenant_wallet:  { pubkey: tenantWallet,  isSigner: false, isWritable: true  },
+    system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    slot_hashes:    { pubkey: new PublicKey("SysvarS1otHashes111111111111111111111111111"), isSigner: false, isWritable: false },
+    ...(vaultTokenAccount ? { vault_token_account: { pubkey: vaultTokenAccount, isSigner: false, isWritable: true } } : {}),
+    ...(userTokenAccount ? { user_token_account: { pubkey: userTokenAccount, isSigner: false, isWritable: true } } : {}),
+    ...(tokenProgram ? { token_program: { pubkey: tokenProgram, isSigner: false, isWritable: false } } : {}),
+  }, [slug, boxId, quantity], remainingAccounts);
+}
+
 

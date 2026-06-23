@@ -11,7 +11,7 @@ use instructions::platform::*;
 use instructions::prize::*;
 use instructions::user::*;
 
-declare_id!("DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
+declare_id!("4GwYrYmaEQqGH3B69kiaxHsjJS5XbK5a3m1ttt5cajqJ");
 
 #[program]
 pub mod mystery_box {
@@ -151,30 +151,13 @@ pub mod mystery_box {
         instructions::prize::withdraw_vault_token(ctx, slug, amount)
     }
 
-    pub fn buy_box(
-        ctx: Context<BuyBox>,
+    pub fn open_box(
+        ctx: Context<OpenBox>,
         slug: String,
         box_id: u64,
         quantity: u8,
     ) -> Result<()> {
-        instructions::user::buy_box(ctx, slug, box_id, quantity)
-    }
-
-    pub fn request_open(
-        ctx: Context<RequestOpen>,
-        slug: String,
-        box_id: u64,
-        quantity: u32,
-    ) -> Result<()> {
-        instructions::user::request_open(ctx, slug, box_id, quantity)
-    }
-
-    pub fn reveal_open(
-        ctx: Context<RevealOpen>,
-        slug: String,
-        box_id: u64,
-    ) -> Result<()> {
-        instructions::user::reveal_open(ctx, slug, box_id)
+        instructions::user::open_box(ctx, slug, box_id, quantity)
     }
 
 
