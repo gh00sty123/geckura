@@ -54,9 +54,13 @@ async function getDecimalsForMint(mintAddress: string, walletAssets: any[] = [],
   try {
     const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
     const conn = new Connection(rpcUrl, "confirmed");
-    const { getMint } = await import("@solana/spl-token");
-    const mintInfo = await getMint(conn, new PublicKey(mintAddress));
-    return mintInfo.decimals;
+    const mintPk = new PublicKey(mintAddress);
+    const accInfo = await conn.getAccountInfo(mintPk);
+    if (accInfo && accInfo.data.length >= 45) {
+      // SPL Token Mint layout: decimals is a single u8 at byte offset 44
+      return accInfo.data[44];
+    }
+    return 9; // Fallback
   } catch (err) {
     console.warn("Failed to fetch mint decimals for", mintAddress, err);
     return 9; // Fallback
