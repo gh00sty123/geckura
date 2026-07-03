@@ -1436,9 +1436,9 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
       <div className="relative w-full overflow-hidden bg-gradient-to-br from-[#f4fef0] to-[#ebfde3]">
         {box.bannerUri ? (
           <img src={resolveIpfsUrl(box.bannerUri)} alt={box.name}
-            className="w-full h-auto min-h-[150px] max-h-[275px] object-contain group-hover:scale-105 transition-transform duration-700 ease-out" />
+            className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
         ) : (
-          <div className="w-full h-[150px] flex items-center justify-center">
+          <div className="w-full aspect-[4/3] flex items-center justify-center">
             <span className="text-5xl opacity-20 group-hover:opacity-30 transition-opacity duration-500">🎁</span>
           </div>
         )}
@@ -1452,10 +1452,10 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
 
         {/* Countdown timer */}
         {active && hasTime && hasStarted && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2">
+          <div className="absolute bottom-3 left-3">
             <motion.span 
-              className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-white/[0.08] text-[#1a3a2a] border-white/[0.12] flex items-center gap-1.5 cursor-default"
-              whileHover={{ scale: 1.05, backgroundColor: "rgba(28, 172, 100, 0.15)", color: "#1cac64", borderColor: "rgba(28, 172, 100, 0.25)" }}
+              className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-black/60 text-[#1cac64] border-[#1cac64]/20 backdrop-blur-md flex items-center gap-1.5 cursor-default"
+              whileHover={{ scale: 1.05, backgroundColor: "rgba(0, 0, 0, 0.8)", borderColor: "rgba(28, 172, 100, 0.4)" }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#1cac64] animate-pulse" />
               {timeLeft(box.endTime)}
