@@ -1512,7 +1512,11 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
               <div className="flex flex-wrap gap-1.5">
                 {payOptions.map((opt, idx) => (
                   <div key={idx} className="flex items-center gap-1.5 bg-[#1cac64]/10 border border-[#1cac64]/20 rounded-xl px-2 py-0.5 hover:border-[#1cac64]/40 hover:bg-[#1cac64]/20 transition duration-300">
-                    <img src={resolveIpfsUrl(opt.image)} alt={opt.symbol} className="h-3 w-3 object-contain rounded-full border border-[#1cac64]/12" />
+                    {opt.image && opt.image !== "🎁" ? (
+                      <img src={resolveIpfsUrl(opt.image)} alt={opt.symbol} className="h-3 w-3 object-contain rounded-full border border-[#1cac64]/12" />
+                    ) : (
+                      <span className="text-[9px]">🎁</span>
+                    )}
                     <span className="text-[9px] font-mono font-bold text-white">
                       {(opt.price / Math.pow(10, opt.decimals)).toFixed(2)} <span className="text-[#a3d9b7] font-sans font-normal">{opt.symbol}</span>
                     </span>
@@ -1793,19 +1797,51 @@ const handleOpen = useCallback(async () => {
           ? new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
           : undefined;
 
-        // Pre-create user ATAs for ALL possible prize mints
+        // Pre-create user ATAs for ALL possible prize mints in separate batch transactions if they don't exist
+        const nonExistentMints: PublicKey[] = [];
         for (const mintStr of uniquePrizeMints) {
           const mint = new PublicKey(mintStr);
           const userAta = getAssociatedTokenAddressSync(mint, wallet.publicKey, true);
           const userAtaInfo = await conn.getAccountInfo(userAta);
           if (!userAtaInfo) {
-            console.log(`[OpenBox] User ATA for ${mintStr.slice(0, 8)}… does not exist, adding create instruction...`);
-            tx.add(createAssociatedTokenAccountInstruction(
-              wallet.publicKey,
-              userAta,
-              wallet.publicKey,
-              mint
-            ));
+            nonExistentMints.push(mint);
+          }
+        }
+
+        if (nonExistentMints.length > 0) {
+          console.log(`[OpenBox] Found ${nonExistentMints.length} missing ATAs. Pre-creating them...`);
+          // Split into chunks of 5 to avoid transaction sizing limits during ATA creation
+          const chunkSize = 5;
+          for (let i = 0; i < nonExistentMints.length; i += chunkSize) {
+            const chunk = nonExistentMints.slice(i, i + chunkSize);
+            const ataTx = new Transaction();
+            for (const mint of chunk) {
+              const userAta = getAssociatedTokenAddressSync(mint, wallet.publicKey, true);
+              ataTx.add(createAssociatedTokenAccountInstruction(
+                wallet.publicKey,
+                userAta,
+                wallet.publicKey,
+                mint
+              ));
+            }
+            setConfirmMessage(`Creating token accounts (batch ${Math.floor(i / chunkSize) + 1}/${Math.ceil(nonExistentMints.length / chunkSize)})...`);
+            ataTx.feePayer = wallet.publicKey;
+            const { blockhash: ataBlockhash } = await retryWithBackoff(
+              () => conn.getLatestBlockhash(),
+              "getLatestBlockhash"
+            ) as { blockhash: string };
+            ataTx.recentBlockhash = ataBlockhash;
+
+            const signedAta = await wallet.signTransaction(ataTx);
+            const ataSig = await retryWithBackoff(
+              () => conn.sendRawTransaction(signedAta.serialize(), { skipPreflight: false, preflightCommitment: "confirmed" }),
+              "sendRawTransaction"
+            );
+            await retryWithBackoff(
+              () => conn.confirmTransaction(ataSig, "confirmed"),
+              "confirmTransaction"
+            );
+            console.log(`[OpenBox] Pre-created ATA chunk successfully, signature:`, ataSig);
           }
         }
         
