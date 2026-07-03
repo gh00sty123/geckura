@@ -1873,7 +1873,7 @@ const handleOpen = useCallback(async () => {
 
         let vaultTokenAccount: PublicKey | undefined;
         let userTokenAccount: PublicKey | undefined;
-        if (uniquePrizeMints.length === 1) {
+        if (uniquePrizeMints.length >= 1) {
           const mint = new PublicKey(uniquePrizeMints[0]);
           const vaultPk = new PublicKey(vaultPubkey);
           const userPk = wallet.publicKey;
