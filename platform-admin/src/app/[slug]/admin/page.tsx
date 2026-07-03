@@ -29,6 +29,39 @@ interface AssetInfo {
   image?: string;
   symbol?: string;
 }
+function getDecimalsForMintSync(mintAddress: string, walletAssets: any[] = [], vaultAssets: any[] = []): number {
+  if (!mintAddress || mintAddress === "SOL" || mintAddress === "11111111111111111111111111111111" || mintAddress === PublicKey.default.toBase58()) {
+    return 9;
+  }
+  if (mintAddress === "EPjFWdd5AufqSSqeM2xzybapC8G4wEGGkZwyTDt1v" || mintAddress === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") {
+    return 6;
+  }
+  const asset = [...walletAssets, ...vaultAssets].find(a => a.mint === mintAddress);
+  if (asset) return asset.decimals;
+  return 9; // Fallback
+}
+
+async function getDecimalsForMint(mintAddress: string, walletAssets: any[] = [], vaultAssets: any[] = []): Promise<number> {
+  if (!mintAddress || mintAddress === "SOL" || mintAddress === "11111111111111111111111111111111" || mintAddress === PublicKey.default.toBase58()) {
+    return 9;
+  }
+  if (mintAddress === "EPjFWdd5AufqSSqeM2xzybapC8G4wEGGkZwyTDt1v" || mintAddress === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") {
+    return 6;
+  }
+  const asset = [...walletAssets, ...vaultAssets].find(a => a.mint === mintAddress);
+  if (asset) return asset.decimals;
+
+  try {
+    const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+    const conn = new Connection(rpcUrl, "confirmed");
+    const { getMint } = await import("@solana/spl-token");
+    const mintInfo = await getMint(conn, new PublicKey(mintAddress));
+    return mintInfo.decimals;
+  } catch (err) {
+    console.warn("Failed to fetch mint decimals for", mintAddress, err);
+    return 9; // Fallback
+  }
+}
 
 // Fallback method using standard Solana JSON-RPC methods
 async function fetchAssetsForOwnerFallback(ownerPk: PublicKey, rpcUrl: string): Promise<AssetInfo[]> {
@@ -804,7 +837,7 @@ function Inner({ slug }: { slug: string }) {
         <Stat label="Active" value={slugBoxes.filter((b:any) => boxStatusToCode(b.status)===0).length} color="text-green-400" />
         <Stat label="Paused" value={slugBoxes.filter((b:any) => boxStatusToCode(b.status)===1).length} color="text-yellow-400" />
         <Stat label="Ended"  value={slugBoxes.filter((b:any) => boxStatusToCode(b.status)===2).length} color="text-red-400" />
-        <StatRevenue label="Total Revenue" boxes={slugBoxes} />
+        <StatRevenue label="Total Revenue" boxes={slugBoxes} walletAssets={walletAssets} vaultAssets={vaultAssets} />
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -1003,8 +1036,31 @@ function EditModal({
   const [startStr, setStartStr]= useState(unixToDatetimeLocal(toUnixSeconds(box.startTime ?? box.start_time)));
   const [endStr, setEndStr]    = useState(unixToDatetimeLocal(toUnixSeconds(box.endTime ?? box.end_time)));
   const [prices, setPrices]    = useState<string[]>(() => {
-    return [0, 1, 2].map(i => String((box.acceptedPrices?.[i] ?? 0) / 1e9));
+    return [0, 1, 2].map(i => {
+      const rawPrice = box.acceptedPrices?.[i] ?? 0;
+      let mintPk = box.acceptedMints?.[i];
+      if (!mintPk) return "0";
+      const mintStr = typeof mintPk === "string" ? mintPk : (mintPk.toBase58?.() ?? "");
+      const decimals = getDecimalsForMintSync(mintStr, walletAssets, vaultAssets);
+      return String(rawPrice / Math.pow(10, decimals));
+    });
   });
+
+  useEffect(() => {
+    const resolvePrices = async () => {
+      const resolved = await Promise.all([0, 1, 2].map(async (i) => {
+        const rawPrice = box.acceptedPrices?.[i] ?? 0;
+        if (rawPrice === 0) return "0";
+        let mintPk = box.acceptedMints?.[i];
+        if (!mintPk) return "0";
+        const mintStr = typeof mintPk === "string" ? mintPk : (mintPk.toBase58?.() ?? "");
+        const decimals = await getDecimalsForMint(mintStr, walletAssets, vaultAssets);
+        return String(rawPrice / Math.pow(10, decimals));
+      }));
+      setPrices(resolved);
+    };
+    resolvePrices();
+  }, [box, walletAssets, vaultAssets]);
 
   const initialSelected = useMemo(() => {
     return [0, 1, 2].map(i => {
@@ -1101,7 +1157,20 @@ function EditModal({
           }
         }
       }
-      const pricesN = prices.map(p => Math.round((Number(p) || 0) * 1e9));
+      const pricesN: number[] = [];
+      for (let i = 0; i < prices.length; i++) {
+        const sm = selectedMints[i];
+        let mintStr = "";
+        if (sm === "SOL") {
+          mintStr = PublicKey.default.toBase58();
+        } else if (sm === "CUSTOM") {
+          mintStr = customMints[i].trim();
+        } else {
+          mintStr = sm.trim();
+        }
+        const decimals = await getDecimalsForMint(mintStr, walletAssets, vaultAssets);
+        pricesN.push(Math.round((Number(prices[i]) || 0) * Math.pow(10, decimals)));
+      }
       
       // Automatically derive priceLamports from SOL entry in accepted tokens
       const solIndex = selectedMints.indexOf("SOL");
@@ -1310,7 +1379,7 @@ function Stat({ label, value, color = "text-[#0f2618]" }: { label: string; value
   );
 }
 
-function StatRevenue({ label, boxes }: { label: string; boxes: any[] }) {
+function StatRevenue({ label, boxes, walletAssets = [], vaultAssets = [] }: { label: string; boxes: any[]; walletAssets?: any[]; vaultAssets?: any[] }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   const revenueByToken = useMemo(() => {
@@ -1336,18 +1405,23 @@ function StatRevenue({ label, boxes }: { label: string; boxes: any[] }) {
           }
         } else {
           const price = acceptedPrices[idx] ?? 0;
+          const decimals = getDecimalsForMintSync(mint, walletAssets, vaultAssets);
+          const asset = [...walletAssets, ...vaultAssets].find(a => a.mint === mint);
+          const symbol = mint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" ? "USDC" : (asset?.symbol ?? `Token ${mint.slice(0, 4)}`);
+          const amount = sold * (price / Math.pow(10, decimals));
+
           const existing = map.get(mint);
           if (existing) {
-            existing.amount += sold * price;
+            existing.amount += amount;
           } else {
-            map.set(mint, { amount: sold * price, decimals: 9, symbol: mint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" ? "USDC" : `Token ${mint.slice(0,4)}` });
+            map.set(mint, { amount, decimals, symbol });
           }
         }
       });
     });
 
     return Array.from(map.entries());
-  }, [boxes]);
+  }, [boxes, walletAssets, vaultAssets]);
 
   const totalRevenueSol = revenueByToken.reduce((sum, [_, data]) => {
     if (_ === "SOL") return sum + data.amount;
@@ -1572,7 +1646,16 @@ function CreateBoxModal({
         } else {
           mintsPk.push(PublicKey.default);
         }
-        priceArr.push(Math.round((Number(po.price) || 0) * 1e9));
+        let mintStr = "";
+        if (po.mintKey === "SOL") {
+          mintStr = PublicKey.default.toBase58();
+        } else if (po.mintKey === "CUSTOM") {
+          mintStr = po.customMint.trim();
+        } else {
+          mintStr = po.mintKey.trim();
+        }
+        const decimals = await getDecimalsForMint(mintStr, walletAssets, vaultAssets);
+        priceArr.push(Math.round((Number(po.price) || 0) * Math.pow(10, decimals)));
       }
       while (mintsPk.length < 3) { mintsPk.push(PublicKey.default); priceArr.push(0); }
 
