@@ -43,6 +43,12 @@ pub enum BoxStatus {
     Ended,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
+pub enum ManagePrizeAction {
+    Deposit,
+    Withdraw,
+}
+
 #[account]
 pub struct PlatformConfig {
     pub authority: Pubkey,
@@ -67,8 +73,9 @@ pub struct Project {
     // 0 = project authority claims ATA rent, 1 = platform treasury claims ATA rent
     pub rent_claim_mode: u8,
     pub fee_wallet_2: Pubkey,
-    // Reserved padding for future schema fields
-    pub reserved: [u8; 31],
+    pub active_boxes_count: u32,
+    // Reserved padding for future schema fields (decreased by 4 bytes to keep size same)
+    pub reserved: [u8; 27],
 }
 
 impl Project {
@@ -102,6 +109,7 @@ pub struct BoxConfig {
     pub end_time: i64,
     pub status: BoxStatus,
     pub bump: u8,
+    pub prizes_count: u8,
 }
 
 impl BoxConfig {
@@ -118,7 +126,8 @@ impl BoxConfig {
         + I64_SIZE
         + I64_SIZE
         + U8_SIZE
-        + U8_SIZE;
+        + U8_SIZE
+        + U8_SIZE; // prizes_count
     pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE;
 }
 

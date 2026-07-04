@@ -277,6 +277,8 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
     const startTime = readI64(raw, offset); offset = startTime.offset;
     const endTime = readI64(raw, offset); offset = endTime.offset;
     const status = raw[offset]; offset += 1;
+    const bump = raw[offset]; offset += 1;
+    const prizesCount = raw[offset]; offset += 1;
     return {
       project,
       boxId: boxId.value,
@@ -291,7 +293,8 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
       startTime: startTime.value,
       endTime: endTime.value,
       status,
-      bump: raw[offset],
+      bump,
+      prizesCount,
     } as T;
   }
 
@@ -848,7 +851,7 @@ export function ixOpenBox(
     box_config:     { pubkey: boxConfig,     isSigner: false, isWritable: true  },
     receipt:        { pubkey: receipt,       isSigner: false, isWritable: true  },
     vault:          { pubkey: vault,         isSigner: false, isWritable: true  },
-    user:           { pubkey: user,          isSigner: true,  isWritable: false },
+    user:           { pubkey: user,          isSigner: true,  isWritable: true  },
     fee_wallet:     { pubkey: feeWallet,     isSigner: false, isWritable: true  },
     fee_wallet_2:   { pubkey: feeWallet2,    isSigner: false, isWritable: true  },
     tenant_wallet:  { pubkey: tenantWallet,  isSigner: false, isWritable: true  },

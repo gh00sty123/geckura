@@ -14,6 +14,7 @@ pub struct CreateBox<'info> {
     )]
     pub platform: Account<'info, PlatformConfig>,
     #[account(
+        mut,
         seeds = [PROJECT_SEED, slug.as_bytes()],
         bump = project.bump
     )]
@@ -57,6 +58,7 @@ pub struct CloseBox<'info> {
     )]
     pub platform: Account<'info, PlatformConfig>,
     #[account(
+        mut,
         seeds = [PROJECT_SEED, slug.as_bytes()],
         bump = project.bump
     )]
@@ -84,7 +86,7 @@ pub fn create_box(
     start_time: i64,
     end_time: i64,
 ) -> Result<()> {
-    let project = &ctx.accounts.project;
+    let project = &mut ctx.accounts.project;
     let platform = &ctx.accounts.platform;
 
     // Authorization: only project authority can create boxes
@@ -98,6 +100,10 @@ pub fn create_box(
     require!(!platform.is_paused, MysteryBoxError::PlatformPaused);
     require!(supply > 0, MysteryBoxError::BoxSoldOut);
     require!(end_time > start_time, MysteryBoxError::BoxAlreadyEnded);
+
+    project.active_boxes_count = project.active_boxes_count
+        .checked_add(1)
+        .ok_or(MysteryBoxError::MathOverflow)?;
 
     let box_config = &mut ctx.accounts.box_config;
     box_config.project = project.key();
@@ -114,6 +120,7 @@ pub fn create_box(
     box_config.end_time = end_time;
     box_config.status = BoxStatus::Active;
     box_config.bump = ctx.bumps.box_config;
+    box_config.prizes_count = 0;
 
     Ok(())
 }
@@ -156,7 +163,7 @@ pub fn update_box(
 
 pub fn close_box(ctx: Context<CloseBox>, _slug: String, _box_id: u64) -> Result<()> {
     let box_config = &ctx.accounts.box_config;
-    let project = &ctx.accounts.project;
+    let project = &mut ctx.accounts.project;
     let platform = &ctx.accounts.platform;
 
     let clock = Clock::get()?;
@@ -180,6 +187,10 @@ pub fn close_box(ctx: Context<CloseBox>, _slug: String, _box_id: u64) -> Result<
         box_config.sold == box_config.total_opened,
         MysteryBoxError::BoxHasPendingReceipts
     );
+
+    project.active_boxes_count = project.active_boxes_count
+        .checked_sub(1)
+        .ok_or(MysteryBoxError::MathOverflow)?;
 
     Ok(())
 }

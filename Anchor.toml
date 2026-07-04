@@ -4,14 +4,14 @@ version = "0.1.0"
 anchor_version = "1.0.1"
 
 [programs.localnet]
-mystery_box = "4GwYrYmaEQqGH3B69kiaxHsjJS5XbK5a3m1ttt5cajqJ"
+mystery_box = "45krUFivAX6f3zkH5CkWRkQWc8FDLjxLiHZyGVfBvzYW"
 
 [programs.devnet]
-mystery_box = "4GwYrYmaEQqGH3B69kiaxHsjJS5XbK5a3m1ttt5cajqJ"
+mystery_box = "45krUFivAX6f3zkH5CkWRkQWc8FDLjxLiHZyGVfBvzYW"
 
 [provider]
 cluster = "localnet"
-wallet = "~/.config/solana/id.json"
+wallet = "../authority.json"
 
 [scripts]
 test = "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

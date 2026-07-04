@@ -136,7 +136,7 @@ export const createPrizeItemTx = async (
 
   const ix = buildIx("create_prize_item", {
     project: { pubkey: projectPda, isSigner: false, isWritable: false },
-    box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: false },
+    box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
     prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: true },
     tenant: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -190,8 +190,6 @@ export const createBoxWithPrizesTx = async (
   const prices = [...params.box.acceptedPrices];
   while (prices.length < 3) prices.push(0);
 
-  const tx = new Transaction();
-
   // Create Box Instruction
   const boxIx = buildIx("create_box", {
     platform: { pubkey: platformPda, isSigner: false, isWritable: false },
@@ -209,10 +207,20 @@ export const createBoxWithPrizesTx = async (
     params.box.startTime,
     params.box.endTime
   ]);
-  tx.add(boxIx);
 
-  // Create Prize Item Instructions
-  for (const prize of params.prizes) {
+  // Split prizes into batches of 4 to prevent exceeding Solana's 1232-byte transaction limit
+  const batchSize = 4;
+  const prizeBatches = [];
+  for (let i = 0; i < params.prizes.length; i += batchSize) {
+    prizeBatches.push(params.prizes.slice(i, i + batchSize));
+  }
+
+  // 1. Transaction 1: Create Box + First Batch of Prizes
+  const tx1 = new Transaction();
+  tx1.add(boxIx);
+
+  const firstBatch = prizeBatches[0] || [];
+  for (const prize of firstBatch) {
     const prizeItemPda = PublicKey.findProgramAddressSync(
       [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([prize.prizeIndex])],
       PROGRAM_ID
@@ -220,7 +228,7 @@ export const createBoxWithPrizesTx = async (
 
     const prizeIx = buildIx("create_prize_item", {
       project: { pubkey: projectPda, isSigner: false, isWritable: false },
-      box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: false },
+      box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
       prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: true },
       tenant: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
       system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -234,10 +242,40 @@ export const createBoxWithPrizesTx = async (
       prize.winPercentage,
       prize.totalCount
     ]);
-    tx.add(prizeIx);
+    tx1.add(prizeIx);
   }
 
-  await sendTx(tx, wallet);
+  await sendTx(tx1, wallet);
+
+  // 2. Subsequent transactions: Remaining prizes in batches of 4
+  for (let b = 1; b < prizeBatches.length; b++) {
+    const tx = new Transaction();
+    for (const prize of prizeBatches[b]) {
+      const prizeItemPda = PublicKey.findProgramAddressSync(
+        [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([prize.prizeIndex])],
+        PROGRAM_ID
+      )[0];
+
+      const prizeIx = buildIx("create_prize_item", {
+        project: { pubkey: projectPda, isSigner: false, isWritable: false },
+        box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
+        prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: true },
+        tenant: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
+        system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      }, [
+        params.box.slug,
+        params.box.boxId,
+        prize.prizeIndex,
+        prize.prizeType,
+        prize.tokenMint,
+        prize.amount,
+        prize.winPercentage,
+        prize.totalCount
+      ]);
+      tx.add(prizeIx);
+    }
+    await sendTx(tx, wallet);
+  }
 };
 
 
@@ -270,22 +308,23 @@ export const depositPrizeTx = async (
     ATA_PROG
   )[0];
 
-  const ix = buildIx("deposit_prize", {
+  const ix = buildIx("manage_prize", {
     project: { pubkey: projectPda, isSigner: false, isWritable: false },
-    box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: false },
-    prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: false },
+    box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
+    prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: true },
     vault: { pubkey: vaultPda, isSigner: false, isWritable: false },
     token_mint: { pubkey: params.tokenMint, isSigner: false, isWritable: false },
     tenant_token_account: { pubkey: signerAta, isSigner: false, isWritable: true },
     vault_token_account: { pubkey: vaultAta, isSigner: false, isWritable: true },
-    tenant: { pubkey: wallet.publicKey!,  isSigner: true, isWritable: false },
+    tenant: { pubkey: wallet.publicKey!,  isSigner: true, isWritable: true },
     token_program: { pubkey: TOKEN_PROG, isSigner: false, isWritable: false },
     associated_token_program: { pubkey: ATA_PROG, isSigner: false, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
     params.slug,
-    params.boxId,
     params.prizeIndex,
+    params.boxId,
+    { deposit: {} },
     params.amount
   ]);
 
@@ -320,22 +359,24 @@ export const withdrawPrizeTx = async (
     ATA_PROG
   )[0];
 
-  const ix = buildIx("withdraw_prize", {
+  const ix = buildIx("manage_prize", {
     project: { pubkey: projectPda, isSigner: false, isWritable: false },
-    box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: false },
-    prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: false },
+    box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
+    prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: true },
     vault: { pubkey: vaultPda, isSigner: false, isWritable: false },
     token_mint: { pubkey: params.tokenMint, isSigner: false, isWritable: false },
-    vault_token_account: { pubkey: vaultAta, isSigner: false, isWritable: true },
     tenant_token_account: { pubkey: signerAta, isSigner: false, isWritable: true },
-    tenant: { pubkey: wallet.publicKey!,  isSigner: true, isWritable: false },
+    vault_token_account: { pubkey: vaultAta, isSigner: false, isWritable: true },
+    tenant: { pubkey: wallet.publicKey!,  isSigner: true, isWritable: true },
     token_program: { pubkey: TOKEN_PROG, isSigner: false, isWritable: false },
     associated_token_program: { pubkey: ATA_PROG, isSigner: false, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
     params.slug,
+    params.prizeIndex,
     params.boxId,
-    params.prizeIndex
+    { withdraw: {} },
+    0
   ]);
 
   await sendIx(ix, wallet);

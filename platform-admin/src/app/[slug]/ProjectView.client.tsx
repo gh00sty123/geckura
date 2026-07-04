@@ -1881,6 +1881,19 @@ const handleOpen = useCallback(async () => {
           userTokenAccount = getAssociatedTokenAddressSync(mint, userPk, true);
         }
 
+        const remainingAccounts = [...prizeItemAccounts];
+        for (const mintStr of uniquePrizeMints) {
+          const mint = new PublicKey(mintStr);
+          const vaultPk = new PublicKey(vaultPubkey);
+          const userPk = wallet.publicKey;
+          const vaultAta = getAssociatedTokenAddressSync(mint, vaultPk, true);
+          const userAta = getAssociatedTokenAddressSync(mint, userPk, true);
+          remainingAccounts.push(
+            { pubkey: vaultAta, isSigner: false, isWritable: true },
+            { pubkey: userAta, isSigner: false, isWritable: true }
+          );
+        }
+
         // Add open_box instruction to buy and reveal instantly in a single transaction
         const openIx = ixOpenBox(
           platformPubkey,
@@ -1898,7 +1911,7 @@ const handleOpen = useCallback(async () => {
           vaultTokenAccount,
           userTokenAccount,
           tokenProgram,
-          prizeItemAccounts
+          remainingAccounts
         );
         tx.add(openIx);
 

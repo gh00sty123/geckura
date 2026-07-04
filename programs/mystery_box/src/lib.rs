@@ -11,7 +11,7 @@ use instructions::platform::*;
 use instructions::prize::*;
 use instructions::user::*;
 
-declare_id!("4GwYrYmaEQqGH3B69kiaxHsjJS5XbK5a3m1ttt5cajqJ");
+declare_id!("45krUFivAX6f3zkH5CkWRkQWc8FDLjxLiHZyGVfBvzYW");
 
 #[program]
 pub mod mystery_box {
@@ -116,23 +116,15 @@ pub mod mystery_box {
         )
     }
 
-    pub fn deposit_prize(
-        ctx: Context<DepositPrize>,
+    pub fn manage_prize(
+        ctx: Context<ManagePrize>,
         slug: String,
         prize_index: u8,
         box_id: u64,
+        action: crate::state::ManagePrizeAction,
         amount: u64,
     ) -> Result<()> {
-        instructions::prize::deposit_prize(ctx, slug, prize_index, box_id, amount)
-    }
-
-    pub fn withdraw_prize(
-        ctx: Context<WithdrawPrize>,
-        slug: String,
-        box_id: u64,
-        prize_index: u8,
-    ) -> Result<()> {
-        instructions::prize::withdraw_prize(ctx, slug, box_id, prize_index)
+        instructions::prize::manage_prize(ctx, slug, prize_index, box_id, action, amount)
     }
 
     pub fn withdraw_vault_sol(
@@ -151,8 +143,8 @@ pub mod mystery_box {
         instructions::prize::withdraw_vault_token(ctx, slug, amount)
     }
 
-    pub fn open_box(
-        ctx: Context<OpenBox>,
+    pub fn open_box<'info>(
+        ctx: Context<'info, OpenBox<'info>>,
         slug: String,
         box_id: u64,
         quantity: u8,

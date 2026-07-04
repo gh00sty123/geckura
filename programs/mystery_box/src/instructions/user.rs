@@ -77,8 +77,8 @@ pub struct OpenBox<'info> {
     pub token_program: Option<Program<'info, Token>>,
 }
 
-pub fn open_box(
-    ctx: Context<OpenBox>,
+pub fn open_box<'info>(
+    ctx: Context<'info, OpenBox<'info>>,
     _slug: String,
     _box_id: u64,
     quantity: u8,
@@ -88,7 +88,7 @@ pub fn open_box(
     let box_config = &mut ctx.accounts.box_config;
     let receipt = &mut ctx.accounts.receipt;
     let user = &ctx.accounts.user;
-    let vault = &ctx.accounts.vault;
+    let vault = &*ctx.accounts.vault;
 
     if receipt.user == Pubkey::default() {
         receipt.user = user.key();
@@ -219,11 +219,15 @@ pub fn open_box(
         let mut guaranteed_prize_index: Option<usize> = None;
 
         let remaining_accounts = ctx.remaining_accounts;
+        let prizes_count = box_config.prizes_count as usize;
+        require!(remaining_accounts.len() >= prizes_count, MysteryBoxError::Unauthorized);
+
         let mut valid_prize_indices = [0u8; 32];
         let mut valid_prize_weights = [0u8; 32];
         let mut valid_count = 0;
 
-        for (i, account_info) in remaining_accounts.iter().enumerate() {
+        for i in 0..prizes_count {
+            let account_info = &remaining_accounts[i];
             let prize_item = crate::state::PrizeItem::try_deserialize(&mut &**account_info.try_borrow_data()?)?;
             let derived_pda = Pubkey::create_program_address(
                 &[
@@ -237,6 +241,7 @@ pub fn open_box(
 
             require_keys_eq!(account_info.key(), derived_pda, MysteryBoxError::Unauthorized);
             require_keys_eq!(prize_item.box_config, box_config.key(), MysteryBoxError::Unauthorized);
+            require!(prize_item.index as usize == i, MysteryBoxError::Unauthorized);
 
             let idx = prize_item.index as usize;
             if idx < 20 {
@@ -307,28 +312,56 @@ pub fn open_box(
                     total_sol_won = current_total_sol_won;
                 }
                 PrizeType::SplToken | PrizeType::Nft => {
+                    let mut vault_token_info = None;
+                    let mut user_token_info = None;
+
+                    // 1. Try to use named accounts if they match the won prize mint
+                    if let (Some(v), Some(u)) = (&ctx.accounts.vault_token_account, &ctx.accounts.user_token_account) {
+                        if v.mint == prize.token_mint && u.mint == prize.token_mint {
+                            vault_token_info = Some(v.to_account_info());
+                            user_token_info = Some(u.to_account_info());
+                        }
+                    }
+
+                    // 2. If they didn't match or weren't provided, look up in remaining accounts using cheap helper
+                    if vault_token_info.is_none() || user_token_info.is_none() {
+                        for acc in ctx.remaining_accounts.iter() {
+                            if validate_token_account(acc, &prize.token_mint, &vault.key()) {
+                                vault_token_info = Some(acc.clone());
+                            } else if validate_token_account(acc, &prize.token_mint, &user.key()) {
+                                user_token_info = Some(acc.clone());
+                            }
+                        }
+                    }
+
                     require!(
-                        ctx.accounts.vault_token_account.is_some() &&
-                        ctx.accounts.user_token_account.is_some() &&
-                        ctx.accounts.token_program.is_some(),
+                        vault_token_info.is_some() && user_token_info.is_some() && ctx.accounts.token_program.is_some(),
                         MysteryBoxError::InsufficientFunds
                     );
 
-                    let vault_token_acc = ctx.accounts.vault_token_account.as_ref().unwrap();
-                    let user_token_acc = ctx.accounts.user_token_account.as_ref().unwrap();
+                    let vault_token_acc_info = vault_token_info.unwrap();
+                    let user_token_acc_info = user_token_info.unwrap();
                     let token_program = ctx.accounts.token_program.as_ref().unwrap();
 
-                    require!(vault_token_acc.mint == prize.token_mint, MysteryBoxError::InvalidMint);
-                    require!(user_token_acc.mint == prize.token_mint, MysteryBoxError::InvalidMint);
-                    require!(vault_token_acc.amount >= amount_won, MysteryBoxError::InsufficientFunds);
-                    require!(vault_token_acc.owner == vault.key(), MysteryBoxError::Unauthorized);
-                    require!(user_token_acc.owner == user.key(), MysteryBoxError::Unauthorized);
+                    // Perform security checks on vault/user token accounts
+                    {
+                        let vault_token_data = vault_token_acc_info.try_borrow_data()?;
+                        let user_token_data = user_token_acc_info.try_borrow_data()?;
+                        require!(vault_token_data.len() >= 64, MysteryBoxError::InsufficientFunds);
+                        require!(user_token_data.len() >= 64, MysteryBoxError::InsufficientFunds);
+
+                        // Check amount won constraint (amount: u64 is at bytes 64..72)
+                        let mut amount_bytes = [0u8; 8];
+                        amount_bytes.copy_from_slice(&vault_token_data[64..72]);
+                        let vault_amount = u64::from_le_bytes(amount_bytes);
+                        require!(vault_amount >= amount_won, MysteryBoxError::InsufficientFunds);
+                    }
 
                     let cpi_ctx = CpiContext::new(
                         token_program.key(),
                         Transfer {
-                            from: vault_token_acc.to_account_info(),
-                            to: user_token_acc.to_account_info(),
+                            from: vault_token_acc_info,
+                            to: user_token_acc_info,
                             authority: vault.to_account_info(),
                         },
                     );
@@ -380,4 +413,22 @@ pub fn open_box(
     }
 
     Ok(())
+}
+
+fn validate_token_account(
+    acc: &AccountInfo,
+    expected_mint: &Pubkey,
+    expected_owner: &Pubkey,
+) -> bool {
+    if acc.owner != &anchor_spl::token::ID {
+        return false;
+    }
+    let data = match acc.try_borrow_data() {
+        Ok(d) => d,
+        Err(_) => return false,
+    };
+    if data.len() < 64 {
+        return false;
+    }
+    &data[0..32] == expected_mint.as_ref() && &data[32..64] == expected_owner.as_ref()
 }

@@ -122,7 +122,8 @@ pub fn create_project(
     project.is_active = true;
     project.bump = ctx.bumps.project;
     project.rent_claim_mode = rent_claim_mode;
-    project.reserved = [0; 31];
+    project.active_boxes_count = 0;
+    project.reserved = [0; 27];
 
     Ok(())
 }
@@ -153,6 +154,10 @@ pub fn close_project(ctx: Context<CloseProject>, _slug: String) -> Result<()> {
          ctx.accounts.super_admin.key(),
          ctx.accounts.platform.authority,
          MysteryBoxError::Unauthorized
+     );
+     require!(
+         ctx.accounts.project.active_boxes_count == 0,
+         MysteryBoxError::ProjectHasActiveBoxes
      );
      // Account closure is handled by the `close = super_admin` constraint
 

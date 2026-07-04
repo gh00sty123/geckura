@@ -37,12 +37,12 @@ pub struct CreatePrizeItem<'info> {
         bump = project.bump
     )]
     pub project: Account<'info, Project>,
-    /// CHECK: box_config PDA validated by seeds below
     #[account(
+        mut,
         seeds = [BOX_SEED, project.key().as_ref(), &box_id.to_le_bytes()],
-        bump
+        bump = box_config.bump
     )]
-    pub box_config: UncheckedAccount<'info>,
+    pub box_config: Account<'info, BoxConfig>,
     #[account(
         init,
         payer = tenant,
@@ -56,69 +56,18 @@ pub struct CreatePrizeItem<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Unique instruction args `(slug, prize_index, box_id)` — distinct from
-/// `CreatePrizeItem(slug, box_id, prize_index)` to avoid duplicate `#[instruction]` macro constants.
+use crate::state::ManagePrizeAction;
+
 #[derive(Accounts)]
 #[instruction(slug: String, prize_index: u8, box_id: u64)]
-pub struct DepositPrize<'info> {
+pub struct ManagePrize<'info> {
     #[account(
         seeds = [PROJECT_SEED, slug.as_bytes()],
         bump = project.bump
     )]
     pub project: Account<'info, Project>,
-    /// CHECK: box_config PDA validated by seeds below
     #[account(
         mut,
-        seeds = [BOX_SEED, project.key().as_ref(), &box_id.to_le_bytes()],
-        bump
-    )]
-    pub box_config: UncheckedAccount<'info>,
-    #[account(
-        mut,
-        seeds = [PRIZE_SEED, box_config.key().as_ref(), &[prize_index]],
-        bump = prize_item.bump
-    )]
-    pub prize_item: Account<'info, PrizeItem>,
-    /// CHECK: vault PDA validated by seeds below
-    #[account(
-        seeds = [VAULT_SEED, project.key().as_ref()],
-        bump
-    )]
-    pub vault: UncheckedAccount<'info>,
-    pub token_mint: Account<'info, Mint>,
-    #[account(
-        mut,
-        associated_token::mint = token_mint,
-        associated_token::authority = tenant
-    )]
-    pub tenant_token_account: Account<'info, TokenAccount>,
-    #[account(
-        mut,
-        associated_token::mint = token_mint,
-        associated_token::authority = vault
-    )]
-    pub vault_token_account: Account<'info, TokenAccount>,
-    #[account(mut)]
-    pub tenant: Signer<'info>,
-    pub token_program: Program<'info, Token>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
-    pub system_program: Program<'info, System>,
-}
-
-/// Unique instruction args `(slug, prize_index, box_id)` — distinct from
-/// `DepositPrize(slug, prize_index, box_id)` by the order of `box_id` in the withdrawal branch
-/// vs deposit branch; the struct type itself is already distinct but the instruction name
-/// (`withdraw_prize`) allows reusing the same signature as `DepositPrize` with no macro conflict.
-#[derive(Accounts)]
-#[instruction(slug: String, box_id: u64, prize_index: u8)]
-pub struct WithdrawPrize<'info> {
-    #[account(
-        seeds = [PROJECT_SEED, slug.as_bytes()],
-        bump = project.bump
-    )]
-    pub project: Account<'info, Project>,
-    /// CHECK: box_config PDA validated by seeds below
-    #[account(
         seeds = [BOX_SEED, project.key().as_ref(), &box_id.to_le_bytes()],
         bump = box_config.bump
     )]
@@ -136,18 +85,10 @@ pub struct WithdrawPrize<'info> {
     )]
     pub vault: UncheckedAccount<'info>,
     pub token_mint: Account<'info, Mint>,
-    #[account(
-        mut,
-        associated_token::mint = token_mint,
-        associated_token::authority = vault
-    )]
-    pub vault_token_account: Account<'info, TokenAccount>,
-    #[account(
-        mut,
-        associated_token::mint = token_mint,
-        associated_token::authority = tenant
-    )]
+    #[account(mut)]
     pub tenant_token_account: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub vault_token_account: Account<'info, TokenAccount>,
     #[account(mut)]
     pub tenant: Signer<'info>,
     pub token_program: Program<'info, Token>,
@@ -173,7 +114,7 @@ pub fn create_prize_item(
     ctx: Context<CreatePrizeItem>,
     _slug: String,
     _box_id: u64,
-    _prize_index: u8,
+    prize_index: u8,
     prize_type: PrizeType,
     token_mint: Pubkey,
     amount: u64,
@@ -189,9 +130,15 @@ pub fn create_prize_item(
     // Validate win percentage range
     require!(win_percentage <= 100, MysteryBoxError::InvalidWinPercentage);
 
+    require!(prize_index < 20, MysteryBoxError::InvalidPrizeIndex);
+    require!(prize_index == ctx.accounts.box_config.prizes_count, MysteryBoxError::InvalidPrizeIndex);
+
+    let box_config = &mut ctx.accounts.box_config;
+    box_config.prizes_count = box_config.prizes_count.checked_add(1).ok_or(MysteryBoxError::MathOverflow)?;
+
     let prize_item = &mut ctx.accounts.prize_item;
-    prize_item.box_config = ctx.accounts.box_config.key();
-    prize_item.index = _prize_index;
+    prize_item.box_config = box_config.key();
+    prize_item.index = prize_index;
     prize_item.prize_type = prize_type;
     prize_item.token_mint = token_mint;
     prize_item.amount = amount;
@@ -203,14 +150,15 @@ pub fn create_prize_item(
     Ok(())
 }
 
-pub fn deposit_prize(
-    ctx: Context<DepositPrize>,
+pub fn manage_prize(
+    ctx: Context<ManagePrize>,
     _slug: String,
     _prize_index: u8,
     _box_id: u64,
+    action: ManagePrizeAction,
     amount: u64,
 ) -> Result<()> {
-    // Authorization: only project authority can deposit prizes
+    // Authorization: only project authority can manage prizes
     require_keys_eq!(
         ctx.accounts.tenant.key(),
         ctx.accounts.project.authority,
@@ -224,73 +172,68 @@ pub fn deposit_prize(
         MysteryBoxError::InvalidMint
     );
 
-    let required = prize_item
-        .amount
-        .checked_mul(prize_item.total_count as u64)
-        .ok_or(MysteryBoxError::DepositMismatch)?;
-    require!(amount == required, MysteryBoxError::DepositMismatch);
+    // Manual validations for token accounts to save size
+    require_keys_eq!(ctx.accounts.tenant_token_account.mint, ctx.accounts.token_mint.key(), MysteryBoxError::InvalidMint);
+    require_keys_eq!(ctx.accounts.tenant_token_account.owner, ctx.accounts.tenant.key(), MysteryBoxError::Unauthorized);
+    require_keys_eq!(ctx.accounts.vault_token_account.mint, ctx.accounts.token_mint.key(), MysteryBoxError::InvalidMint);
+    require_keys_eq!(ctx.accounts.vault_token_account.owner, ctx.accounts.vault.key(), MysteryBoxError::Unauthorized);
 
-    let cpi_ctx = CpiContext::new(
-        ctx.accounts.token_program.key(),
-        token::Transfer {
-            from: ctx.accounts.tenant_token_account.to_account_info(),
-            to: ctx.accounts.vault_token_account.to_account_info(),
-            authority: ctx.accounts.tenant.to_account_info(),
-        },
-    );
-    token::transfer(cpi_ctx, amount)?;
+    match action {
+        ManagePrizeAction::Deposit => {
+            let required = prize_item
+                .amount
+                .checked_mul(prize_item.total_count as u64)
+                .ok_or(MysteryBoxError::DepositMismatch)?;
+            require!(amount == required, MysteryBoxError::DepositMismatch);
 
-    Ok(())
-}
+            let cpi_ctx = CpiContext::new(
+                ctx.accounts.token_program.key(),
+                token::Transfer {
+                    from: ctx.accounts.tenant_token_account.to_account_info(),
+                    to: ctx.accounts.vault_token_account.to_account_info(),
+                    authority: ctx.accounts.tenant.to_account_info(),
+                },
+            );
+            token::transfer(cpi_ctx, amount)?;
+        }
+        ManagePrizeAction::Withdraw => {
+            let box_config = &ctx.accounts.box_config;
+            let vault = &ctx.accounts.vault;
+            let project = &ctx.accounts.project;
 
-pub fn withdraw_prize(
-    ctx: Context<WithdrawPrize>,
-    _slug: String,
-    _box_id: u64,
-    _prize_index: u8,
-) -> Result<()> {
-    // Authorization: only project authority can withdraw prizes
-    require_keys_eq!(
-        ctx.accounts.tenant.key(),
-        ctx.accounts.project.authority,
-        MysteryBoxError::Unauthorized
-    );
-    let box_config = &ctx.accounts.box_config;
-    let prize_item = &ctx.accounts.prize_item;
-    let vault = &ctx.accounts.vault;
-    let project = &ctx.accounts.project;
+            let clock = Clock::get()?;
+            let now = clock.unix_timestamp;
+            require!(
+                box_config.status == BoxStatus::Ended || now > box_config.end_time,
+                MysteryBoxError::BoxNotEnded
+            );
 
-    let clock = Clock::get()?;
-    let now = clock.unix_timestamp;
-    require!(
-        box_config.status == BoxStatus::Ended || now > box_config.end_time,
-        MysteryBoxError::BoxNotEnded
-    );
+            let unclaimed = prize_item
+                .total_count
+                .saturating_sub(prize_item.claimed_count);
+            require!(unclaimed > 0, MysteryBoxError::NoPrizeClaimsRemaining);
 
-    let unclaimed = prize_item
-        .total_count
-        .saturating_sub(prize_item.claimed_count);
-    require!(unclaimed > 0, MysteryBoxError::NoPrizeClaimsRemaining);
+            let withdraw_amount = prize_item
+                .amount
+                .checked_mul(unclaimed as u64)
+                .ok_or(MysteryBoxError::DepositMismatch)?;
 
-    let withdraw_amount = prize_item
-        .amount
-        .checked_mul(unclaimed as u64)
-        .ok_or(MysteryBoxError::DepositMismatch)?;
+            let project_key = project.key();
+            let seeds = &[VAULT_SEED, project_key.as_ref(), &[ctx.bumps.vault]];
+            let signer = &[&seeds[..]];
 
-    let project_key = project.key();
-    let seeds = &[VAULT_SEED, project_key.as_ref(), &[ctx.bumps.vault]];
-    let signer = &[&seeds[..]];
-
-    let cpi_ctx = CpiContext::new_with_signer(
-        ctx.accounts.token_program.key(),
-        token::Transfer {
-            from: ctx.accounts.vault_token_account.to_account_info(),
-            to: ctx.accounts.tenant_token_account.to_account_info(),
-            authority: vault.to_account_info(),
-        },
-        signer,
-    );
-    token::transfer(cpi_ctx, withdraw_amount)?;
+            let cpi_ctx = CpiContext::new_with_signer(
+                ctx.accounts.token_program.key(),
+                token::Transfer {
+                    from: ctx.accounts.vault_token_account.to_account_info(),
+                    to: ctx.accounts.tenant_token_account.to_account_info(),
+                    authority: vault.to_account_info(),
+                },
+                signer,
+            );
+            token::transfer(cpi_ctx, withdraw_amount)?;
+        }
+    }
 
     Ok(())
 }
@@ -322,6 +265,11 @@ pub struct WithdrawVaultSol<'info> {
 }
 
 pub fn withdraw_vault_sol(ctx: Context<WithdrawVaultSol>, _slug: String, amount: u64) -> Result<()> {
+    require!(
+        ctx.accounts.project.active_boxes_count == 0,
+        MysteryBoxError::ProjectHasActiveBoxes
+    );
+
     let vault_acc = &mut ctx.accounts.vault.to_account_info();
     let authority_acc = &mut ctx.accounts.authority.to_account_info();
 
@@ -387,6 +335,11 @@ pub struct WithdrawVaultToken<'info> {
 }
 
 pub fn withdraw_vault_token(ctx: Context<WithdrawVaultToken>, _slug: String, amount: u64) -> Result<()> {
+    require!(
+        ctx.accounts.project.active_boxes_count == 0,
+        MysteryBoxError::ProjectHasActiveBoxes
+    );
+
     let project_key = ctx.accounts.project.key();
     let seeds = &[
         VAULT_SEED,

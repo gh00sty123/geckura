@@ -1595,6 +1595,7 @@ function CreateBoxModal({
   const submit = useCallback(async () => {
     if (!wallet.publicKey) return;
     if (!name.trim()) { toast.error("Name required"); return; }
+    if (rewards.length > 20) { toast.error("Maximum of 20 rewards allowed per box"); return; }
     if (cumulativeWinPct > 100) { toast.error("Total win % exceeds 100%"); return; }
     setLoading(true); setErr(""); setStep("");
     try {
@@ -1848,9 +1849,20 @@ function CreateBoxModal({
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold text-[#2d5a3f] uppercase tracking-wider">🎁 Box Prizes &amp; Rewards <span className="text-[#4a7d5e] normal-case">(from vault)</span></p>
             <button
-              onClick={() => setRewards(prev => [...prev, { id: nextRewardId, assetKey: rewardAssetOptions[0]?.value ?? "", amountPerWin: "1", totalCount: "1", winPct: "5" }])}
-              className="text-[10px] px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 border border-emerald-500/25 hover:bg-emerald-500/20 transition font-semibold"
-            >+ Add Reward</button>
+              onClick={() => {
+                if (rewards.length >= 20) {
+                  toast.error("A box can have at most 20 rewards");
+                  return;
+                }
+                setRewards(prev => [...prev, { id: nextRewardId, assetKey: rewardAssetOptions[0]?.value ?? "", amountPerWin: "1", totalCount: "1", winPct: "5" }]);
+              }}
+              disabled={rewards.length >= 20}
+              className={`text-[10px] px-2.5 py-1 rounded-md font-semibold border transition ${
+                rewards.length >= 20
+                  ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                  : "bg-emerald-500/10 text-emerald-600 border-emerald-500/25 hover:bg-emerald-500/20"
+              }`}
+            >+ Add Reward ({rewards.length}/20)</button>
           </div>
 
           {rewards.length === 0 && (

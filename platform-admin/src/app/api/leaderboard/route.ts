@@ -55,6 +55,7 @@ const verifyOnChainTx = async (
     const hasOpenLog = logs.some(log => 
       log.includes("BoxOpenEvent") || 
       log.includes("Program data:") || 
+      log.includes("Instruction: open_box") ||
       log.includes("Instruction: request_open") || 
       log.includes("Instruction: reveal_open")
     );

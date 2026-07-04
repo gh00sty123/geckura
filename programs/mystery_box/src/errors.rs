@@ -26,4 +26,6 @@ pub enum MysteryBoxError {
     SlotHashNotFound,
     RequestExpired,
     NoPurchasedBoxes,
+    ProjectHasActiveBoxes,
+    InvalidPrizeIndex,
 }

@@ -2548,6 +2548,16 @@
       "code": 6023,
       "name": "NoPurchasedBoxes",
       "msg": "No purchased boxes available to open."
+    },
+    {
+      "code": 6024,
+      "name": "ProjectHasActiveBoxes",
+      "msg": "Project has active boxes and cannot be closed."
+    },
+    {
+      "code": 6025,
+      "name": "InvalidPrizeIndex",
+      "msg": "Prize index is invalid or out of sequence."
     }
   ],
   "types": [
@@ -2629,6 +2639,10 @@
           },
           {
             "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "prizes_count",
             "type": "u8"
           }
         ]

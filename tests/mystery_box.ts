@@ -143,6 +143,7 @@ describe("mystery_box", () => {
     const feeWalletFund = isLocalnet ? 1e8 : 1e7;    // 0.1 SOL on localnet, 0.01 SOL on devnet
     const feeWallet2Fund = isLocalnet ? 1e8 : 1e7;   // 0.1 SOL on localnet, 0.01 SOL on devnet
 
+    await fundAccount(superAdmin.publicKey, 10 * 1e9);
     await fundAccount(tenant.publicKey, tenantFund);
     await fundAccount(user.publicKey, userFund);
     await fundAccount(feeWallet.publicKey, feeWalletFund);
@@ -201,7 +202,7 @@ describe("mystery_box", () => {
       // If fetch fails, the account is not initialized yet. Proceed to initialize it.
     }
 
-    await program.methods
+    await (program as any).methods
       .initializePlatform(platformTreasury.publicKey)
       .accounts({
         platform: platformPda,
@@ -220,7 +221,7 @@ describe("mystery_box", () => {
     const feeLamports = new anchor.BN(5_000_000); // 0.005 SOL fee
     const rentClaimMode = 0;
 
-    await program.methods
+    await (program as any).methods
       .createProject(
         slug,
         tenant.publicKey,
@@ -247,7 +248,7 @@ describe("mystery_box", () => {
   });
 
   it("Initializes the prize vault PDA", async () => {
-    await program.methods
+    await (program as any).methods
       .initializeVault(slug)
       .accounts({
         project: projectPda,
@@ -270,7 +271,7 @@ describe("mystery_box", () => {
     const startTime = new anchor.BN(Math.floor(Date.now() / 1000) - 100);
     const endTime = new anchor.BN(Math.floor(Date.now() / 1000) + 10000);
 
-    await program.methods
+    await (program as any).methods
       .createBox(
         slug,
         boxId,
@@ -304,7 +305,7 @@ describe("mystery_box", () => {
     const winPercentage = 100; // Guaranteed win to simplify test verification
     const totalCount = 10;
 
-    await program.methods
+    await (program as any).methods
       .createPrizeItem(
         slug,
         boxId,
@@ -337,8 +338,8 @@ describe("mystery_box", () => {
   it("Deposits the SPL prize tokens into the vault PDA", async () => {
     const amount = new anchor.BN(10_000_000_000); // 10 tokens (required: amount * totalCount = 1 token * 10 count = 10 tokens)
 
-    await program.methods
-      .depositPrize(slug, prizeIndex, boxId, amount)
+    await (program as any).methods
+      .managePrize(slug, prizeIndex, boxId, { deposit: {} }, amount)
       .accounts({
         project: projectPda,
         boxConfig: boxConfigPda,
@@ -385,7 +386,7 @@ describe("mystery_box", () => {
     const startTime = new anchor.BN(Math.floor(Date.now() / 1000) - 100);
     const endTime = new anchor.BN(Math.floor(Date.now() / 1000) + 10000);
 
-    await program.methods
+    await (program as any).methods
       .createBox(
         slug,
         boxId2,
@@ -412,7 +413,7 @@ describe("mystery_box", () => {
     const winPercentage = 100;
     const totalCount = 10;
 
-    await program.methods
+    await (program as any).methods
       .createPrizeItem(
         slug,
         boxId2,
@@ -435,8 +436,8 @@ describe("mystery_box", () => {
 
     // 3. Deposit prize tokens
     const depositAmount = new anchor.BN(20_000_000_000); // 20 tokens
-    await program.methods
-      .depositPrize(slug, prizeIndex2, boxId2, depositAmount)
+    await (program as any).methods
+      .managePrize(slug, prizeIndex2, boxId2, { deposit: {} }, depositAmount)
       .accounts({
         project: projectPda,
         boxConfig: boxConfigPda2,
@@ -460,7 +461,7 @@ describe("mystery_box", () => {
     // Get user token balance before open
     const preUserBalance = await connection.getTokenAccountBalance(userTokenAccount.address);
 
-    await program.methods
+    await (program as any).methods
       .openBox(slug, boxId2, quantity)
       .accounts({
         platform: platformPda,
@@ -522,7 +523,7 @@ describe("mystery_box", () => {
     const startTime = new anchor.BN(Math.floor(Date.now() / 1000) - 100);
     const endTime = new anchor.BN(Math.floor(Date.now() / 1000) + 10000);
 
-    await program.methods
+    await (program as any).methods
       .createBox(
         slug,
         boxId3,
@@ -549,7 +550,7 @@ describe("mystery_box", () => {
     const winPercentage = 100;
     const totalCount = 20;
 
-    await program.methods
+    await (program as any).methods
       .createPrizeItem(
         slug,
         boxId3,
@@ -584,7 +585,7 @@ describe("mystery_box", () => {
     const SYSVAR_SLOT_HASHES_PUBKEY = new PublicKey("SysvarS1otHashes111111111111111111111111111");
     const preUserSol = await connection.getBalance(user.publicKey);
 
-    await program.methods
+    await (program as any).methods
       .openBox(slug, boxId3, 1)
       .accounts({
         platform: platformPda,
@@ -620,7 +621,7 @@ describe("mystery_box", () => {
     // 5. Call openBox with quantity = 3 (Bulk)
     const preUserSolBulk = await connection.getBalance(user.publicKey);
 
-    await program.methods
+    await (program as any).methods
       .openBox(slug, boxId3, 3)
       .accounts({
         platform: platformPda,
@@ -678,7 +679,7 @@ describe("mystery_box", () => {
     const startTime = new anchor.BN(Math.floor(Date.now() / 1000) - 100);
     const endTime = new anchor.BN(Math.floor(Date.now() / 1000) + 10000);
 
-    await program.methods
+    await (program as any).methods
       .createBox(
         slug,
         boxId4,
@@ -705,7 +706,7 @@ describe("mystery_box", () => {
     const winPercentage = 0;
     const totalCount = 10;
 
-    await program.methods
+    await (program as any).methods
       .createPrizeItem(
         slug,
         boxId4,
@@ -730,7 +731,7 @@ describe("mystery_box", () => {
     const SYSVAR_SLOT_HASHES_PUBKEY = new PublicKey("SysvarS1otHashes111111111111111111111111111");
     const preUserSol = await connection.getBalance(user.publicKey);
 
-    await program.methods
+    await (program as any).methods
       .openBox(slug, boxId4, 1)
       .accounts({
         platform: platformPda,
@@ -795,7 +796,7 @@ describe("mystery_box", () => {
     const startTime = new anchor.BN(Math.floor(Date.now() / 1000) - 100);
     const endTime = new anchor.BN(Math.floor(Date.now() / 1000) + 10000);
 
-    await program.methods
+    await (program as any).methods
       .createBox(
         slug,
         boxId5,
@@ -817,7 +818,7 @@ describe("mystery_box", () => {
       .rpc();
 
     // 2. Create SOL prize item (guaranteed win variant, percentage = 50%)
-    await program.methods
+    await (program as any).methods
       .createPrizeItem(
         slug,
         boxId5,
@@ -839,7 +840,7 @@ describe("mystery_box", () => {
       .rpc();
 
     // 3. Create SPL prize item (percentage = 50%)
-    await program.methods
+    await (program as any).methods
       .createPrizeItem(
         slug,
         boxId5,
@@ -862,8 +863,8 @@ describe("mystery_box", () => {
 
     // 4. Deposit both SOL and SPL prizes
     // SPL tokens deposit
-    await program.methods
-      .depositPrize(slug, prizeIndex5_1, boxId5, new anchor.BN(5_000_000_000))
+    await (program as any).methods
+      .managePrize(slug, prizeIndex5_1, boxId5, { deposit: {} }, new anchor.BN(5_000_000_000))
       .accounts({
         project: projectPda,
         boxConfig: boxConfigPda5,
@@ -893,7 +894,7 @@ describe("mystery_box", () => {
     // 5. Call openBox for 2 boxes
     const SYSVAR_SLOT_HASHES_PUBKEY = new PublicKey("SysvarS1otHashes111111111111111111111111111");
 
-    await program.methods
+    await (program as any).methods
       .openBox(slug, boxId5, 2)
       .accounts({
         platform: platformPda,
@@ -1244,13 +1245,15 @@ describe("mystery_box", () => {
       },
       {
         id: 128,
-        description: "Combo 28: Invalid index check (prize index >= 20)",
+        description: "Combo 28: Invalid index check (prize index >= 20) (Expect: InvalidPrizeIndex)",
         priceSOL: 0.01,
         feeSOL: 0,
         supply: 10,
         quantity: 1,
         prizes: [{ type: "sol", amount: new anchor.BN(10_000_000), winPercentage: 100, totalCount: 10 }],
-        expectedSuccess: true,
+        expectedSuccess: false,
+        errorPhase: "create_prize",
+        errorMessage: "InvalidPrizeIndex",
       },
       {
         id: 129,
@@ -1303,7 +1306,7 @@ describe("mystery_box", () => {
         const acceptedMints = [PublicKey.default, PublicKey.default, PublicKey.default];
         const acceptedPrices = [new anchor.BN(0), new anchor.BN(0), new anchor.BN(0)];
 
-        await program.methods
+        await (program as any).methods
           .createBox(
             slug,
             scenarioBoxId,
@@ -1326,6 +1329,8 @@ describe("mystery_box", () => {
 
         // 3. Create Prize Items and Fund Vault
         const prizePdaList: PublicKey[] = [];
+        let createPrizeErr: any = null;
+        try {
         for (let i = 0; i < scenario.prizes.length; i++) {
           const prize = scenario.prizes[i];
           const targetIndex = scenario.id === 128 ? 20 : i; // Combo 28 uses index 20
@@ -1338,7 +1343,7 @@ describe("mystery_box", () => {
           const prizeType = prize.type === "sol" ? { sol: {} } : { splToken: {} };
           const mintKey = prize.type === "sol" ? PublicKey.default : tokenMint;
 
-          await program.methods
+          await (program as any).methods
             .createPrizeItem(
               slug,
               scenarioBoxId,
@@ -1376,8 +1381,8 @@ describe("mystery_box", () => {
             } else {
               if (scenario.id !== 121 && scenario.id !== 123) {
                 const requiredTokens = prize.amount.muln(prize.totalCount);
-                await program.methods
-                  .depositPrize(slug, targetIndex, scenarioBoxId, requiredTokens)
+                await (program as any).methods
+                  .managePrize(slug, targetIndex, scenarioBoxId, { deposit: {} }, requiredTokens)
                   .accounts({
                     project: projectPda,
                     boxConfig: scenarioBoxConfigPda,
@@ -1397,12 +1402,26 @@ describe("mystery_box", () => {
             }
           }
         }
+        } catch (err: any) {
+          createPrizeErr = err;
+        }
+
+        // If error expected at create_prize phase, verify and skip the rest
+        if ((scenario as any).errorPhase === "create_prize") {
+          expect(createPrizeErr).to.not.be.null;
+          if (scenario.errorMessage) {
+            expect(createPrizeErr.toString()).to.include(scenario.errorMessage);
+          }
+          return;
+        }
+        // Otherwise, prize creation should have succeeded
+        expect(createPrizeErr).to.be.null;
 
         // Setup pre-rolls for lifecycle tests
         const SYSVAR_SLOT_HASHES_PUBKEY = new PublicKey("SysvarS1otHashes111111111111111111111111111");
         if (scenario.id === 111 || scenario.id === 124) {
           // Open the box once (supply = 1) to end it
-          await program.methods
+          await (program as any).methods
             .openBox(slug, scenarioBoxId, 1)
             .accounts({
               platform: platformPda,
@@ -1447,7 +1466,7 @@ describe("mystery_box", () => {
 
         let runErr: any = null;
         try {
-          await program.methods
+          await (program as any).methods
             .openBox(slug, scenarioBoxId, scenario.quantity)
             .accounts({
               platform: platformPda,
