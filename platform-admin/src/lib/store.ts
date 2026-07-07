@@ -193,7 +193,7 @@ function getGeckuraProjectPk(projects: AppUIState["allProjects"]): string {
     projects.find(p => p.slug === GECKURA_DEFAULT_SLUG)?.pubkey
     || PublicKey.findProgramAddressSync(
       [Buffer.from("project"), Buffer.from(GECKURA_DEFAULT_SLUG)],
-      new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"),
+      new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv"),
     )[0].toBase58()
   );
 }
@@ -220,7 +220,7 @@ export const useAppStore = create<AppUIState>((set, get) => ({
     const conn = makeConn();
     try {
       const allPkgs = await retryWithBackoff(
-        () => conn.getProgramAccounts(new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4")),
+        () => conn.getProgramAccounts(new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv")),
         "getProgramAccounts(frontend)",
       );
       const projects = await fetchProjects();
@@ -289,15 +289,12 @@ export const useAppStore = create<AppUIState>((set, get) => ({
     toast.loading("Purchasing box…", { id: "buy-box" });
     const conn = makeConn();
     try {
-      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
-      const boxConfigPk = new PublicKey(box.pubkey);
+      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+      const projectPk = new PublicKey(box.project);
       const receiptPk = PublicKey.findProgramAddressSync(
-        [Buffer.from("receipt"), wallet.publicKey.toBuffer(), boxConfigPk.toBuffer()],
+        [Buffer.from("receipt"), wallet.publicKey.toBuffer(), projectPk.toBuffer()],
         PGID,
       )[0];
-
-      /* Fetch Project account to read fee_wallet and tenant (authority) addresses required by buy_box */
-      const projectPk = new PublicKey(box.project);
       const projectAcc = await retryWithBackoff(
         () => conn.getAccountInfo(projectPk),
         "getAccountInfo(project_fee_wallet)"
@@ -323,14 +320,13 @@ export const useAppStore = create<AppUIState>((set, get) => ({
       const [projectPubkey] = await projectPDA(slug);
       const [boxConfigPubkey] = await boxPDA(projectPubkey, BigInt(box.boxId));
 
-      const ix = buildIx("buy_box", {
+      const ix = buildIx("open_box", {
         platform:      { pubkey: platformPubkey,             isSigner: false, isWritable: true  },
         project:       { pubkey: projectPubkey,              isSigner: false, isWritable: false },
         box_config:    { pubkey: boxConfigPubkey,            isSigner: false, isWritable: true  },
         receipt:       { pubkey: receiptPk,                  isSigner: false, isWritable: true  },
         user:          { pubkey: wallet.publicKey,           isSigner: true,  isWritable: false },
         fee_wallet:    { pubkey: feeWalletPk,                isSigner: false, isWritable: true  },
-        fee_wallet_2:  { pubkey: feeWallet2Pk,               isSigner: false, isWritable: true  },
         tenant_wallet: { pubkey: tenantPk,                   isSigner: false, isWritable: true  },
         system_program: { pubkey: SystemProgram.programId,   isSigner: false, isWritable: false },
       }, [slug, box.boxId, 1]);
@@ -368,10 +364,10 @@ export const useAppStore = create<AppUIState>((set, get) => ({
     toast.loading("Opening box…", { id: "open-box" });
     const conn = makeConn();
     try {
-      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
-      const boxConfigPk = new PublicKey(box.pubkey);
+      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+      const projectPk = new PublicKey(box.project);
       const receiptPk  = PublicKey.findProgramAddressSync(
-        [Buffer.from("receipt"), wallet.publicKey.toBuffer(), boxConfigPk.toBuffer()],
+        [Buffer.from("receipt"), wallet.publicKey.toBuffer(), projectPk.toBuffer()],
         PGID,
       )[0];
       const vaultPk    = PublicKey.findProgramAddressSync(

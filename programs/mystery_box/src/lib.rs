@@ -11,7 +11,7 @@ use instructions::platform::*;
 use instructions::prize::*;
 use instructions::user::*;
 
-declare_id!("45krUFivAX6f3zkH5CkWRkQWc8FDLjxLiHZyGVfBvzYW");
+declare_id!("AEQrvbZvGwGcat5FXDXXZD71NiQsWNfdxvDFvdigxL5t");
 
 #[program]
 pub mod mystery_box {
@@ -85,14 +85,7 @@ pub mod mystery_box {
     pub fn close_box(ctx: Context<CloseBox>, slug: String, box_id: u64) -> Result<()> {
         instructions::box_management::close_box(ctx, slug, box_id)
     }
-    pub fn close_prize_item(
-        ctx: Context<ClosePrizeItem>,
-        slug: String,
-        box_id: u64,
-        prize_index: u8,
-    ) -> Result<()> {
-        instructions::prize::close_prize_item(ctx, slug, box_id, prize_index)
-    }
+
 
 
     pub fn initialize_vault(ctx: Context<InitializeVault>, slug: String) -> Result<()> {
@@ -143,6 +136,13 @@ pub mod mystery_box {
         instructions::prize::withdraw_vault_token(ctx, slug, amount)
     }
 
+    pub fn close_vault_token_account(
+        ctx: Context<CloseVaultTokenAccount>,
+        slug: String,
+    ) -> Result<()> {
+        instructions::prize::close_vault_token_account(ctx, slug)
+    }
+
     pub fn open_box<'info>(
         ctx: Context<'info, OpenBox<'info>>,
         slug: String,
@@ -152,6 +152,14 @@ pub mod mystery_box {
         instructions::user::open_box(ctx, slug, box_id, quantity)
     }
 
+    pub fn claim_prizes<'info>(
+        ctx: Context<'info, ClaimPrizes<'info>>,
+        slug: String,
+    ) -> Result<()> {
+        instructions::user::claim_prizes(ctx, slug)
+    }
 
+    pub fn close_receipt(ctx: Context<CloseReceipt>, slug: String) -> Result<()> {
+        instructions::user::close_receipt(ctx, slug)
+    }
 }
-

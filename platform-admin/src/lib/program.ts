@@ -24,7 +24,7 @@ export function useProgram(connection: Connection | null, wallet: any): Program 
 
 export const PLATFORM_SEED = Buffer.from("platform");
 export const PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"
+  process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv"
 );
 
 export async function platformPDA(): Promise<[PublicKey, number]> {
@@ -86,9 +86,9 @@ export async function retryWithBackoff<T>(fn: () => Promise<T>, label = ""): Pro
   throw lastErr;
 }
 
-export async function receiptPDA(user: PublicKey, boxConfig: PublicKey): Promise<[PublicKey, number]> {
+export async function receiptPDA(user: PublicKey, project: PublicKey): Promise<[PublicKey, number]> {
   return PublicKey.findProgramAddress(
-    [Buffer.from("receipt"), user.toBuffer(), boxConfig.toBuffer()],
+    [Buffer.from("receipt"), user.toBuffer(), project.toBuffer()],
     PROGRAM_ID,
   );
 }

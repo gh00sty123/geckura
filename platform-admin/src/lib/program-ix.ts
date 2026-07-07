@@ -7,7 +7,7 @@ import IDL from "@/lib/idl.json";
 
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 export const PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"
+  process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv"
 );
 export { RPC_URL };
 
@@ -173,11 +173,17 @@ function readString(raw: Buffer, offset: number) {
 }
 
 function readU64(raw: Buffer, offset: number) {
-  return { value: Number(raw.readBigUInt64LE(offset)), offset: offset + 8 };
+  const low = raw.readUInt32LE(offset);
+  const high = raw.readUInt32LE(offset + 4);
+  const value = low + high * 0x100000000;
+  return { value, offset: offset + 8 };
 }
 
 function readI64(raw: Buffer, offset: number) {
-  return { value: Number(raw.readBigInt64LE(offset)), offset: offset + 8 };
+  const low = raw.readUInt32LE(offset);
+  const high = raw.readInt32LE(offset + 4);
+  const value = low + high * 0x100000000;
+  return { value, offset: offset + 8 };
 }
 
 /** Decode a raw account buffer */
@@ -323,6 +329,30 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
     } as T;
   }
 
+  if (schema === "BoxReceipt") {
+    if (!hasDiscriminator(raw, "BoxReceipt")) throw new Error("Invalid BoxReceipt discriminator");
+    let offset = 8;
+    const user = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
+    const boxConfig = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
+    const purchased = raw.readUInt32LE(offset); offset += 4;
+    const totalOpened = raw.readUInt32LE(offset); offset += 4;
+    const nonce = Number(raw.readBigUInt64LE(offset)); offset += 8;
+    const vecLen = raw.readUInt32LE(offset); offset += 4;
+    const claimablePrizes: { prizeIndex: number; prizeType: number; tokenMint: PublicKey; amount: number }[] = [];
+    for (let i = 0; i < vecLen; i++) {
+      const prizeIndex = raw[offset]; offset += 1;
+      const prizeType = raw[offset]; offset += 1;
+      const tokenMint = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
+      const amount = Number(raw.readBigUInt64LE(offset)); offset += 8;
+      claimablePrizes.push({ prizeIndex, prizeType, tokenMint, amount });
+    }
+    const bump = raw[offset];
+    return {
+      user, boxConfig, purchased, totalOpened, nonce,
+      claimablePrizes, bump,
+    } as T;
+  }
+
   throw new Error(`Unknown account schema: ${schema}`);
 }
 
@@ -448,7 +478,7 @@ export async function sendIx(
     if (err instanceof SendTransactionError) {
       try {
         const logs = await err.getLogs(conn);
-        (err as any).logs = logs;
+        Object.defineProperty(err, "logs", { value: logs, configurable: true, writable: true });
       } catch (logErr) {
         console.error("Failed to retrieve SendTransactionError logs in sendIx:", logErr);
       }
@@ -481,7 +511,7 @@ export async function sendTx(
     if (err instanceof SendTransactionError) {
       try {
         const logs = await err.getLogs(conn);
-        (err as any).logs = logs;
+        Object.defineProperty(err, "logs", { value: logs, configurable: true, writable: true });
       } catch (logErr) {
         console.error("Failed to retrieve SendTransactionError logs in sendTx:", logErr);
       }
@@ -556,7 +586,7 @@ export async function retryWithBackoff<T>(fn: () => Promise<T>, label = ""): Pro
 }
 
 /** Fetch all Project accounts by discriminator scan */
-export async function fetchProjects(): Promise<{ pubkey: string; name: string; slug: string; description: string; isActive: boolean; logoUri?: string; bgUri?: string; themeColor?: string; rentClaimMode?: number; solRankingPoints?: number; tokenRankingPoints?: number; feeWallet2?: string }[]> {
+export async function fetchProjects(): Promise<{ pubkey: string; name: string; slug: string; description: string; isActive: boolean; logoUri?: string; bgUri?: string; themeColor?: string; rentClaimMode?: number; solRankingPoints?: number; tokenRankingPoints?: number; feeWallet2?: string; feeWallet?: string; feeLamports?: number }[]> {
   const conn = buildConn();
   const result: any[] = [];
   const accounts = await retryWithBackoff(() => conn.getProgramAccounts(PROGRAM_ID), "getProgramAccounts(fetchProjects)");
@@ -595,6 +625,8 @@ export async function fetchProjects(): Promise<{ pubkey: string; name: string; s
         rentClaimMode: d.rentClaimMode ?? 0,
         solRankingPoints: d.solRankingPoints,
         tokenRankingPoints: d.tokenRankingPoints,
+        feeWallet: d.feeWallet?.toBase58?.() || String(d.feeWallet),
+        feeLamports: d.feeLamports ? Number(d.feeLamports) : 0,
         feeWallet2: d.feeWallet2?.toBase58?.() || String(d.feeWallet2),
       });
     } catch { /* not Project */ }
@@ -716,7 +748,7 @@ export function getSolanaErrorDetails(err: any): string {
   } else if (err && typeof err.getLogs === "function") {
     try {
       console.error("[Solana Error] Detailed Logs:", err.logs || err.getLogs());
-    } catch {}
+    } catch { }
   }
 
   let msg = err.detail?.message || err.message || String(err);
@@ -780,7 +812,7 @@ export function ixCloseBox(
   project: PublicKey,
   boxConfig: PublicKey,
   signer: PublicKey,
-  rentDestination: PublicKey,
+  platformTreasury: PublicKey,
   slug: string,
   boxId: number,
 ): TransactionInstruction {
@@ -789,30 +821,11 @@ export function ixCloseBox(
     project: { pubkey: project, isSigner: false, isWritable: false },
     box_config: { pubkey: boxConfig, isSigner: false, isWritable: true },
     signer: { pubkey: signer, isSigner: true, isWritable: false },
-    rent_destination: { pubkey: rentDestination, isSigner: false, isWritable: true },
+    platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
   }, [slug, boxId]);
 }
 
-export function ixClosePrizeItem(
-  platform: PublicKey,
-  project: PublicKey,
-  boxConfig: PublicKey,
-  prizeItem: PublicKey,
-  signer: PublicKey,
-  rentDestination: PublicKey,
-  slug: string,
-  boxId: number,
-  prizeIndex: number,
-): TransactionInstruction {
-  return buildIx("close_prize_item", {
-    platform: { pubkey: platform, isSigner: false, isWritable: false },
-    project: { pubkey: project, isSigner: false, isWritable: false },
-    box_config: { pubkey: boxConfig, isSigner: false, isWritable: false },
-    prize_item: { pubkey: prizeItem, isSigner: false, isWritable: true },
-    signer: { pubkey: signer, isSigner: true, isWritable: false },
-    rent_destination: { pubkey: rentDestination, isSigner: false, isWritable: true },
-  }, [slug, boxId, prizeIndex]);
-}
+
 
 export function ixCloseProject(
   platform: PublicKey,
@@ -835,32 +848,83 @@ export function ixOpenBox(
   vault: PublicKey,
   user: PublicKey,
   feeWallet: PublicKey,
-  feeWallet2: PublicKey,
   tenantWallet: PublicKey,
   slug: string,
   boxId: number,
   quantity: number,
-  vaultTokenAccount?: PublicKey,
-  userTokenAccount?: PublicKey,
-  tokenProgram?: PublicKey,
   remainingAccounts?: { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }[]
 ): TransactionInstruction {
   return buildIx("open_box", {
-    platform:       { pubkey: platform,      isSigner: false, isWritable: false },
-    project:        { pubkey: project,       isSigner: false, isWritable: false },
-    box_config:     { pubkey: boxConfig,     isSigner: false, isWritable: true  },
-    receipt:        { pubkey: receipt,       isSigner: false, isWritable: true  },
-    vault:          { pubkey: vault,         isSigner: false, isWritable: true  },
-    user:           { pubkey: user,          isSigner: true,  isWritable: true  },
-    fee_wallet:     { pubkey: feeWallet,     isSigner: false, isWritable: true  },
-    fee_wallet_2:   { pubkey: feeWallet2,    isSigner: false, isWritable: true  },
-    tenant_wallet:  { pubkey: tenantWallet,  isSigner: false, isWritable: true  },
+    platform: { pubkey: platform, isSigner: false, isWritable: false },
+    project: { pubkey: project, isSigner: false, isWritable: false },
+    box_config: { pubkey: boxConfig, isSigner: false, isWritable: true },
+    receipt: { pubkey: receipt, isSigner: false, isWritable: true },
+    vault: { pubkey: vault, isSigner: false, isWritable: true },
+    user: { pubkey: user, isSigner: true, isWritable: true },
+    fee_wallet: { pubkey: feeWallet, isSigner: false, isWritable: true },
+    tenant_wallet: { pubkey: tenantWallet, isSigner: false, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-    slot_hashes:    { pubkey: new PublicKey("SysvarS1otHashes111111111111111111111111111"), isSigner: false, isWritable: false },
-    ...(vaultTokenAccount ? { vault_token_account: { pubkey: vaultTokenAccount, isSigner: false, isWritable: true } } : {}),
-    ...(userTokenAccount ? { user_token_account: { pubkey: userTokenAccount, isSigner: false, isWritable: true } } : {}),
-    ...(tokenProgram ? { token_program: { pubkey: tokenProgram, isSigner: false, isWritable: false } } : {}),
+    slot_hashes: { pubkey: new PublicKey("SysvarS1otHashes111111111111111111111111111"), isSigner: false, isWritable: false },
+    instructions: { pubkey: new PublicKey("Sysvar1nstructions1111111111111111111111111"), isSigner: false, isWritable: false },
   }, [slug, boxId, quantity], remainingAccounts);
+}
+
+export function ixClaimPrizes(
+  platform: PublicKey,
+  project: PublicKey,
+  receipt: PublicKey,
+  vault: PublicKey,
+  user: PublicKey,
+  slug: string,
+  remainingAccounts?: { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }[]
+): TransactionInstruction {
+  return buildIx("claim_prizes", {
+    platform: { pubkey: platform, isSigner: false, isWritable: false },
+    project: { pubkey: project, isSigner: false, isWritable: false },
+    receipt: { pubkey: receipt, isSigner: false, isWritable: true },
+    vault: { pubkey: vault, isSigner: false, isWritable: true },
+    user: { pubkey: user, isSigner: true, isWritable: true },
+    system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    token_program: { pubkey: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"), isSigner: false, isWritable: false },
+  }, [slug], remainingAccounts);
+}
+
+export function ixCloseReceipt(
+  platform: PublicKey,
+  project: PublicKey,
+  receipt: PublicKey,
+  user: PublicKey,
+  platformTreasury: PublicKey,
+  slug: string,
+): TransactionInstruction {
+  return buildIx("close_receipt", {
+    platform: { pubkey: platform, isSigner: false, isWritable: false },
+    project: { pubkey: project, isSigner: false, isWritable: false },
+    receipt: { pubkey: receipt, isSigner: false, isWritable: true },
+    user: { pubkey: user, isSigner: true, isWritable: true },
+    platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
+    system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  }, [slug]);
+}
+
+export function ixCloseVaultTokenAccount(
+  platform: PublicKey,
+  project: PublicKey,
+  vault: PublicKey,
+  vaultTokenAccount: PublicKey,
+  platformTreasury: PublicKey,
+  signer: PublicKey,
+  slug: string,
+): TransactionInstruction {
+  return buildIx("close_vault_token_account", {
+    platform: { pubkey: platform, isSigner: false, isWritable: false },
+    project: { pubkey: project, isSigner: false, isWritable: false },
+    vault: { pubkey: vault, isSigner: false, isWritable: false },
+    vault_token_account: { pubkey: vaultTokenAccount, isSigner: false, isWritable: true },
+    platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
+    signer: { pubkey: signer, isSigner: true, isWritable: true },
+    token_program: { pubkey: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"), isSigner: false, isWritable: false },
+  }, [slug]);
 }
 
 

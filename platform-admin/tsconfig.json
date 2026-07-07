@@ -41,6 +41,7 @@
     "test_ata.ts",
     "test_ata_raw.ts",
     "test_native_ata.ts",
-    "check_accounts.ts"
+    "check_accounts.ts",
+    "claim_e2e.ts"
   ]
 }

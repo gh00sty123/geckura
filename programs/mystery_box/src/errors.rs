@@ -28,4 +28,5 @@ pub enum MysteryBoxError {
     NoPurchasedBoxes,
     ProjectHasActiveBoxes,
     InvalidPrizeIndex,
+    PendingPrizesExist,
 }

@@ -1,5 +1,5 @@
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import { buildIx, sendIx, sendTx, platformPDA, projectPDA, boxPDA, vaultPDA, ixCloseBox, ixClosePrizeItem, ixCloseProject, PROGRAM_ID, buildConn, retryWithBackoff, decodeAccount } from "@/lib/program-ix";
+import { buildIx, sendIx, sendTx, platformPDA, projectPDA, boxPDA, vaultPDA, ixCloseBox, ixCloseProject, PROGRAM_ID, buildConn, retryWithBackoff, decodeAccount, ixClaimPrizes, boxStatusToCode, ixCloseReceipt, ixCloseVaultTokenAccount } from "@/lib/program-ix";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { WalletContextState } from "@solana/wallet-adapter-react";
 
@@ -92,7 +92,7 @@ export const createBoxTx = async (
 
   const ix = buildIx("create_box", {
     platform: { pubkey: platformPda, isSigner: false, isWritable: false },
-    project: { pubkey: projectPda, isSigner: false, isWritable: false },
+    project: { pubkey: projectPda, isSigner: false, isWritable: true },
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
     tenant: { pubkey: wallet.publicKey!,  isSigner: true, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -123,23 +123,16 @@ export const createPrizeItemTx = async (
     totalCount: number;
   }
 ) => {
-  const [platformPda] = await platformPDA();
   const [projectPda] = await projectPDA(params.slug);
   const [boxConfigPda] = await boxPDA(
     projectPda,
     params.boxId
   );
-  const prizeItemPda = PublicKey.findProgramAddressSync(
-    [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([params.prizeIndex])],
-    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4")
-  )[0];
 
   const ix = buildIx("create_prize_item", {
     project: { pubkey: projectPda, isSigner: false, isWritable: false },
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
-    prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: true },
     tenant: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
-    system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
     params.slug,
     params.boxId,
@@ -193,7 +186,7 @@ export const createBoxWithPrizesTx = async (
   // Create Box Instruction
   const boxIx = buildIx("create_box", {
     platform: { pubkey: platformPda, isSigner: false, isWritable: false },
-    project: { pubkey: projectPda, isSigner: false, isWritable: false },
+    project: { pubkey: projectPda, isSigner: false, isWritable: true },
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
     tenant: { pubkey: wallet.publicKey!,  isSigner: true, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -221,17 +214,10 @@ export const createBoxWithPrizesTx = async (
 
   const firstBatch = prizeBatches[0] || [];
   for (const prize of firstBatch) {
-    const prizeItemPda = PublicKey.findProgramAddressSync(
-      [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([prize.prizeIndex])],
-      PROGRAM_ID
-    )[0];
-
     const prizeIx = buildIx("create_prize_item", {
       project: { pubkey: projectPda, isSigner: false, isWritable: false },
       box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
-      prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: true },
       tenant: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
-      system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     }, [
       params.box.slug,
       params.box.boxId,
@@ -251,17 +237,10 @@ export const createBoxWithPrizesTx = async (
   for (let b = 1; b < prizeBatches.length; b++) {
     const tx = new Transaction();
     for (const prize of prizeBatches[b]) {
-      const prizeItemPda = PublicKey.findProgramAddressSync(
-        [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([prize.prizeIndex])],
-        PROGRAM_ID
-      )[0];
-
       const prizeIx = buildIx("create_prize_item", {
         project: { pubkey: projectPda, isSigner: false, isWritable: false },
         box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
-        prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: true },
         tenant: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
-        system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
       }, [
         params.box.slug,
         params.box.boxId,
@@ -278,7 +257,6 @@ export const createBoxWithPrizesTx = async (
   }
 };
 
-
 export const depositPrizeTx = async (
   wallet: WalletState,
   params: {
@@ -294,10 +272,6 @@ export const depositPrizeTx = async (
     projectPda,
     params.boxId
   );
-  const prizeItemPda = PublicKey.findProgramAddressSync(
-    [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([params.prizeIndex])],
-    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4")
-  )[0];
   const [vaultPda] = await vaultPDA(projectPda);
   const vaultAta = PublicKey.findProgramAddressSync(
     [vaultPda.toBuffer(), TOKEN_PROG.toBuffer(), params.tokenMint.toBuffer()],
@@ -311,7 +285,6 @@ export const depositPrizeTx = async (
   const ix = buildIx("manage_prize", {
     project: { pubkey: projectPda, isSigner: false, isWritable: false },
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
-    prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: true },
     vault: { pubkey: vaultPda, isSigner: false, isWritable: false },
     token_mint: { pubkey: params.tokenMint, isSigner: false, isWritable: false },
     tenant_token_account: { pubkey: signerAta, isSigner: false, isWritable: true },
@@ -345,10 +318,6 @@ export const withdrawPrizeTx = async (
     projectPda,
     params.boxId
   );
-  const prizeItemPda = PublicKey.findProgramAddressSync(
-    [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([params.prizeIndex])],
-    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4")
-  )[0];
   const [vaultPda] = await vaultPDA(projectPda);
   const vaultAta = PublicKey.findProgramAddressSync(
     [vaultPda.toBuffer(), TOKEN_PROG.toBuffer(), params.tokenMint.toBuffer()],
@@ -362,7 +331,6 @@ export const withdrawPrizeTx = async (
   const ix = buildIx("manage_prize", {
     project: { pubkey: projectPda, isSigner: false, isWritable: false },
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
-    prize_item: { pubkey: prizeItemPda, isSigner: false, isWritable: true },
     vault: { pubkey: vaultPda, isSigner: false, isWritable: false },
     token_mint: { pubkey: params.tokenMint, isSigner: false, isWritable: false },
     tenant_token_account: { pubkey: signerAta, isSigner: false, isWritable: true },
@@ -428,7 +396,6 @@ export const closeBoxTx = async (
   params: {
     slug: string;
     boxId: number;
-    rentDestination?: PublicKey;
   }
 ) => {
   const [platformPda] = await platformPDA();
@@ -438,14 +405,17 @@ export const closeBoxTx = async (
     params.boxId
   );
 
-  const rentDest = params.rentDestination || wallet.publicKey!;
+  const conn = buildConn();
+  const platformInfo = await conn.getAccountInfo(platformPda);
+  if (!platformInfo) throw new Error("Platform config not initialized");
+  const platformTreasury = new PublicKey(platformInfo.data.slice(40, 72));
 
   const ix = buildIx("close_box", {
     platform: { pubkey: platformPda, isSigner: false, isWritable: false },
     project: { pubkey: projectPda, isSigner: false, isWritable: false },
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
     signer: { pubkey: wallet.publicKey!, isSigner: true, isWritable: false },
-    rent_destination: { pubkey: rentDest, isSigner: false, isWritable: true },
+    platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
   }, [
     params.slug,
     params.boxId
@@ -520,8 +490,6 @@ export const withdrawVaultTokenTx = async (
     authority_token_account: { pubkey: signerAta, isSigner: false, isWritable: true },
     authority: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
     token_program: { pubkey: TOKEN_PROG, isSigner: false, isWritable: false },
-    associated_token_program: { pubkey: ATA_PROG, isSigner: false, isWritable: false },
-    system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
     params.slug,
     params.amount
@@ -674,11 +642,18 @@ export interface SweepableBox {
   endTime: number;
 }
 
+export interface SweepableVaultAta {
+  pubkey: string;
+  mint: string;
+  lamports: number;
+}
+
 /** Per-project rent summary */
 export interface ProjectRentInfo {
   slug: string;
   projectPubkey: string;
   sweepableBoxes: SweepableBox[];
+  sweepableVaultAtas: SweepableVaultAta[];
   totalRentLamports: number;
 }
 
@@ -707,7 +682,7 @@ export const fetchRentInfoForProject = async (
   const conn = buildConn();
 
   for (const box of projectBoxes) {
-    const isEnded = box.status === 2 || now > box.endTime;
+    const isEnded = boxStatusToCode(box.status) === 2 || now > box.endTime;
     const isSoldOut = box.sold >= box.supply;
     if (!isEnded && !isSoldOut) continue;
 
@@ -762,12 +737,94 @@ export const fetchRentInfoForProject = async (
     });
   }
 
+  // Fetch all empty vault token accounts (ATAs) owned by vaultPda
+  const [vaultPda] = await vaultPDA(projectPda);
+  const tokenAccounts = await conn.getTokenAccountsByOwner(vaultPda, {
+    programId: TOKEN_PROG,
+  }).catch(() => ({ value: [] }));
+
+  const sweepableVaultAtas: SweepableVaultAta[] = [];
+  for (const ta of tokenAccounts.value) {
+    const accInfo = await conn.getAccountInfo(ta.pubkey).catch(() => null);
+    if (!accInfo) continue;
+    
+    // Parse the token account data to check balance (at offset 64)
+    if (accInfo.data.length >= 165) {
+      const amountData = accInfo.data.slice(64, 72);
+      let balance = BigInt(0);
+      for (let i = 7; i >= 0; i--) {
+        balance = (balance << BigInt(8)) + BigInt(amountData[i]);
+      }
+
+      if (balance === BigInt(0)) {
+        const mintPk = new PublicKey(accInfo.data.slice(0, 32));
+        sweepableVaultAtas.push({
+          pubkey: ta.pubkey.toBase58(),
+          mint: mintPk.toBase58(),
+          lamports: accInfo.lamports,
+        });
+      }
+    }
+  }
+
+  const boxesRentSum = sweepableBoxes.reduce((s, b) => s + b.totalLamports, 0);
+  const atasRentSum = sweepableVaultAtas.reduce((s, a) => s + a.lamports, 0);
+
   return {
     slug,
     projectPubkey,
     sweepableBoxes,
-    totalRentLamports: sweepableBoxes.reduce((s, b) => s + b.totalLamports, 0),
+    sweepableVaultAtas,
+    totalRentLamports: boxesRentSum + atasRentSum,
   };
+};
+
+export const sweepVaultAtaRentTx = async (
+  wallet: WalletState,
+  params: {
+    slug: string;
+    vaultTokenAccount: string;
+  }
+): Promise<string> => {
+  const [platformPda] = await platformPDA();
+  const [projectPda] = await projectPDA(params.slug);
+  const [vaultPda] = await vaultPDA(projectPda);
+
+  const conn = buildConn();
+  const platformInfo = await conn.getAccountInfo(platformPda);
+  if (!platformInfo) throw new Error("Platform config not initialized");
+  const platformTreasury = new PublicKey(platformInfo.data.slice(40, 72));
+
+  const tx = new Transaction();
+  const ix = ixCloseVaultTokenAccount(
+    platformPda,
+    projectPda,
+    vaultPda,
+    new PublicKey(params.vaultTokenAccount),
+    platformTreasury,
+    wallet.publicKey!,
+    params.slug
+  );
+  tx.add(ix);
+
+  if (!wallet.publicKey) throw new Error("Wallet not connected");
+  if (!wallet.signTransaction) throw new Error("Wallet not ready");
+
+  tx.feePayer = wallet.publicKey;
+  tx.recentBlockhash = (
+    await retryWithBackoff(() => conn.getLatestBlockhash(), "getLatestBlockhash(sweep-ata)")
+  ).blockhash;
+
+  const signed = await wallet.signTransaction(tx as any);
+  const sig = await retryWithBackoff(
+    () => conn.sendRawTransaction(signed.serialize(), {
+      skipPreflight: false,
+      preflightCommitment: "confirmed",
+    }),
+    "sendRawTransaction(sweep-ata)"
+  );
+  await retryWithBackoff(() => conn.confirmTransaction(sig, "confirmed"), "confirmTransaction(sweep-ata)");
+  return sig;
 };
 
 /**
@@ -781,7 +838,6 @@ export const adminSweepBoxRentTx = async (
     slug: string;
     boxId: number;
     prizeIndices: number[];
-    rentReceiver: PublicKey;
   }
 ): Promise<string> => {
   const [platformPda] = await platformPDA();
@@ -789,36 +845,19 @@ export const adminSweepBoxRentTx = async (
   const [boxConfigPda] = await boxPDA(projectPda, params.boxId);
 
   const conn = buildConn();
+  const platformInfo = await conn.getAccountInfo(platformPda);
+  if (!platformInfo) throw new Error("Platform config not initialized");
+  const platformTreasury = new PublicKey(platformInfo.data.slice(40, 72));
+
   const tx = new Transaction();
 
-  // 1. Close each prize item first (box must exist for seeds to resolve)
-  for (const prizeIndex of params.prizeIndices) {
-    const prizeItemPda = PublicKey.findProgramAddressSync(
-      [Buffer.from("prize"), boxConfigPda.toBuffer(), Buffer.from([prizeIndex])],
-      PROGRAM_ID
-    )[0];
-
-    const ix = ixClosePrizeItem(
-      platformPda,
-      projectPda,
-      boxConfigPda,
-      prizeItemPda,
-      wallet.publicKey!,
-      params.rentReceiver,
-      params.slug,
-      params.boxId,
-      prizeIndex,
-    );
-    tx.add(ix);
-  }
-
-  // 2. Close the box config last
+  // 1. Close the box config directly
   const boxIx = ixCloseBox(
     platformPda,
     projectPda,
     boxConfigPda,
     wallet.publicKey!,
-    params.rentReceiver,
+    platformTreasury,
     params.slug,
     params.boxId,
   );
@@ -857,4 +896,121 @@ export const closeProjectTx = async (
 
   const ix = ixCloseProject(platformPda, projectPda, wallet.publicKey!, slug);
   await sendIx(ix, wallet);
+};
+
+export const claimPrizesTx = async (
+  wallet: WalletState,
+  params: {
+    slug: string;
+    boxId: number;
+    claimablePrizes: {
+      prizeIndex: number;
+      prizeType: number; // 0 = Sol, 1 = SplToken, 2 = Nft
+      tokenMint: string;
+      amount: string;
+    }[];
+  }
+) => {
+  const [platformPda] = await platformPDA();
+  const [projectPda] = await projectPDA(params.slug);
+  const [boxConfigPda] = await boxPDA(projectPda, params.boxId);
+  const [receiptPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("receipt"), wallet.publicKey!.toBuffer(), projectPda.toBuffer()],
+    PROGRAM_ID
+  );
+  const [vaultPda] = await vaultPDA(projectPda);
+
+  const conn = buildConn();
+  const tx = new Transaction();
+
+  const remainingAccounts: { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }[] = [];
+
+  const mintsToCreateATA: string[] = [];
+
+  for (const prize of params.claimablePrizes) {
+    if (prize.prizeType === 1 || prize.prizeType === 2) {
+      const mint = new PublicKey(prize.tokenMint);
+      const vaultAta = PublicKey.findProgramAddressSync(
+        [vaultPda.toBuffer(), TOKEN_PROG.toBuffer(), mint.toBuffer()],
+        ATA_PROG
+      )[0];
+      const userAta = PublicKey.findProgramAddressSync(
+        [wallet.publicKey!.toBuffer(), TOKEN_PROG.toBuffer(), mint.toBuffer()],
+        ATA_PROG
+      )[0];
+
+      if (!remainingAccounts.some(acc => acc.pubkey.equals(vaultAta))) {
+        remainingAccounts.push({ pubkey: vaultAta, isSigner: false, isWritable: true });
+      }
+      if (!remainingAccounts.some(acc => acc.pubkey.equals(userAta))) {
+        remainingAccounts.push({ pubkey: userAta, isSigner: false, isWritable: true });
+      }
+
+      if (!mintsToCreateATA.includes(prize.tokenMint)) {
+        mintsToCreateATA.push(prize.tokenMint);
+      }
+    }
+  }
+
+  // Pre-create missing user ATAs
+  for (const mintStr of mintsToCreateATA) {
+    const mint = new PublicKey(mintStr);
+    const userAta = PublicKey.findProgramAddressSync(
+      [wallet.publicKey!.toBuffer(), TOKEN_PROG.toBuffer(), mint.toBuffer()],
+      ATA_PROG
+    )[0];
+
+    const userAtaInfo = await conn.getAccountInfo(userAta);
+    if (!userAtaInfo) {
+      tx.add(
+        createAssociatedTokenAccountInstruction(
+          wallet.publicKey!,
+          userAta,
+          wallet.publicKey!,
+          mint
+        )
+      );
+    }
+  }
+
+  const ix = ixClaimPrizes(
+    platformPda,
+    projectPda,
+    receiptPda,
+    vaultPda,
+    wallet.publicKey!,
+    params.slug,
+    remainingAccounts
+  );
+  tx.add(ix);
+
+  await sendTx(tx, wallet);
+};
+
+export const closeReceiptTx = async (
+  wallet: any,
+  params: {
+    slug: string;
+    platformTreasury: string;
+  }
+) => {
+  const [platformPda] = await platformPDA();
+  const [projectPda] = await projectPDA(params.slug);
+  const [receiptPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("receipt"), wallet.publicKey!.toBuffer(), projectPda.toBuffer()],
+    PROGRAM_ID
+  );
+
+  const tx = new Transaction();
+  const ix = ixCloseReceipt(
+    platformPda,
+    projectPda,
+    receiptPda,
+    wallet.publicKey!,
+    new PublicKey(params.platformTreasury),
+    params.slug
+  );
+  tx.add(ix);
+
+  await sendTx(tx, wallet);
 };

@@ -1,5 +1,5 @@
 {
-  "address": "3UsFkjHEJF37odV39hMcPcR6w7ifAC5KVRh6MzMpRQ3Z",
+  "address": "AEQrvbZvGwGcat5FXDXXZD71NiQsWNfdxvDFvdigxL5t",
   "metadata": {
     "name": "mystery_box",
     "version": "0.1.0",
@@ -7,16 +7,16 @@
   },
   "instructions": [
     {
-      "name": "admin_close_box",
+      "name": "claim_prizes",
       "discriminator": [
-        52,
-        216,
-        38,
-        203,
-        152,
-        19,
-        100,
-        49
+        76,
+        144,
+        95,
+        183,
+        178,
+        231,
+        121,
+        76
       ],
       "accounts": [
         {
@@ -58,239 +58,6 @@
               {
                 "kind": "arg",
                 "path": "slug"
-              }
-            ]
-          }
-        },
-        {
-          "name": "box_config",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  98,
-                  111,
-                  120
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "project"
-              },
-              {
-                "kind": "arg",
-                "path": "box_id"
-              }
-            ]
-          }
-        },
-        {
-          "name": "super_admin",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "rent_receiver",
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "slug",
-          "type": "string"
-        },
-        {
-          "name": "box_id",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "admin_close_prize_item",
-      "discriminator": [
-        105,
-        47,
-        111,
-        88,
-        111,
-        198,
-        94,
-        57
-      ],
-      "accounts": [
-        {
-          "name": "platform",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  108,
-                  97,
-                  116,
-                  102,
-                  111,
-                  114,
-                  109
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "project",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  114,
-                  111,
-                  106,
-                  101,
-                  99,
-                  116
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "slug"
-              }
-            ]
-          }
-        },
-        {
-          "name": "box_config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  98,
-                  111,
-                  120
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "project"
-              },
-              {
-                "kind": "arg",
-                "path": "box_id"
-              }
-            ]
-          }
-        },
-        {
-          "name": "prize_item",
-          "writable": true
-        },
-        {
-          "name": "super_admin",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "rent_receiver",
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "slug",
-          "type": "string"
-        },
-        {
-          "name": "box_id",
-          "type": "u64"
-        },
-        {
-          "name": "prize_index",
-          "type": "u8"
-        }
-      ]
-    },
-    {
-      "name": "buy_box",
-      "discriminator": [
-        189,
-        165,
-        151,
-        165,
-        208,
-        250,
-        244,
-        108
-      ],
-      "accounts": [
-        {
-          "name": "platform",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  108,
-                  97,
-                  116,
-                  102,
-                  111,
-                  114,
-                  109
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "project",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  114,
-                  111,
-                  106,
-                  101,
-                  99,
-                  116
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "slug"
-              }
-            ]
-          }
-        },
-        {
-          "name": "box_config",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  98,
-                  111,
-                  120
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "project"
-              },
-              {
-                "kind": "arg",
-                "path": "box_id"
               }
             ]
           }
@@ -318,7 +85,29 @@
               },
               {
                 "kind": "account",
-                "path": "box_config"
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
               }
             ]
           }
@@ -329,30 +118,18 @@
           "signer": true
         },
         {
-          "name": "fee_wallet",
-          "writable": true
-        },
-        {
-          "name": "tenant_wallet",
-          "writable": true
-        },
-        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         }
       ],
       "args": [
         {
           "name": "slug",
           "type": "string"
-        },
-        {
-          "name": "box_id",
-          "type": "u64"
-        },
-        {
-          "name": "quantity",
-          "type": "u8"
         }
       ]
     },
@@ -391,6 +168,7 @@
         },
         {
           "name": "project",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -437,8 +215,16 @@
           }
         },
         {
-          "name": "tenant",
+          "name": "signer",
           "signer": true
+        },
+        {
+          "name": "platform_treasury",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -522,6 +308,213 @@
       ]
     },
     {
+      "name": "close_receipt",
+      "discriminator": [
+        126,
+        254,
+        244,
+        203,
+        124,
+        164,
+        134,
+        89
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "receipt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  101,
+                  105,
+                  112,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "platform_treasury",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "close_vault_token_account",
+      "discriminator": [
+        124,
+        142,
+        69,
+        139,
+        94,
+        176,
+        190,
+        56
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true
+        },
+        {
+          "name": "platform_treasury",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        }
+      ]
+    },
+    {
       "name": "create_box",
       "discriminator": [
         108,
@@ -556,6 +549,7 @@
         },
         {
           "name": "project",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -629,7 +623,7 @@
           "type": {
             "array": [
               "pubkey",
-              5
+              3
             ]
           }
         },
@@ -638,7 +632,7 @@
           "type": {
             "array": [
               "u64",
-              5
+              3
             ]
           }
         },
@@ -670,26 +664,6 @@
       ],
       "accounts": [
         {
-          "name": "platform",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  108,
-                  97,
-                  116,
-                  102,
-                  111,
-                  114,
-                  109
-                ]
-              }
-            ]
-          }
-        },
-        {
           "name": "project",
           "pda": {
             "seeds": [
@@ -714,6 +688,7 @@
         },
         {
           "name": "box_config",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -736,17 +711,9 @@
           }
         },
         {
-          "name": "prize_item",
-          "writable": true
-        },
-        {
           "name": "tenant",
           "writable": true,
           "signer": true
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -869,30 +836,294 @@
           "type": "pubkey"
         },
         {
+          "name": "fee_wallet_2",
+          "type": "pubkey"
+        },
+        {
           "name": "fee_lamports",
           "type": "u64"
         },
         {
-          "name": "sol_ranking_points",
+          "name": "rent_claim_mode",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "initialize_platform",
+      "discriminator": [
+        119,
+        201,
+        101,
+        45,
+        75,
+        122,
+        89,
+        3
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "super_admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "treasury",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "initialize_vault",
+      "discriminator": [
+        48,
+        191,
+        163,
+        44,
+        71,
+        129,
+        63,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tenant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "manage_prize",
+      "discriminator": [
+        235,
+        36,
+        26,
+        108,
+        224,
+        210,
+        238,
+        199
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "box_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  120
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              },
+              {
+                "kind": "arg",
+                "path": "box_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_mint"
+        },
+        {
+          "name": "tenant_token_account",
+          "writable": true
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true
+        },
+        {
+          "name": "tenant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "prize_index",
+          "type": "u8"
+        },
+        {
+          "name": "box_id",
           "type": "u64"
         },
         {
-          "name": "token_ranking_points",
+          "name": "action",
+          "type": {
+            "defined": {
+              "name": "ManagePrizeAction"
+            }
+          }
+        },
+        {
+          "name": "amount",
           "type": "u64"
         }
       ]
     },
     {
-      "name": "deposit_prize",
+      "name": "open_box",
       "discriminator": [
-        245,
-        164,
-        83,
-        19,
-        96,
-        75,
-        73,
-        130
+        225,
+        220,
+        10,
+        104,
+        173,
+        151,
+        214,
+        199
       ],
       "accounts": [
         {
@@ -963,457 +1194,6 @@
           }
         },
         {
-          "name": "prize_item",
-          "writable": true
-        },
-        {
-          "name": "vault",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "project"
-              }
-            ]
-          }
-        },
-        {
-          "name": "token_mint"
-        },
-        {
-          "name": "tenant_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "tenant"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "token_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "vault_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "token_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "tenant",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "associated_token_program",
-          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "slug",
-          "type": "string"
-        },
-        {
-          "name": "prize_index",
-          "type": "u8"
-        },
-        {
-          "name": "box_id",
-          "type": "u64"
-        },
-        {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "initialize_platform",
-      "discriminator": [
-        119,
-        201,
-        101,
-        45,
-        75,
-        122,
-        89,
-        3
-      ],
-      "accounts": [
-        {
-          "name": "platform",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  108,
-                  97,
-                  116,
-                  102,
-                  111,
-                  114,
-                  109
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "super_admin",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "treasury",
-          "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "initialize_vault",
-      "discriminator": [
-        48,
-        191,
-        163,
-        44,
-        71,
-        129,
-        63,
-        164
-      ],
-      "accounts": [
-        {
-          "name": "platform",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  108,
-                  97,
-                  116,
-                  102,
-                  111,
-                  114,
-                  109
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "project",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  114,
-                  111,
-                  106,
-                  101,
-                  99,
-                  116
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "slug"
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "project"
-              }
-            ]
-          }
-        },
-        {
-          "name": "tenant",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "slug",
-          "type": "string"
-        }
-      ]
-    },
-    {
-      "name": "open_box",
-      "discriminator": [
-        225,
-        220,
-        10,
-        104,
-        173,
-        151,
-        214,
-        199
-      ],
-      "accounts": [
-        {
-          "name": "platform",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  108,
-                  97,
-                  116,
-                  102,
-                  111,
-                  114,
-                  109
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "project",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  114,
-                  111,
-                  106,
-                  101,
-                  99,
-                  116
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "slug"
-              }
-            ]
-          }
-        },
-        {
-          "name": "box_config",
-          "writable": true
-        },
-        {
           "name": "receipt",
           "writable": true,
           "pda": {
@@ -1436,7 +1216,7 @@
               },
               {
                 "kind": "account",
-                "path": "box_config"
+                "path": "project"
               }
             ]
           }
@@ -1469,23 +1249,24 @@
           "signer": true
         },
         {
+          "name": "fee_wallet",
+          "writable": true
+        },
+        {
+          "name": "tenant_wallet",
+          "writable": true
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "vault_token_account",
-          "writable": true,
-          "optional": true
+          "name": "slot_hashes",
+          "address": "SysvarS1otHashes111111111111111111111111111"
         },
         {
-          "name": "user_token_account",
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "token_program",
-          "optional": true,
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "instructions",
+          "address": "Sysvar1nstructions1111111111111111111111111"
         }
       ],
       "args": [
@@ -1496,6 +1277,10 @@
         {
           "name": "box_id",
           "type": "u64"
+        },
+        {
+          "name": "quantity",
+          "type": "u8"
         }
       ]
     },
@@ -1512,26 +1297,6 @@
         99
       ],
       "accounts": [
-        {
-          "name": "platform",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  108,
-                  97,
-                  116,
-                  102,
-                  111,
-                  114,
-                  109
-                ]
-              }
-            ]
-          }
-        },
         {
           "name": "project",
           "pda": {
@@ -1602,7 +1367,7 @@
           "type": {
             "array": [
               "pubkey",
-              5
+              3
             ]
           }
         },
@@ -1611,7 +1376,7 @@
           "type": {
             "array": [
               "u64",
-              5
+              3
             ]
           }
         },
@@ -1699,326 +1464,10 @@
         {
           "name": "new_fee_wallet",
           "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "withdraw_prize",
-      "discriminator": [
-        125,
-        86,
-        6,
-        204,
-        176,
-        159,
-        61,
-        119
-      ],
-      "accounts": [
-        {
-          "name": "platform",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  108,
-                  97,
-                  116,
-                  102,
-                  111,
-                  114,
-                  109
-                ]
-              }
-            ]
-          }
         },
         {
-          "name": "project",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  114,
-                  111,
-                  106,
-                  101,
-                  99,
-                  116
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "slug"
-              }
-            ]
-          }
-        },
-        {
-          "name": "box_config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  98,
-                  111,
-                  120
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "project"
-              },
-              {
-                "kind": "arg",
-                "path": "box_id"
-              }
-            ]
-          }
-        },
-        {
-          "name": "prize_item",
-          "writable": true
-        },
-        {
-          "name": "vault",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "project"
-              }
-            ]
-          }
-        },
-        {
-          "name": "token_mint"
-        },
-        {
-          "name": "vault_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "token_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "tenant_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "tenant"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "token_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "tenant",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "associated_token_program",
-          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "slug",
-          "type": "string"
-        },
-        {
-          "name": "box_id",
-          "type": "u64"
-        },
-        {
-          "name": "prize_index",
-          "type": "u8"
+          "name": "new_fee_wallet_2",
+          "type": "pubkey"
         }
       ]
     },
@@ -2035,26 +1484,6 @@
         85
       ],
       "accounts": [
-        {
-          "name": "platform",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  108,
-                  97,
-                  116,
-                  102,
-                  111,
-                  114,
-                  109
-                ]
-              }
-            ]
-          }
-        },
         {
           "name": "project",
           "pda": {
@@ -2135,26 +1564,6 @@
       ],
       "accounts": [
         {
-          "name": "platform",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  108,
-                  97,
-                  116,
-                  102,
-                  111,
-                  114,
-                  109
-                ]
-              }
-            ]
-          }
-        },
-        {
           "name": "project",
           "pda": {
             "seeds": [
@@ -2204,183 +1613,11 @@
         },
         {
           "name": "vault_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "token_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
+          "writable": true
         },
         {
           "name": "authority_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "authority"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "token_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
+          "writable": true
         },
         {
           "name": "authority",
@@ -2390,14 +1627,6 @@
         {
           "name": "token_program",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "associated_token_program",
-          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -2453,19 +1682,6 @@
       ]
     },
     {
-      "name": "PrizeItem",
-      "discriminator": [
-        194,
-        89,
-        176,
-        118,
-        66,
-        135,
-        97,
-        67
-      ]
-    },
-    {
       "name": "PrizeVault",
       "discriminator": [
         34,
@@ -2510,83 +1726,111 @@
   "errors": [
     {
       "code": 6000,
-      "name": "Unauthorized",
-      "msg": "The signer is not authorized to perform this action."
+      "name": "Unauthorized"
     },
     {
       "code": 6001,
-      "name": "PlatformPaused",
-      "msg": "The platform is paused."
+      "name": "PlatformPaused"
     },
     {
       "code": 6002,
-      "name": "ProjectInactive",
-      "msg": "The project is inactive."
+      "name": "ProjectInactive"
     },
     {
       "code": 6003,
-      "name": "BoxNotActive",
-      "msg": "The box is not active."
+      "name": "BoxNotActive"
     },
     {
       "code": 6004,
-      "name": "BoxSoldOut",
-      "msg": "The box is sold out."
+      "name": "BoxSoldOut"
     },
     {
       "code": 6005,
-      "name": "BoxAlreadyEnded",
-      "msg": "The box sale has already ended."
+      "name": "BoxAlreadyEnded"
     },
     {
       "code": 6006,
-      "name": "InsufficientPayment",
-      "msg": "The payment amount is insufficient."
+      "name": "InsufficientPayment"
     },
     {
       "code": 6007,
-      "name": "InvalidPrizeType",
-      "msg": "Prize type does not match the prize item configuration."
+      "name": "InvalidPrizeType"
     },
     {
       "code": 6008,
-      "name": "InvalidMint",
-      "msg": "Token mint does not match the prize item configuration."
+      "name": "InvalidMint"
     },
     {
       "code": 6009,
-      "name": "DepositMismatch",
-      "msg": "Deposit amount does not match the required total."
+      "name": "DepositMismatch"
     },
     {
       "code": 6010,
-      "name": "BoxNotEnded",
-      "msg": "Box is still active or has not ended yet."
+      "name": "BoxNotEnded"
     },
     {
       "code": 6011,
-      "name": "NoPrizeClaimsRemaining",
-      "msg": "Prize item has no remaining claims."
+      "name": "NoPrizeClaimsRemaining"
     },
     {
       "code": 6012,
-      "name": "BoxHasPendingReceipts",
-      "msg": "Box has unopened purchases and cannot be closed."
+      "name": "BoxHasPendingReceipts"
     },
     {
       "code": 6013,
-      "name": "InvalidSlug",
-      "msg": "Slug can only contain lowercase letters, numbers, and hyphens."
+      "name": "InvalidSlug"
     },
     {
       "code": 6014,
-      "name": "InsufficientFunds",
-      "msg": "Insufficient funds in the vault."
+      "name": "InsufficientFunds"
     },
     {
       "code": 6015,
-      "name": "MathOverflow",
-      "msg": "Math overflow error."
+      "name": "MathOverflow"
+    },
+    {
+      "code": 6016,
+      "name": "TokenAccountNotEmpty"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidWinPercentage"
+    },
+    {
+      "code": 6018,
+      "name": "AlreadyPendingReveal"
+    },
+    {
+      "code": 6019,
+      "name": "NoPendingReveal"
+    },
+    {
+      "code": 6020,
+      "name": "SameSlotReveal"
+    },
+    {
+      "code": 6021,
+      "name": "SlotHashNotFound"
+    },
+    {
+      "code": 6022,
+      "name": "RequestExpired"
+    },
+    {
+      "code": 6023,
+      "name": "NoPurchasedBoxes"
+    },
+    {
+      "code": 6024,
+      "name": "ProjectHasActiveBoxes"
+    },
+    {
+      "code": 6025,
+      "name": "InvalidPrizeIndex"
+    },
+    {
+      "code": 6026,
+      "name": "PendingPrizesExist"
     }
   ],
   "types": [
@@ -2612,7 +1856,7 @@
             "type": {
               "array": [
                 "pubkey",
-                5
+                3
               ]
             }
           },
@@ -2621,7 +1865,7 @@
             "type": {
               "array": [
                 "u64",
-                5
+                3
               ]
             }
           },
@@ -2669,6 +1913,20 @@
           {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "prizes_count",
+            "type": "u8"
+          },
+          {
+            "name": "prizes",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "PrizeItem"
+                }
+              }
+            }
           }
         ]
       }
@@ -2739,7 +1997,7 @@
             "type": "pubkey"
           },
           {
-            "name": "box_config",
+            "name": "project",
             "type": "pubkey"
           },
           {
@@ -2753,6 +2011,16 @@
           {
             "name": "nonce",
             "type": "u64"
+          },
+          {
+            "name": "claimable_prizes",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "ClaimablePrize"
+                }
+              }
+            }
           },
           {
             "name": "bump",
@@ -2774,6 +2042,52 @@
           },
           {
             "name": "Ended"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClaimablePrize",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "box_config",
+            "type": "pubkey"
+          },
+          {
+            "name": "prize_index",
+            "type": "u8"
+          },
+          {
+            "name": "prize_type",
+            "type": {
+              "defined": {
+                "name": "PrizeType"
+              }
+            }
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ManagePrizeAction",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Deposit"
+          },
+          {
+            "name": "Withdraw"
           }
         ]
       }
@@ -2808,10 +2122,6 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "box_config",
-            "type": "pubkey"
-          },
-          {
             "name": "index",
             "type": "u8"
           },
@@ -2842,10 +2152,6 @@
           {
             "name": "claimed_count",
             "type": "u32"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
           }
         ]
       }
@@ -2909,16 +2215,29 @@
             "type": "bool"
           },
           {
-            "name": "sol_ranking_points",
-            "type": "u64"
-          },
-          {
-            "name": "token_ranking_points",
-            "type": "u64"
-          },
-          {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "rent_claim_mode",
+            "type": "u8"
+          },
+          {
+            "name": "fee_wallet_2",
+            "type": "pubkey"
+          },
+          {
+            "name": "active_boxes_count",
+            "type": "u32"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                27
+              ]
+            }
           }
         ]
       }

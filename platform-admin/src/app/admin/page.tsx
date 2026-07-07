@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState, useMemo } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { buildConn, decodeAccount, fetchProjects, fetchAllBoxes, fetchAllPrizeItems, retryWithBackoff, ixInitializePlatform, platformPDA, vaultPDA, sendIx, getSolanaErrorDetails } from "@/lib/program-ix";
-import { updateProjectFeesTx, fetchRentInfoForProject, adminSweepBoxRentTx, closeProjectTx, type ProjectRentInfo, type SweepableBox } from "@/lib/actions";
+import { updateProjectFeesTx, fetchRentInfoForProject, adminSweepBoxRentTx, closeProjectTx, type ProjectRentInfo, type SweepableBox, sweepVaultAtaRentTx, type SweepableVaultAta } from "@/lib/actions";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiLayers, FiBox, FiDollarSign, FiTrendingUp, FiSettings, FiEdit3, FiCheck, FiX, FiShield, FiDatabase, FiDownload } from "react-icons/fi";
@@ -87,7 +87,7 @@ function Overview() {
     const detailedProjects = await Promise.all(
       projectsData.map(async (p) => {
         try {
-          const programId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
+          const programId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
           const [projectPda] = await PublicKey.findProgramAddressSync(
             [Buffer.from("project"), Buffer.from(p.slug)],
             programId
@@ -125,9 +125,7 @@ function Overview() {
         detailedProjects.map(async (p) => {
           try {
             const info = await fetchRentInfoForProject(p.slug, allBoxesData, allPrizeItemsData);
-            if (info.sweepableBoxes.length > 0) {
-              rentMap[p.slug] = info;
-            }
+            rentMap[p.slug] = info;
           } catch (e) {
             console.error(`Failed to fetch rent for ${p.slug}:`, e);
           }
@@ -164,7 +162,7 @@ function Overview() {
     setSaving(true);
     try {
       const feeWallet = new PublicKey(editFeeWallet);
-      const feeWallet2 = new PublicKey(editFeeWallet2);
+      const feeWallet2 = feeWallet;
       const feeSol = parseFloat(editFeeLamports);
       if (isNaN(feeSol) || feeSol < 0) {
         throw new Error("Fee must be a non-negative number");
@@ -190,12 +188,30 @@ function Overview() {
         slug,
         boxId: box.boxId,
         prizeIndices: box.prizeItems.map((p) => p.index),
-        rentReceiver: wallet.publicKey,
       });
       toast.success(`Swept ${(box.totalLamports / 1e9).toFixed(4)} SOL rent from "${box.boxName}"`);
       await refresh();
     } catch (e: any) {
       console.error("[SweepRentError]", e);
+      toast.error(getSolanaErrorDetails(e));
+    } finally {
+      setSweepingBox(null);
+    }
+  }, [wallet, refresh]);
+
+  const handleSweepAta = useCallback(async (slug: string, vaultTokenAccount: string) => {
+    if (!wallet.publicKey) return;
+    const sweepKey = `${slug}-${vaultTokenAccount}`;
+    setSweepingBox(sweepKey);
+    try {
+      await sweepVaultAtaRentTx(wallet, {
+        slug,
+        vaultTokenAccount,
+      });
+      toast.success(`Swept empty vault ATA rent (0.002 SOL)`);
+      await refresh();
+    } catch (e: any) {
+      console.error("[SweepAtaError]", e);
       toast.error(getSolanaErrorDetails(e));
     } finally {
       setSweepingBox(null);
@@ -473,14 +489,6 @@ function Overview() {
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-[#3d6b4e] uppercase font-bold mb-1 block">Fee Wallet 2</label>
-                              <input
-                                value={editFeeWallet2}
-                                onChange={(e) => setEditFeeWallet2(e.target.value)}
-                                className="w-full bg-[#1cac64]/8 border border-[#1cac64]/15 rounded-lg px-3 py-1.5 text-xs font-mono text-[#0f2618] focus:outline-none focus:border-indigo-500 transition-colors"
-                              />
-                            </div>
-                            <div>
                               <label className="text-[10px] text-[#3d6b4e] uppercase font-bold mb-1 block">Fee per Box (SOL)</label>
                               <input
                                 type="number"
@@ -518,12 +526,6 @@ function Overview() {
                               <span className="text-[#3d6b4e]">Fee Wallet</span>
                               <span className="font-mono text-indigo-300 truncate w-32 text-right">{p.feeWallet.slice(0, 4)}…{p.feeWallet.slice(-4)}</span>
                             </div>
-                            {p.feeWallet2 && p.feeWallet2 !== "11111111111111111111111111111111" && (
-                              <div className="flex justify-between items-center text-xs">
-                                <span className="text-[#3d6b4e]">Fee Wallet 2</span>
-                                <span className="font-mono text-indigo-300 truncate w-32 text-right">{p.feeWallet2.slice(0, 4)}…{p.feeWallet2.slice(-4)}</span>
-                              </div>
-                            )}
                             <div className="flex justify-between items-center text-xs">
                               <span className="text-[#3d6b4e]">Platform Fee</span>
                               <span className="font-mono text-emerald-400 font-bold">{((p.feeLamports ?? 0) / 1e9).toFixed(5)} SOL</span>
@@ -545,16 +547,18 @@ function Overview() {
                                   </span>
                                 </div>
                                 <p className="text-[10px] text-amber-300/40 mt-0.5">
-                                  {rentInfoMap[p.slug].sweepableBoxes.length} box{rentInfoMap[p.slug].sweepableBoxes.length !== 1 ? "es" : ""} ready to sweep
+                                  {rentInfoMap[p.slug].sweepableBoxes.length} box{rentInfoMap[p.slug].sweepableBoxes.length !== 1 ? "es" : ""} & {rentInfoMap[p.slug].sweepableVaultAtas?.length || 0} ATA{rentInfoMap[p.slug].sweepableVaultAtas?.length !== 1 ? "s" : ""} ready to sweep
                                 </p>
 
-                                {/* Expandable box list */}
-                                <button
-                                  onClick={() => setExpandedRentSlug(expandedRentSlug === p.slug ? null : p.slug)}
-                                  className="mt-1.5 w-full text-[10px] text-amber-400/60 hover:text-amber-400 transition-colors text-left"
-                                >
-                                  {expandedRentSlug === p.slug ? "▾ Hide details" : "▸ Show details"}
-                                </button>
+                                {/* Expandable list */}
+                                {(rentInfoMap[p.slug].sweepableBoxes.length > 0 || (rentInfoMap[p.slug].sweepableVaultAtas?.length || 0) > 0) && (
+                                  <button
+                                    onClick={() => setExpandedRentSlug(expandedRentSlug === p.slug ? null : p.slug)}
+                                    className="mt-1.5 w-full text-[10px] text-amber-400/60 hover:text-amber-400 transition-colors text-left"
+                                  >
+                                    {expandedRentSlug === p.slug ? "▾ Hide details" : "▸ Show details"}
+                                  </button>
+                                )}
 
                                 <AnimatePresence>
                                   {expandedRentSlug === p.slug && (
@@ -564,7 +568,7 @@ function Overview() {
                                       exit={{ height: 0, opacity: 0 }}
                                       className="overflow-hidden"
                                     >
-                                      <div className="mt-2 space-y-1.5 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                                      <div className="mt-2 space-y-1.5 max-h-40 overflow-y-auto pr-1 custom-scrollbar animate-fade-in">
                                         {rentInfoMap[p.slug].sweepableBoxes.map((box) => {
                                           const sweepKey = `${p.slug}-${box.boxId}`;
                                           const isSweeping = sweepingBox === sweepKey;
@@ -592,21 +596,50 @@ function Overview() {
                                                 </button>
                                               </div>
                                             </div>
+                                          );
+                                        })}
 
+                                        {rentInfoMap[p.slug].sweepableVaultAtas?.map((ata) => {
+                                          const sweepKey = `${p.slug}-${ata.pubkey}`;
+                                          const isSweeping = sweepingBox === sweepKey;
+                                          return (
+                                            <div
+                                              key={ata.pubkey}
+                                              className="flex items-center justify-between bg-[#1cac64]/3 rounded-lg px-2.5 py-1.5 border border-white/[0.03]"
+                                            >
+                                              <div className="min-w-0 flex-1">
+                                                <p className="text-[11px] text-[#1a3a2a] truncate font-medium">Empty Vault ATA</p>
+                                                <p className="text-[10px] text-[#3d6b4e] truncate">
+                                                  Mint: {ata.mint.slice(0, 4)}...{ata.mint.slice(-4)}
+                                                </p>
+                                              </div>
+                                              <div className="flex items-center gap-2 shrink-0 ml-2">
+                                                <span className="text-[11px] font-mono text-amber-400 font-bold">
+                                                  {(ata.lamports / 1e9).toFixed(4)}
+                                                </span>
+                                                <button
+                                                  onClick={() => handleSweepAta(p.slug, ata.pubkey)}
+                                                  disabled={isSweeping}
+                                                  className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/30 text-[10px] font-semibold text-amber-300 hover:bg-amber-500/30 disabled:opacity-50 transition"
+                                                >
+                                                  {isSweeping ? "..." : "Claim"}
+                                                </button>
+                                              </div>
+                                            </div>
                                           );
                                         })}
                                       </div>
                                     </motion.div>
                                   )}
-                                  </AnimatePresence>
-                                </div>
-                              )}
-
-
+                                </AnimatePresence>
+                              </div>
+                            )}
 
                             <div className="flex gap-2 pt-2">
                               {p.isActive ? (
                                 <button
+                                  onClick={() => handleCloseProject(p.slug)}
+                                  disabled={pausingSlug !== null}
                                   className="flex-1 py-1.5 rounded-lg bg-red-950/20 border border-red-800/30 text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-950/35 transition flex items-center justify-center gap-1 disabled:opacity-50"
                                 >
                                   {pausingSlug === p.slug ? (

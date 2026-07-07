@@ -1,10 +1,15 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, use, useState, useMemo, useSyncExternalStore } from "react";
+import { Suspense, useCallback, useEffect, use, useState, useMemo, useRef, useSyncExternalStore } from "react";
 import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const WalletMultiButton = dynamic(
+  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  { ssr: false }
+);
 import { decodeAccount, fetchProjects, retryWithBackoff, ixInitializePlatform, platformPDA, sendIx, buildIx, getSolanaErrorDetails, boxStatusToCode, toUnixSeconds, unixToDatetimeLocal, datetimeLocalToUnix } from "@/lib/program-ix";
 import { createBoxTx, createPrizeItemTx, createBoxWithPrizesTx, depositPrizeTx, withdrawPrizeTx, withdrawVaultSolTx, withdrawVaultTokenTx, closeVaultTokenAccountTx, updateProjectBrandingTx, migrateProjectToV2Tx } from "@/lib/actions";
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction, createTransferInstruction } from "@solana/spl-token";
@@ -71,13 +76,22 @@ async function getDecimalsForMint(mintAddress: string, walletAssets: any[] = [],
 async function fetchAssetsForOwnerFallback(ownerPk: PublicKey, rpcUrl: string): Promise<AssetInfo[]> {
   const conn = new Connection(rpcUrl, "confirmed");
   const tokenProg = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
-  
-  const tokens = await retryWithBackoff(
-    () => conn.getParsedTokenAccountsByOwner(ownerPk, { programId: tokenProg }),
-    "getParsedTokenAccountsByOwner"
-  );
-  
-  const parsed = tokens.value.map((ta): AssetInfo | null => {
+  const token2022Prog = new PublicKey("TokenzQdBNbXtJU34e2qpQX29ZK4555eUBJ1ibh86uLC");
+
+  const [tokens, tokens2022] = await Promise.all([
+    retryWithBackoff(
+      () => conn.getParsedTokenAccountsByOwner(ownerPk, { programId: tokenProg }),
+      "getParsedTokenAccountsByOwner(Token)"
+    ).catch(() => ({ value: [] })),
+    retryWithBackoff(
+      () => conn.getParsedTokenAccountsByOwner(ownerPk, { programId: token2022Prog }),
+      "getParsedTokenAccountsByOwner(Token-2022)"
+    ).catch(() => ({ value: [] }))
+  ]);
+
+  const allTokenAccounts = [...tokens.value, ...tokens2022.value];
+
+  const parsed = allTokenAccounts.map((ta): AssetInfo | null => {
     const parsedData = ta.account.data;
     if (!parsedData || typeof parsedData !== 'object' || !('parsed' in parsedData)) {
       return null;
@@ -228,10 +242,11 @@ async function fetchAssetsForOwner(ownerPk: PublicKey, rpcUrl: string): Promise<
 
 // React component to render asset images with fallback
 function AssetAvatar({ asset }: { asset: any }) {
-  const [imgFailed, setImgFailed] = useState(!asset.image);
+  const hasImage = asset.image && (asset.image.startsWith("http") || asset.image.startsWith("data:") || asset.image.startsWith("/"));
+  const [imgFailed, setImgFailed] = useState(!hasImage);
   const isNFT = asset.isNFT;
 
-  if (!imgFailed && asset.image) {
+  if (!imgFailed && hasImage && asset.image) {
     return (
       <img 
         src={asset.image} 
@@ -250,12 +265,17 @@ function AssetAvatar({ asset }: { asset: any }) {
 }
 
 export default function ProjectAdminPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
-  return (
-    <Suspense fallback={<div className="p-6 text-[#3d6b4e] animate-pulse">Loading project…</div>}>
-      <Inner slug={slug} />
-    </Suspense>
-  );
+  const [slug, setSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then((p) => setSlug(p.slug));
+  }, [params]);
+
+  if (!slug) {
+    return <div className="p-6 text-[#3d6b4e] animate-pulse">Loading project…</div>;
+  }
+
+  return <Inner slug={slug} />;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -268,11 +288,15 @@ function Inner({ slug }: { slug: string }) {
   const wallet = useWallet();
   const { connected, publicKey } = wallet;
 
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
+  const [mounted, setMounted] = useState(false);
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    setMounted(true);
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
    /* ── State ────────────────────────────────────────────────────────────────── */
   const [loading,   setLoading]   = useState(!connected);
@@ -282,7 +306,6 @@ function Inner({ slug }: { slug: string }) {
   const [projects, setProjects]     = useState<any[]>([]);
   const [slugProj, setSlugProj]     = useState<any>(null);
   const [slugBoxes, setSlugBoxes]   = useState<any[]>([]);
-  const [allPrizes, setAllPrizes]   = useState<any[]>([]);
   const [slugLoaded, setSlugLoaded] = useState(false);
 
   /* ── Create Box Modal state ───────────────────────────────────────────────── */
@@ -388,28 +411,21 @@ function Inner({ slug }: { slug: string }) {
       const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
       const conn = new Connection(rpcUrl, "confirmed");
       
-      // 1. Fetch Wallet SOL Balance
-      const wSol = await retryWithBackoff(() => conn.getBalance(publicKey), "getBalance(wallet)");
-      setWalletSol(wSol / 1e9);
-
-      // 2. Fetch Vault SOL Balance
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
       const [projPk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
       const [vaultPk] = PublicKey.findProgramAddressSync([Buffer.from("vault"), projPk.toBuffer()], pgId);
-      
-      const vInfo = await retryWithBackoff(() => conn.getAccountInfo(vaultPk), "getAccountInfo(vault)");
-      if (vInfo) {
-        setVaultSol(vInfo.lamports / 1e9);
-      } else {
-        setVaultSol(0);
-      }
 
-      // 3. Fetch Admin Wallet Assets
-      const wAssets = await fetchAssetsForOwner(publicKey, rpcUrl);
+      /* Run ALL fetches in parallel */
+      const [wSol, vInfo, wAssets, vAssets] = await Promise.all([
+        retryWithBackoff(() => conn.getBalance(publicKey), "getBalance(wallet)"),
+        retryWithBackoff(() => conn.getAccountInfo(vaultPk), "getAccountInfo(vault)"),
+        fetchAssetsForOwner(publicKey, rpcUrl),
+        fetchAssetsForOwner(vaultPk, rpcUrl),
+      ]);
+
+      setWalletSol(wSol / 1e9);
+      setVaultSol(vInfo ? vInfo.lamports / 1e9 : 0);
       setWalletAssets(wAssets);
-
-      // 4. Fetch Vault Assets
-      const vAssets = await fetchAssetsForOwner(vaultPk, rpcUrl);
       setVaultAssets(vAssets);
     } catch (e: any) {
       console.error("Error fetching assets:", e);
@@ -431,7 +447,7 @@ function Inner({ slug }: { slug: string }) {
     if (!connected || !publicKey) { setSlugLoaded(false); setSlugBoxes([]); return; }
     try {
       const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
       const [pk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
 
       // Fetch branding from Supabase via API route
@@ -482,7 +498,9 @@ function Inner({ slug }: { slug: string }) {
             }
           }
           console.debug("[ProjectAdmin] decoded Project:", { slug: decoded.slug, name: decoded.name, isActive: decoded.isActive });
-          setSlugProj(decoded);
+          if (isMountedRef.current) {
+            setSlugProj(decoded);
+          }
         } catch { /* ignore */ }
       }
 
@@ -490,7 +508,6 @@ function Inner({ slug }: { slug: string }) {
       const coder = BorshAccountsCoder;
       /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
       const dec: any[] = [];
-      const prizeDec: any[] = [];
       for (const { pubkey, account } of pgAccs) {
         try {
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -537,18 +554,18 @@ function Inner({ slug }: { slug: string }) {
             });
           }
         } catch { /* not BoxConfig */ }
-
-        try {
-          const p: any = (new coder(IDL as any)).decode("PrizeItem", account.data);
-          prizeDec.push(p);
-        } catch { /* not PrizeItem */ }
       }
-      setSlugBoxes(dec);
-      setAllPrizes(prizeDec);
+      if (isMountedRef.current) {
+        setSlugBoxes(dec);
+      }
     } catch (e: unknown) {
-      setErr((e as Error).message || String(e));
+      if (isMountedRef.current) {
+        setErr((e as Error).message || String(e));
+      }
     } finally {
-      setSlugLoaded(true);
+      if (isMountedRef.current) {
+        setSlugLoaded(true);
+      }
     }
   }, [slug, connected, publicKey]);
 
@@ -556,24 +573,30 @@ function Inner({ slug }: { slug: string }) {
     setErr("");
     const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
 
-    /* platform config */
-    const [pPda] = await platformPDA();
-    const acc = await retryWithBackoff(() => conn.getAccountInfo(pPda), "getAccountInfo(platform)");
-    if (acc) {
-      try { setPlatform(decodeAccount("PlatformConfig", acc.data)); }
-      catch { setPlatform({ authority: acc.owner.toBase58(), treasury: "?", isPaused: false }); }
+    /* Run all fetches in parallel for speed */
+    const [platformResult, projectsResult] = await Promise.all([
+      /* platform config */
+      (async () => {
+        const [pPda] = await platformPDA();
+        return retryWithBackoff(() => conn.getAccountInfo(pPda), "getAccountInfo(platform)");
+      })(),
+      /* all projects */
+      fetchProjects(),
+    ]);
+
+    if (platformResult) {
+      try { setPlatform(decodeAccount("PlatformConfig", platformResult.data)); }
+      catch { setPlatform({ authority: platformResult.owner.toBase58(), treasury: "?", isPaused: false }); }
     } else {
       setPlatform(null);
     }
+    setProjects(projectsResult);
 
-    /* all projects */
-    setProjects(await fetchProjects());
-
-    /* fetch on-chain assets */
-    await fetchOnChainAssets();
-
-    /* fetch specific project boxes */
-    await fetchBoxes();
+    /* fetch assets and boxes in parallel */
+    await Promise.all([
+      fetchOnChainAssets(),
+      fetchBoxes(),
+    ]);
   }, [fetchOnChainAssets, fetchBoxes]);
 
   const copyPda = useCallback(async (pda: string) => {
@@ -686,8 +709,28 @@ function Inner({ slug }: { slug: string }) {
         className={`flex flex-col items-center justify-center min-h-screen p-6 text-center ${bgUri ? "" : "gradient-bg"}`}
         style={adminBgStyle}
       >
-        <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
-        <p className="text-[#2d5a3f] text-sm mt-4 animate-pulse">Loading project configuration from blockchain...</p>
+        {!slugLoaded ? (
+          <>
+            <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
+            <p className="text-[#2d5a3f] text-sm mt-4 animate-pulse">Loading project configuration from blockchain...</p>
+          </>
+        ) : (
+          <div className="max-w-md w-full bg-[#d9f5cc]/60 border border-amber-500/30 rounded-3xl p-8 backdrop-blur-md space-y-6 shadow-2xl">
+            <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-full flex items-center justify-center mx-auto text-3xl">
+              ⚠️
+            </div>
+            <h2 className="text-xl font-bold text-[#0f2618]">Project "{slug}" Not Found</h2>
+            <p className="text-[#2d5a3f] text-sm">
+              This project doesn't exist on-chain yet. Go to the Platform Admin to initialize the platform and create this project first.
+            </p>
+            <a
+              href="/admin"
+              className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition-all"
+            >
+              Go to Platform Admin →
+            </a>
+          </div>
+        )}
       </div>
     );
   }
@@ -760,7 +803,7 @@ function Inner({ slug }: { slug: string }) {
 
   /* ── Render ──────────────────────────────────────────────────────────────── */
   /* Derive project PDA once here so both header and modals share it */
-  const pgId  = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
+  const pgId  = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
   const projPda = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId)[0].toBase58();
 
   return (
@@ -818,7 +861,7 @@ function Inner({ slug }: { slug: string }) {
         />
       )}
       {showCreateBox && (
-        <CreateBoxModal slug={slug} onClose={() => setShowCreateBox(false)} onDone={refresh} walletAssets={walletAssets} vaultAssets={vaultAssets} vaultSol={vaultSol} allPrizes={allPrizes} />
+        <CreateBoxModal slug={slug} onClose={() => setShowCreateBox(false)} onDone={refresh} walletAssets={walletAssets} vaultAssets={vaultAssets} vaultSol={vaultSol} boxes={slugBoxes} />
       )}
       {showVaultManager && (
         <VaultManager
@@ -918,14 +961,15 @@ function ProjectBoxGrid({
           const supply   = b.supply?.toNumber?.()   ?? b.supply    ?? 1;
           const pct      = supply > 0 ? Math.round((sold / supply) * 100) : 0;
           const statusCode = boxStatusToCode(b.status);
-          const active   = statusCode === 0;
-          const canEdit  = active && sold === 0;
-          const canClose = statusCode === 2 && sold >= supply;
+          const totalOpened = b.totalOpened?.toNumber?.() ?? b.totalOpened ?? 0;
           const started  = toUnixSeconds(b.startTime ?? b.start_time);
           const endTs    = toUnixSeconds(b.endTime ?? b.end_time);
           const now      = Math.floor(Date.now() / 1000);
-          const inRange  = active && now >= started && now <= endTs;
           const pastWindow = now > endTs;
+          const canClose = (statusCode === 2 || pastWindow) && (sold === totalOpened);
+          const active   = statusCode === 0;
+          const canEdit  = active && sold === 0;
+          const inRange  = active && now >= started && now <= endTs;
           const notStarted = now < started;
 
           const badgeLabel = statusCode === 1 
@@ -982,6 +1026,7 @@ function ProjectBoxGrid({
                 <div className="flex gap-3 text-xs">
                   <span><span className="text-[#3d6b4e]">Price </span><span className="text-green-400 font-mono font-semibold">{((b.priceLamports?.toNumber?.() ?? b.priceLamports ?? 0)/1e9).toFixed(4)} SOL</span></span>
                   <span className="text-[#3d6b4e]">• {supply===1?"1 NFT":`${supply} total`}</span>
+                  <span><span className="text-[#3d6b4e]">Reclaimable Rent: </span><span className="text-amber-400 font-mono font-semibold">0.01004 SOL</span></span>
                 </div>
                 <div className="flex gap-2 pt-2 border-t border-gray-700/50">
                   <button
@@ -1481,7 +1526,7 @@ interface PaymentOption { id: number; mintKey: string; customMint: string; price
 interface RewardEntry  { id: number; assetKey: string; amountPerWin: string; totalCount: string; winPct: string; }
 
 function CreateBoxModal({
-  slug, onClose, onDone, walletAssets, vaultAssets, vaultSol, allPrizes
+  slug, onClose, onDone, walletAssets, vaultAssets, vaultSol, boxes
 }: {
   slug: string;
   onClose: () => void;
@@ -1489,7 +1534,7 @@ function CreateBoxModal({
   walletAssets: any[];
   vaultAssets: any[];
   vaultSol: number | null;
-  allPrizes: any[];
+  boxes: any[];
 }) {
   const wallet = useWallet();
   const [name, setName]       = useState("");
@@ -1545,24 +1590,26 @@ function CreateBoxModal({
 
     // Determine allocated NFT mints across active prizes (where claims remaining > 0)
     const allocatedNftMints = new Set<string>();
-    (allPrizes || []).forEach((p: any) => {
-      let isNft = false;
-      const pType = p.prizeType ?? p.prize_type;
-      if (typeof pType === "number") {
-        isNft = pType === 2;
-      } else if (pType && typeof pType === "object") {
-        isNft = "nft" in pType || "Nft" in pType;
-      }
-      if (isNft) {
-        const total = p.totalCount ?? p.total_count ?? 0;
-        const claimed = p.claimedCount ?? p.claimed_count ?? 0;
-        if (total > claimed) {
-          const mintStr = p.tokenMint?.toBase58?.() ?? p.token_mint?.toBase58?.() ?? String(p.tokenMint ?? p.token_mint ?? "");
-          if (mintStr && mintStr !== PublicKey.default.toBase58()) {
-            allocatedNftMints.add(mintStr);
+    (boxes || []).forEach((b: any) => {
+      (b.prizes || []).forEach((p: any) => {
+        let isNft = false;
+        const pType = p.prizeType ?? p.prize_type;
+        if (typeof pType === "number") {
+          isNft = pType === 2;
+        } else if (pType && typeof pType === "object") {
+          isNft = "nft" in pType || "Nft" in pType;
+        }
+        if (isNft) {
+          const total = p.totalCount ?? p.total_count ?? 0;
+          const claimed = p.claimedCount ?? p.claimed_count ?? 0;
+          if (total > claimed) {
+            const mintStr = p.tokenMint?.toBase58?.() ?? p.token_mint?.toBase58?.() ?? String(p.tokenMint ?? p.token_mint ?? "");
+            if (mintStr && mintStr !== PublicKey.default.toBase58()) {
+              allocatedNftMints.add(mintStr);
+            }
           }
         }
-      }
+      });
     });
 
     vaultAssets.forEach((t: any) => {
@@ -1582,7 +1629,7 @@ function CreateBoxModal({
       asset: { mint: PublicKey.default.toBase58(), name: "Nothing", decimals: 9, uiAmount: 999999, isNFT: false, image: "🎁" },
     });
     return opts;
-  }, [vaultSol, vaultAssets, allPrizes]);
+  }, [vaultSol, vaultAssets, boxes]);
 
   const updateReward = (id: number, field: keyof RewardEntry, val: string) =>
     setRewards(prev => prev.map(r => r.id === id ? { ...r, [field]: val } : r));
@@ -1602,7 +1649,7 @@ function CreateBoxModal({
       /* ---- derive next box ID ---- */
       setStep("Resolving box ID…");
       const conn    = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
-      const pgId    = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
+      const pgId    = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
       const [projPk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
       const allBoxes = await retryWithBackoff(() => conn.getProgramAccounts(pgId), "getProgramAccounts");
       const projectBoxes: number[] = [];
@@ -1988,14 +2035,7 @@ function PrizeItemManager({
   const [isDepositMode, setIsDepositMode] = useState<boolean>(true);
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
 
-  const prizePda = useMemo(() => {
-    const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
-    const boxPk = new PublicKey(box.pubkey);
-    return PublicKey.findProgramAddressSync(
-      [Buffer.from("prize"), boxPk.toBuffer(), Buffer.from([0])],
-      pgId,
-    )[0];
-  }, [box.pubkey]);
+
 
   const selectOptions = useMemo(() => {
     const assets = isDepositMode ? walletAssets : vaultAssets;
@@ -2116,8 +2156,8 @@ function PrizeItemManager({
 
         <div className="space-y-1 text-xs">
           <div className="text-[#3d6b4e] flex justify-between">
-            <span>Prize Item PDA (idx=0):</span>
-            <span className="font-mono text-[#0f2618] break-all">{prizePda.toBase58().slice(0, 10)}…{prizePda.toBase58().slice(-10)}</span>
+            <span>Box Config PDA:</span>
+            <span className="font-mono text-[#0f2618] break-all">{box.pubkey.slice(0, 10)}…{box.pubkey.slice(-10)}</span>
           </div>
         </div>
 
@@ -2213,7 +2253,7 @@ function VaultManager({
   rentClaimMode?: number;
 }) {
   const wallet = useWallet();
-  const pgId   = useMemo(() => new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"), []);
+  const pgId   = useMemo(() => new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv"), []);
   const conn   = useMemo(() => new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed"), []);
   const projPk = useMemo(() => PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId)[0], [slug, pgId]);
   const vaultPk = useMemo(
@@ -2283,7 +2323,7 @@ function VaultManager({
     setActionErr("");
     setTxLoading(true);
     try {
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
       const [platform] = PublicKey.findProgramAddressSync([Buffer.from("platform")], pgId);
       const [project]  = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
       const [vault]    = PublicKey.findProgramAddressSync([Buffer.from("vault"), project.toBuffer()], pgId);

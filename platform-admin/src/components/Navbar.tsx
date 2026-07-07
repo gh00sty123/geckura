@@ -9,8 +9,13 @@ import {
   FiMenu, FiX
 } from "react-icons/fi";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useProjectBranding } from "@/lib/ProjectBrandingProvider";
+import dynamic from "next/dynamic";
+
+const WalletMultiButton = dynamic(
+  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  { ssr: false }
+);
 import { TwitterXIcon } from "@/components/SocialIcons";
 import Image from "next/image";
 import { Connection } from "@solana/web3.js";
@@ -87,11 +92,10 @@ export default function Navbar({
    * WalletMultiButton must NOT render on the server — it relies on
    * the wallet-adapter context which is unavailable at SSR time.
    */
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   /* ── Fetch SOL balance when wallet connects ── */
   useEffect(() => {

@@ -13,8 +13,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { PublicKey, Connection, SystemProgram, Transaction, SendTransactionError } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { retryWithBackoff, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, boxPDA, ixOpenBox } from "@/lib/program-ix";
+import { retryWithBackoff, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, boxPDA, ixOpenBox, ixClaimPrizes, decodeAccount, vaultPDA } from "@/lib/program-ix";
+import dynamic from "next/dynamic";
+
+const WalletMultiButton = dynamic(
+  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  { ssr: false }
+);
 import { type LiveBox, useAppStore } from "@/lib/store";
 import { useSetProjectBranding, useProjectBranding } from "@/lib/ProjectBrandingProvider";
 import { TwitterXIcon } from "@/components/SocialIcons";
@@ -24,7 +29,7 @@ import { resolveIpfsUrl, updateFavicon } from "@/lib/helpers";
 import { BorshAccountsCoder, BorshCoder, BorshEventCoder, EventParser } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
 
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
 const RPC  = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 const EXPLORER_BASE = "https://explorer.solana.com/tx";
 const CLUSTER_PARAM = RPC.includes("devnet") ? "?cluster=devnet" : RPC.includes("mainnet") ? "" : "?cluster=devnet";
@@ -224,14 +229,23 @@ function parseMetaplexMetadata(data: Buffer | Uint8Array) {
 async function fetchAssetsForOwnerFallback(ownerPk: PublicKey, rpcUrl: string): Promise<AssetInfo[]> {
   const conn = new Connection(rpcUrl, "confirmed");
   const tokenProg = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+  const token2022Prog = new PublicKey("TokenzQdBNbXtJU34e2qpQX29ZK4555eUBJ1ibh86uLC");
   const METAPLEX_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
   
-  const tokens = await retryWithBackoff(
-    () => conn.getParsedTokenAccountsByOwner(ownerPk, { programId: tokenProg }),
-    "getParsedTokenAccountsByOwner"
-  );
+  const [tokens, tokens2022] = await Promise.all([
+    retryWithBackoff(
+      () => conn.getParsedTokenAccountsByOwner(ownerPk, { programId: tokenProg }),
+      "getParsedTokenAccountsByOwner(Token)"
+    ).catch(() => ({ value: [] })),
+    retryWithBackoff(
+      () => conn.getParsedTokenAccountsByOwner(ownerPk, { programId: token2022Prog }),
+      "getParsedTokenAccountsByOwner(Token-2022)"
+    ).catch(() => ({ value: [] }))
+  ]);
+
+  const allTokenAccounts = [...tokens.value, ...tokens2022.value];
   
-  const parsedPromises = tokens.value.map(async (ta): Promise<AssetInfo | null> => {
+  const parsedPromises = allTokenAccounts.map(async (ta): Promise<AssetInfo | null> => {
     const parsedData = ta.account.data;
     if (!parsedData || typeof parsedData !== 'object' || !('parsed' in parsedData)) {
       return null;
@@ -488,11 +502,10 @@ export default function ProjectView({ slug }: { slug: string }) {
   const { connected } = wallet;
   const branding = useProjectBranding();
 
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [project, setProject]   = useState<Record<string, unknown>>({});
   const [loading, setLoading]   = useState(true);
@@ -920,14 +933,206 @@ export default function ProjectView({ slug }: { slug: string }) {
       }
     }
   }, [project, slug, setBranding]);
-  
+
   /* ── Fetch project + boxes ─────────────────────────────── */
   useEffect(() => {
     fetchProjectAndBoxes();
   }, [fetchProjectAndBoxes]);
 
-  const [activeTab, setActiveTab] = useState<"active" | "expired">("active");
+  const [activeTab, setActiveTab] = useState<"active" | "expired" | "claims">("active");
   const [selectedBoxForRewards, setSelectedBoxForRewards] = useState<LiveBox | null>(null);
+  const [claimablePrizesData, setClaimablePrizesData] = useState<{
+    box: LiveBox;
+    receiptPda: PublicKey;
+    prizes: {
+      prizeIndex: number;
+      prizeType: number;
+      tokenMint: string;
+      amount: string;
+    }[];
+  }[]>([]);
+  const [claimingStates, setClaimingStates] = useState<Record<string, boolean>>({});
+
+  const fetchClaimablePrizes = useCallback(async () => {
+    if (!wallet.publicKey) {
+      setClaimablePrizesData([]);
+      return;
+    }
+    try {
+      const conn = new Connection(RPC, "confirmed");
+      const [projectPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("project"), Buffer.from(slug)],
+        PGID
+      );
+      const [receiptPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("receipt"), wallet.publicKey!.toBuffer(), projectPda.toBuffer()],
+        PGID
+      );
+      
+      const info = await conn.getAccountInfo(receiptPda);
+      if (!info) {
+        setClaimablePrizesData([]);
+        return;
+      }
+
+      const claimablesList: typeof claimablePrizesData = [];
+      try {
+        const decoded = decodeAccount("BoxReceipt", info.data);
+        const rawPrizes = decoded.claimablePrizes || decoded.claimable_prizes || [];
+        
+        // Group prizes by box_config
+        const prizesByBox: Record<string, any[]> = {};
+        for (const p of rawPrizes) {
+          const boxConfigStr = (p.boxConfig ?? p.box_config).toBase58();
+          if (!prizesByBox[boxConfigStr]) {
+            prizesByBox[boxConfigStr] = [];
+          }
+          let pType = 0; // Sol
+          if (p.prizeType && typeof p.prizeType === 'object') {
+            const keys = Object.keys(p.prizeType).map(k => k.toLowerCase());
+            if (keys.includes("spltoken") || keys.includes("token")) pType = 1;
+            else if (keys.includes("nft")) pType = 2;
+          } else if (typeof p.prizeType === 'number') {
+            pType = p.prizeType;
+          }
+          const mintStr = (p.tokenMint ?? p.token_mint)?.toBase58?.() || String(p.token_mint ?? p.tokenMint);
+          const amtStr = (p.amount ?? 0).toString();
+          
+          if (Number(amtStr) > 0) {
+            prizesByBox[boxConfigStr].push({
+              prizeIndex: Number(p.prizeIndex ?? p.prize_index ?? 0),
+              prizeType: pType,
+              tokenMint: mintStr,
+              amount: amtStr,
+            });
+          }
+        }
+
+        // Map to claimablesList
+        for (const [boxConfigStr, prizes] of Object.entries(prizesByBox)) {
+          const box = allBoxes.find(b => b.pubkey === boxConfigStr);
+          if (box && prizes.length > 0) {
+            claimablesList.push({
+              box,
+              receiptPda,
+              prizes,
+            });
+          }
+        }
+      } catch (decErr) {
+        console.warn("[Claims] Failed to decode receipt:", decErr);
+      }
+      
+      setClaimablePrizesData(claimablesList);
+    } catch (err) {
+      console.error("[Claims] Failed to fetch claimable prizes:", err);
+    }
+  }, [wallet.publicKey, allBoxes, slug]);
+
+  useEffect(() => {
+    fetchClaimablePrizes();
+  }, [wallet.publicKey, activeTab, fetchClaimablePrizes]);
+
+  const handleClaim = async (claimable: typeof claimablePrizesData[0]) => {
+    const boxIdKey = claimable.box.pubkey;
+    setClaimingStates(prev => ({ ...prev, [boxIdKey]: true }));
+    try {
+      const conn = new Connection(RPC, "confirmed");
+      const tx = new Transaction();
+
+      const [platformPda] = await platformPDA();
+      const [projectPda] = await projectPDA(slug);
+      const [vaultPda] = await vaultPDA(projectPda);
+
+      const remainingAccounts: { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }[] = [];
+      const mintsToCreateATA: string[] = [];
+      const TOKEN_PROG = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+      const ATA_PROG = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+
+      for (const prize of claimable.prizes) {
+        if (prize.prizeType === 1 || prize.prizeType === 2) {
+          const mint = new PublicKey(prize.tokenMint);
+          const vaultAta = PublicKey.findProgramAddressSync(
+            [vaultPda.toBuffer(), TOKEN_PROG.toBuffer(), mint.toBuffer()],
+            ATA_PROG
+          )[0];
+          const userAta = PublicKey.findProgramAddressSync(
+            [wallet.publicKey!.toBuffer(), TOKEN_PROG.toBuffer(), mint.toBuffer()],
+            ATA_PROG
+          )[0];
+
+          if (!remainingAccounts.some(acc => acc.pubkey.equals(vaultAta))) {
+            remainingAccounts.push({ pubkey: vaultAta, isSigner: false, isWritable: true });
+          }
+          if (!remainingAccounts.some(acc => acc.pubkey.equals(userAta))) {
+            remainingAccounts.push({ pubkey: userAta, isSigner: false, isWritable: true });
+          }
+
+          if (!mintsToCreateATA.includes(prize.tokenMint)) {
+            mintsToCreateATA.push(prize.tokenMint);
+          }
+        }
+      }
+
+      // Pre-create missing user ATAs
+      for (const mintStr of mintsToCreateATA) {
+        const mint = new PublicKey(mintStr);
+        const userAta = PublicKey.findProgramAddressSync(
+          [wallet.publicKey!.toBuffer(), TOKEN_PROG.toBuffer(), mint.toBuffer()],
+          ATA_PROG
+        )[0];
+
+        const userAtaInfo = await conn.getAccountInfo(userAta);
+        if (!userAtaInfo) {
+          tx.add(
+            createAssociatedTokenAccountInstruction(
+              wallet.publicKey!,
+              userAta,
+              wallet.publicKey!,
+              mint
+            )
+          );
+        }
+      }
+
+      const ix = ixClaimPrizes(
+        platformPda,
+        projectPda,
+        claimable.receiptPda,
+        vaultPda,
+        wallet.publicKey!,
+        slug,
+        remainingAccounts
+      );
+      tx.add(ix);
+
+      tx.feePayer = wallet.publicKey || undefined;
+      const { blockhash } = await retryWithBackoff(
+        () => conn.getLatestBlockhash(),
+        "getLatestBlockhash",
+      ) as { blockhash: string };
+      tx.recentBlockhash = blockhash;
+
+      if (!wallet.signTransaction) throw new Error("Wallet does not support transaction signing");
+      const signed = await wallet.signTransaction(tx);
+      const sig = await retryWithBackoff(
+        () => conn.sendRawTransaction(signed.serialize(), { skipPreflight: false, preflightCommitment: "confirmed" }),
+        "sendRawTransaction",
+      );
+      await retryWithBackoff(
+        () => conn.confirmTransaction(sig, "confirmed"),
+        "confirmTransaction",
+      );
+
+      toast.success("Rewards claimed successfully!");
+      await fetchClaimablePrizes();
+    } catch (err: any) {
+      console.error("[Claim] Error claiming prizes:", err);
+      toast.error(`Claim failed: ${err.message || err}`);
+    } finally {
+      setClaimingStates(prev => ({ ...prev, [boxIdKey]: false }));
+    }
+  };
 
   /* ── Render ─────────────────────────────────────────────── */
   const logoUri = resolveIpfsUrl((project.logoUri || project.logo_uri || project.logo_url) as string | undefined) || undefined;
@@ -1169,33 +1374,152 @@ export default function ProjectView({ slug }: { slug: string }) {
           >
             Expired Packs ({endedBoxes.length})
           </button>
+          <button
+            onClick={() => setActiveTab("claims")}
+            style={activeTab === "claims" ? { backgroundColor: themeColor || "#1cac64", color: "#ffffff" } : {}}
+            className={`flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 cursor-pointer ${
+              activeTab === "claims"
+                ? "shadow-[0_2px_10px_rgba(28,172,100,0.25)]"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            My Claims {claimablePrizesData.length > 0 && `(${claimablePrizesData.length})`}
+          </button>
         </div>
 
-        {currentBoxes.length === 0 ? (
+        {activeTab !== "claims" ? (
+          currentBoxes.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="py-20 text-center rounded-3xl glass-panel"
+            >
+              <span className="text-5xl block mb-4">📦</span>
+              <p className="text-[#2d5a3f] text-sm">
+                {activeTab === "active" ? "No active packs available yet." : "No expired packs yet."}
+              </p>
+              <p className="text-[#4a7d5e] text-xs mt-1">Check back soon!</p>
+            </motion.div>
+          ) : (
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 ${activeTab === "expired" ? "opacity-60" : ""}`}>
+              {currentBoxes.map((b, i) => (
+                <BoxCard 
+                  key={b.pubkey} 
+                  box={b} 
+                  index={i} 
+                  onSelect={() => setSelectedBox(b)} 
+                  tokenMetaMap={tokenMetaMap}
+                  onShowRewards={() => setSelectedBoxForRewards(b)}
+                />
+              ))}
+            </div>
+          )
+        ) : (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="py-20 text-center rounded-3xl glass-panel"
+            className="space-y-6 max-w-4xl mx-auto"
           >
-            <span className="text-5xl block mb-4">📦</span>
-            <p className="text-[#2d5a3f] text-sm">
-              {activeTab === "active" ? "No active packs available yet." : "No expired packs yet."}
-            </p>
-            <p className="text-[#4a7d5e] text-xs mt-1">Check back soon!</p>
+            <div className="bg-[#111915] border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#1cac64]/5 rounded-full blur-3xl pointer-events-none" />
+              <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                <span>🏆</span> My Claim Queue
+              </h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Prizes won from opening boxes are securely queued here. Phantom preview won't show balance changes during opening. You can claim all won assets for any pack in a single batch transaction.
+              </p>
+            </div>
+
+            {claimablePrizesData.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 border border-dashed border-white/5 rounded-3xl bg-black/20">
+                <span className="text-5xl mb-4">🎁</span>
+                <h4 className="text-base font-bold text-white">Your queue is empty</h4>
+                <p className="text-gray-400 text-sm max-w-xs text-center mt-1">
+                  Open packs to accumulate prizes here. There are no claimable rewards waiting at this moment.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {claimablePrizesData.map((claimable) => {
+                  const isClaiming = claimingStates[claimable.box.pubkey] || false;
+                  return (
+                    <div
+                      key={claimable.box.pubkey}
+                      className="relative overflow-hidden bg-[#111915]/90 border border-white/5 rounded-2xl p-6 transition-all duration-300 hover:border-white/10 group"
+                    >
+                      {/* Box Banner / Name */}
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center overflow-hidden border border-white/5">
+                          {claimable.box.bannerUri && claimable.box.bannerUri.startsWith("http") ? (
+                            <img src={claimable.box.bannerUri} alt={claimable.box.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-2xl">🎁</span>
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white text-base leading-tight group-hover:text-[#1cac64] transition-colors">
+                            {claimable.box.name}
+                          </h4>
+                          <span className="text-xs text-gray-400">
+                            {claimable.prizes.length} pending reward{claimable.prizes.length > 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Prizes List */}
+                      <div className="space-y-3 mb-6 bg-black/40 border border-white/5 rounded-xl p-4">
+                        {claimable.prizes.map((prize, idx) => {
+                          const meta = resolveTokenDetails(prize.tokenMint, tokenMetaMap);
+                          const decimals = meta.decimals ?? 9;
+                          const displayAmount = Number(prize.amount) / Math.pow(10, decimals);
+                          
+                          return (
+                            <div key={idx} className="flex items-center justify-between text-sm">
+                              <div className="flex items-center gap-2">
+                                {meta.image && meta.image.startsWith("http") ? (
+                                  <img src={meta.image} alt={meta.symbol} className="w-5 h-5 rounded-full" />
+                                ) : (
+                                  <span className="text-base">🎁</span>
+                                )}
+                                <span className="text-gray-300 text-xs sm:text-sm">{meta.name}</span>
+                              </div>
+                              <span className="font-bold text-white text-xs sm:text-sm">
+                                {displayAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 6 })} {meta.symbol}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Claim Button */}
+                      <button
+                        onClick={() => handleClaim(claimable)}
+                        disabled={isClaiming}
+                        style={!isClaiming ? { backgroundColor: themeColor || "#1cac64" } : {}}
+                        className={`w-full py-3.5 rounded-xl font-bold text-white transition-all duration-300 hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
+                          isClaiming ? "bg-gray-700" : ""
+                        }`}
+                      >
+                        {isClaiming ? (
+                          <>
+                            <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Claiming...
+                          </>
+                        ) : (
+                          <>
+                            <span>📥</span> Claim Rewards
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </motion.div>
-        ) : (
-          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 ${activeTab === "expired" ? "opacity-60" : ""}`}>
-            {currentBoxes.map((b, i) => (
-              <BoxCard 
-                key={b.pubkey} 
-                box={b} 
-                index={i} 
-                onSelect={() => setSelectedBox(b)} 
-                tokenMetaMap={tokenMetaMap}
-                onShowRewards={() => setSelectedBoxForRewards(b)}
-              />
-            ))}
-          </div>
         )}
       </div>
 
@@ -1209,6 +1533,7 @@ export default function ProjectView({ slug }: { slug: string }) {
             onClose={async () => {
               setSelectedBox(null);
               await fetchProjectAndBoxes();
+              await fetchClaimablePrizes();
             }}
             vaultAssets={vaultAssets}
             tokenMetaMap={tokenMetaMap}
@@ -1668,6 +1993,8 @@ const handleOpen = useCallback(async () => {
         return;
       }
       setPhase("signing"); setErrMsg(""); setWonRewards(null);
+      let sig = "";
+      let revealSig = "";
       const bigIntReplacer = (key: any, value: any) => 
         typeof value === 'bigint' ? value.toString() : value;
       const conn = new Connection(RPC, "confirmed");
@@ -1719,7 +2046,7 @@ const handleOpen = useCallback(async () => {
           PGID,
         );
         const receiptPk = PublicKey.findProgramAddressSync(
-          [Buffer.from("receipt"), wallet.publicKey.toBuffer(), boxConfigPubkey.toBuffer()],
+          [Buffer.from("receipt"), wallet.publicKey.toBuffer(), projectPubkey.toBuffer()],
           PGID,
         )[0];
         
@@ -1797,103 +2124,6 @@ const handleOpen = useCallback(async () => {
           ? new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
           : undefined;
 
-        // Pre-create user ATAs for ALL possible prize mints in separate batch transactions if they don't exist
-        const nonExistentMints: PublicKey[] = [];
-        for (const mintStr of uniquePrizeMints) {
-          const mint = new PublicKey(mintStr);
-          const userAta = getAssociatedTokenAddressSync(mint, wallet.publicKey, true);
-          const userAtaInfo = await conn.getAccountInfo(userAta);
-          if (!userAtaInfo) {
-            nonExistentMints.push(mint);
-          }
-        }
-
-        if (nonExistentMints.length > 0) {
-          console.log(`[OpenBox] Found ${nonExistentMints.length} missing ATAs. Pre-creating them...`);
-          // Split into chunks of 5 to avoid transaction sizing limits during ATA creation
-          const chunkSize = 5;
-          for (let i = 0; i < nonExistentMints.length; i += chunkSize) {
-            const chunk = nonExistentMints.slice(i, i + chunkSize);
-            const ataTx = new Transaction();
-            for (const mint of chunk) {
-              const userAta = getAssociatedTokenAddressSync(mint, wallet.publicKey, true);
-              ataTx.add(createAssociatedTokenAccountInstruction(
-                wallet.publicKey,
-                userAta,
-                wallet.publicKey,
-                mint
-              ));
-            }
-            setConfirmMessage(`Creating token accounts (batch ${Math.floor(i / chunkSize) + 1}/${Math.ceil(nonExistentMints.length / chunkSize)})...`);
-            ataTx.feePayer = wallet.publicKey;
-            const { blockhash: ataBlockhash } = await retryWithBackoff(
-              () => conn.getLatestBlockhash(),
-              "getLatestBlockhash"
-            ) as { blockhash: string };
-            ataTx.recentBlockhash = ataBlockhash;
-
-            const signedAta = await wallet.signTransaction(ataTx);
-            const ataSig = await retryWithBackoff(
-              () => conn.sendRawTransaction(signedAta.serialize(), { skipPreflight: false, preflightCommitment: "confirmed" }),
-              "sendRawTransaction"
-            );
-            await retryWithBackoff(
-              () => conn.confirmTransaction(ataSig, "confirmed"),
-              "confirmTransaction"
-            );
-            console.log(`[OpenBox] Pre-created ATA chunk successfully, signature:`, ataSig);
-          }
-        }
-        
-        console.log("[OpenBox Debug] prizeItems:", JSON.stringify(prizeItems, bigIntReplacer, 2));
-        console.log("[OpenBox Debug] uniquePrizeMints:", uniquePrizeMints);
-        
-        // Fetch starting BoxReceipt data to detect when totalOpened increments and check for pending reveals
-        let startingTotalOpened = 0;
-        let hasPendingReveal = false;
-        try {
-          const receiptAcc = await conn.getAccountInfo(receiptPk);
-          if (receiptAcc) {
-            const accountCoder = new BorshAccountsCoder(IDL as any);
-            const decodedReceipt: any = accountCoder.decode("BoxReceipt", receiptAcc.data);
-            startingTotalOpened = decodedReceipt.totalOpened ?? decodedReceipt.total_opened ?? 0;
-            const pendingOpens = decodedReceipt.pendingOpens ?? decodedReceipt.pending_opens ?? 0;
-            if (pendingOpens > 0) {
-              hasPendingReveal = true;
-              console.log(`[OpenBox] Found existing pending reveal with ${pendingOpens} boxes. Resuming reveal...`);
-            }
-          }
-        } catch (e) {
-          console.warn("[OpenBox] Could not fetch starting receipt:", e);
-        }
-
-        let sig = "";
-        setPhase("confirming");
-        setConfirmMessage("Preparing transaction...");
-
-        let vaultTokenAccount: PublicKey | undefined;
-        let userTokenAccount: PublicKey | undefined;
-        if (uniquePrizeMints.length >= 1) {
-          const mint = new PublicKey(uniquePrizeMints[0]);
-          const vaultPk = new PublicKey(vaultPubkey);
-          const userPk = wallet.publicKey;
-          vaultTokenAccount = getAssociatedTokenAddressSync(mint, vaultPk, true);
-          userTokenAccount = getAssociatedTokenAddressSync(mint, userPk, true);
-        }
-
-        const remainingAccounts = [...prizeItemAccounts];
-        for (const mintStr of uniquePrizeMints) {
-          const mint = new PublicKey(mintStr);
-          const vaultPk = new PublicKey(vaultPubkey);
-          const userPk = wallet.publicKey;
-          const vaultAta = getAssociatedTokenAddressSync(mint, vaultPk, true);
-          const userAta = getAssociatedTokenAddressSync(mint, userPk, true);
-          remainingAccounts.push(
-            { pubkey: vaultAta, isSigner: false, isWritable: true },
-            { pubkey: userAta, isSigner: false, isWritable: true }
-          );
-        }
-
         // Add open_box instruction to buy and reveal instantly in a single transaction
         const openIx = ixOpenBox(
           platformPubkey,
@@ -1903,19 +2133,15 @@ const handleOpen = useCallback(async () => {
           vaultPubkey,
           wallet.publicKey,
           feeWalletPk,
-          feeWallet2Pk,
           tenantPk,
           slug,
           Number(realBoxId),
           qty,
-          vaultTokenAccount,
-          userTokenAccount,
-          tokenProgram,
-          remainingAccounts
+          prizeItemAccounts
         );
         tx.add(openIx);
 
-        tx.feePayer = wallet.publicKey;
+        tx.feePayer = wallet.publicKey || undefined;
         const { blockhash } = await retryWithBackoff(
           () => conn.getLatestBlockhash(),
           "getLatestBlockhash",
@@ -1923,6 +2149,7 @@ const handleOpen = useCallback(async () => {
         tx.recentBlockhash = blockhash;
 
         setConfirmMessage("Submitting transaction to wallet...");
+        if (!wallet.signTransaction) throw new Error("Wallet does not support transaction signing");
         const signed = await wallet.signTransaction(tx);
         setConfirmMessage("Broadcasting transaction to Solana...");
         sig = await retryWithBackoff(
@@ -1952,7 +2179,7 @@ const handleOpen = useCallback(async () => {
           logs = txDetails.meta.logMessages || [];
         }
 
-        let revealSig = sig;
+        revealSig = sig;
         let revealed = true;
 
       const rewardsList: any[] = [];

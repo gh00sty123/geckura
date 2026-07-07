@@ -1,0 +1,8 @@
+test-ledger
+target
+node_modules
+.anchor
+.git
+test_balances.log
+platform-admin/node_modules
+platform-admin/.next

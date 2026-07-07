@@ -110,6 +110,7 @@ pub struct BoxConfig {
     pub status: BoxStatus,
     pub bump: u8,
     pub prizes_count: u8,
+    pub prizes: Vec<PrizeItem>,
 }
 
 impl BoxConfig {
@@ -128,7 +129,7 @@ impl BoxConfig {
         + U8_SIZE
         + U8_SIZE
         + U8_SIZE; // prizes_count
-    pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE;
+    pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE + 4 + (20 * PrizeItem::INIT_SPACE);
 }
 
 #[account]
@@ -142,9 +143,8 @@ impl PrizeVault {
     pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE;
 }
 
-#[account]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
 pub struct PrizeItem {
-    pub box_config: Pubkey,
     pub index: u8,
     pub prize_type: PrizeType,
     pub token_mint: Pubkey,
@@ -152,37 +152,56 @@ pub struct PrizeItem {
     pub win_percentage: u8,
     pub total_count: u32,
     pub claimed_count: u32,
-    pub bump: u8,
 }
 
 impl PrizeItem {
-    pub const INIT_SPACE: usize = PUBKEY_SIZE
-        + U8_SIZE
+    pub const INIT_SPACE: usize = U8_SIZE
         + U8_SIZE
         + PUBKEY_SIZE
         + U64_SIZE
         + U8_SIZE
         + U32_SIZE
-        + U32_SIZE
-        + U8_SIZE;
-    pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE;
+        + U32_SIZE;
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
+pub struct ClaimablePrize {
+    pub box_config: Pubkey,
+    pub prize_index: u8,
+    pub prize_type: PrizeType,
+    pub token_mint: Pubkey,
+    pub amount: u64,
+}
+
+impl ClaimablePrize {
+    pub const INIT_SPACE: usize = PUBKEY_SIZE  // box_config
+        + U8_SIZE                          // prize_index
+        + U8_SIZE                          // prize_type
+        + PUBKEY_SIZE                      // token_mint
+        + U64_SIZE;                        // amount
 }
 
 #[account]
 pub struct BoxReceipt {
     pub user: Pubkey,
-    pub box_config: Pubkey,
+    pub project: Pubkey,
     pub purchased: u32,
     pub total_opened: u32,
     pub nonce: u64,
-    pub request_slot: u64,
-    pub pending_opens: u32,
+    pub claimable_prizes: Vec<ClaimablePrize>,
     pub bump: u8,
 }
 
 impl BoxReceipt {
-    pub const INIT_SPACE: usize =
-        PUBKEY_SIZE + PUBKEY_SIZE + U32_SIZE + U32_SIZE + U64_SIZE + U64_SIZE + U32_SIZE + U8_SIZE;
+    pub const MAX_CLAIMABLE_PRIZES: usize = 10;
+    pub const INIT_SPACE: usize = PUBKEY_SIZE // user
+        + PUBKEY_SIZE                      // project
+        + U32_SIZE                         // purchased
+        + U32_SIZE                         // total_opened
+        + U64_SIZE                         // nonce
+        + 4                                // vector length prefix
+        + (Self::MAX_CLAIMABLE_PRIZES * ClaimablePrize::INIT_SPACE)
+        + U8_SIZE;                         // bump
     pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE;
 }
 

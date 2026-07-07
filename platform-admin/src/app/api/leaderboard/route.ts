@@ -3,9 +3,9 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import crypto from "crypto";
 import IDL from "@/lib/idl.json";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 // Fetch project authority from Solana blockchain
@@ -70,6 +70,10 @@ const verifyOnChainTx = async (
 
 export async function GET(req: NextRequest) {
   try {
+    if (!isSupabaseConfigured) {
+      return NextResponse.json([]);
+    }
+
     const { searchParams } = new URL(req.url);
     const slug = searchParams.get("slug");
     
@@ -106,6 +110,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    if (!isSupabaseConfigured) {
+      if (Array.isArray(body)) {
+        return NextResponse.json({ success: true, added: body.length });
+      } else {
+        return NextResponse.json({ success: true });
+      }
+    }
     
     // Check for batch sync input (from Admin dashboard)
     if (Array.isArray(body)) {

@@ -84,7 +84,7 @@ export default function NewProjectPage() {
           slug,
           authority: new PublicKey(adminWallet),
           feeWallet: new PublicKey(feeWallet),
-          feeWallet2: new PublicKey(feeWallet2),
+          feeWallet2: new PublicKey(feeWallet),
           feeLamports: feeLamportsValue,
           solRankingPoints: solPoints,
           tokenRankingPoints: tokenPoints,
@@ -331,28 +331,6 @@ Theme Color Accent: ${themeColor}
                 />
               </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-xs text-[#3d6b4e] uppercase font-bold">Platform Fee Wallet 2 (Secondary Split Recipient)</label>
-                  {wallet.publicKey && (
-                    <button
-                      type="button"
-                      onClick={() => setFeeWallet2(wallet.publicKey!.toBase58())}
-                      className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition cursor-pointer"
-                    >
-                      Use Connected Wallet
-                    </button>
-                  )}
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={feeWallet2}
-                  onChange={(e) => setFeeWallet2(e.target.value)}
-                  className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] placeholder-[#6b9b7a] font-mono"
-                  placeholder="Enter Secondary Solana wallet address"
-                />
-              </div>
 
               <div>
                 <label className="block text-xs text-[#3d6b4e] uppercase mb-1">Platform Fee (SOL per box opened)</label>

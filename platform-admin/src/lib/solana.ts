@@ -6,7 +6,7 @@ import { decodeAccount as decodeRawAccount } from "@/lib/program-ix";
 
 export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 export const PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"
+  process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv"
 );
 export const SYS = PublicKey.default;
 
@@ -59,8 +59,8 @@ export async function pdaBox(project: PublicKey, boxId: number | bigint) {
   return PublicKey.findProgramAddress([Buffer.from("box"), project.toBuffer(), id], PROGRAM_ID);
 }
 export async function pdaVault(project: PublicKey) { return PublicKey.findProgramAddress([Buffer.from("vault"), project.toBuffer()], PROGRAM_ID); }
-export async function pdaReceipt(user: PublicKey, boxCfg: PublicKey) {
-  return PublicKey.findProgramAddress([Buffer.from("receipt"), user.toBuffer(), boxCfg.toBuffer()], PROGRAM_ID);
+export async function pdaReceipt(user: PublicKey, project: PublicKey) {
+  return PublicKey.findProgramAddress([Buffer.from("receipt"), user.toBuffer(), project.toBuffer()], PROGRAM_ID);
 }
 
 export async function pdaPrizeItem(boxCfg: PublicKey, idx: number) {

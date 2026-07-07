@@ -67,12 +67,17 @@ pub struct CloseBox<'info> {
         mut,
         seeds = [BOX_SEED, project.key().as_ref(), &box_id.to_le_bytes()],
         bump = box_config.bump,
-        close = rent_destination
+        close = platform_treasury
     )]
     pub box_config: Account<'info, BoxConfig>,
     pub signer: Signer<'info>,
-    #[account(mut)]
-    pub rent_destination: SystemAccount<'info>,
+    /// CHECK: platform treasury receives the closed account rent
+    #[account(
+        mut,
+        address = platform.treasury
+    )]
+    pub platform_treasury: SystemAccount<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 pub fn create_box(
@@ -121,6 +126,7 @@ pub fn create_box(
     box_config.status = BoxStatus::Active;
     box_config.bump = ctx.bumps.box_config;
     box_config.prizes_count = 0;
+    box_config.prizes = Vec::new();
 
     Ok(())
 }
@@ -170,14 +176,10 @@ pub fn close_box(ctx: Context<CloseBox>, _slug: String, _box_id: u64) -> Result<
     let now = clock.unix_timestamp;
 
     let signer_key = ctx.accounts.signer.key();
-    crate::state::validate_close_authority(
-        signer_key,
-        project.authority,
-        platform.authority,
-        project.rent_claim_mode,
-        platform.treasury,
-        ctx.accounts.rent_destination.key(),
-    )?;
+    require!(
+        signer_key == project.authority || signer_key == platform.authority,
+        MysteryBoxError::Unauthorized
+    );
 
     require!(
         box_config.status == BoxStatus::Ended || now > box_config.end_time,

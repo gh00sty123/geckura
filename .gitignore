@@ -12,3 +12,4 @@ Anchor.lock
 Cargo.lock
 .vercel
 .env*
+test-ledger/

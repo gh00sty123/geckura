@@ -3,9 +3,9 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import crypto from "crypto";
 import IDL from "@/lib/idl.json";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4");
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 // Fetch project authority from Solana blockchain
@@ -34,6 +34,10 @@ export async function GET(req: NextRequest) {
     const slug = searchParams.get("slug");
     if (!slug) {
       return NextResponse.json({ error: "Missing slug parameter" }, { status: 400 });
+    }
+
+    if (!isSupabaseConfigured) {
+      return NextResponse.json({ success: true, project: null });
     }
 
     // 1. Fetch project branding
@@ -94,6 +98,10 @@ export async function POST(req: NextRequest) {
 
     if (!slug || !name) {
       return NextResponse.json({ error: "Missing required fields: slug and name" }, { status: 400 });
+    }
+
+    if (!isSupabaseConfigured) {
+      return NextResponse.json({ success: true });
     }
 
     // Cryptographic signature verification headers

@@ -71,8 +71,8 @@ export function useVaultAddress(project: PublicKey) {
   return useMemo(() => PublicKey.findProgramAddressSync([Buffer.from("vault"), project.toBuffer()], PROGRAM_ID), [project]);
 }
 
-export function useReceiptAddress(user: PublicKey, boxCfg: PublicKey) {
-  return useMemo(() => PublicKey.findProgramAddressSync([Buffer.from("receipt"), user.toBuffer(), boxCfg.toBuffer()], PROGRAM_ID), [user, boxCfg]);
+export function useReceiptAddress(user: PublicKey, project: PublicKey) {
+  return useMemo(() => PublicKey.findProgramAddressSync([Buffer.from("receipt"), user.toBuffer(), project.toBuffer()], PROGRAM_ID), [user, project]);
 }
 
 // ─── Build a simple Anchor instruction from the IDL using Borsh coder ─────────
