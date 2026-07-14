@@ -53,6 +53,12 @@ export default function HomePage() {
     return stats;
   }, [boxes]);
 
+  const geckuraBoxes = useMemo(() => {
+    const geckuraProj = projects.find(p => p.slug === "geckurabox");
+    if (!geckuraProj) return [];
+    return boxes.filter(b => b.project?.toBase58?.() === geckuraProj.pubkey || b.project?.toString?.() === geckuraProj.pubkey);
+  }, [projects, boxes]);
+
   const handleScrollToDirectory = () => {
     const el = document.getElementById("projects-directory");
     if (el) {
@@ -64,7 +70,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#ebfde3] text-[#1a3a2a] pb-16">
       <div className="mx-auto max-w-[1440px] px-4 lg:px-6 py-6 lg:py-8 space-y-12">
         {/* ── HERO ── */}
-        <Hero onOpenPack={handleScrollToDirectory} />
+        <Hero liveBoxes={geckuraBoxes} onOpenPack={handleScrollToDirectory} />
 
         {/* ── Directory Header ── */}
         <div id="projects-directory" className="space-y-4 pt-4">

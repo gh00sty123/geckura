@@ -8,6 +8,7 @@ import {
 import { LuSwords, LuSparkles } from "react-icons/lu";
 import type { PackItem } from "@/lib/mockData";
 import { NETWORK } from "@/lib/env";
+import { resolveIpfsUrl } from "@/lib/helpers";
 
 interface TickerItem {
   text: string;
@@ -60,8 +61,10 @@ function Ticker({ items }: { items: TickerItem[] }) {
 ══════════════════════════════════════════ */
 export default function Hero({
   onOpenPack,
+  liveBoxes = [],
 }: {
   onOpenPack: (packName: string) => void;
+  liveBoxes?: any[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [liveWins, setLiveWins] = useState<TickerItem[]>([]);
@@ -238,7 +241,7 @@ export default function Hero({
 
           {/* Featured pack card */}
           <div className="relative float-anim">
-            <FeaturedPack onOpen={onOpenPack} />
+            <FeaturedPack liveBox={liveBoxes[0] || null} onOpen={onOpenPack} />
           </div>
         </motion.div>
 
@@ -276,23 +279,13 @@ export default function Hero({
 /* ══════════════════════════════════════════
    Featured (hero) mini pack — enhanced
 ══════════════════════════════════════════ */
-function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
-  const packs: PackItem[] = [
-    {
-      id: "featured",
-      name: "Gecko Genesis",
-      category: "limited",
-      categoryLabel: "Limited Drop",
-      price: 2.5,
-      supplyLeft: 4120,
-      totalSupply: 5000,
-      oddsPreview: {},
-      image: "",
-      description: "",
-    },
-  ];
-  const pack = packs[0];
-  const soldPercent = Math.round(((pack.totalSupply - pack.supplyLeft) / pack.totalSupply) * 100);
+function FeaturedPack({ liveBox, onOpen }: { liveBox: any; onOpen: (n: string) => void }) {
+  const packName = liveBox?.name || "Gecko Genesis";
+  const packPrice = liveBox ? (Number(liveBox.priceLamports) / 1e9) : 2.5;
+  const supplyLeft = liveBox ? (Number(liveBox.supply) - Number(liveBox.sold)) : 4120;
+  const totalSupply = liveBox ? Number(liveBox.supply) : 5000;
+  const bannerUrl = liveBox?.bannerUri ? resolveIpfsUrl(liveBox.bannerUri) : null;
+  const soldPercent = Math.round(((totalSupply - supplyLeft) / totalSupply) * 100);
 
   return (
     <motion.div
@@ -300,25 +293,29 @@ function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
       whileHover={{ scale: 1.06, rotateY: 8, rotateX: -3 }}
       transition={{ type: "spring", stiffness: 300, damping: 18 }}
       style={{ transformStyle: "preserve-3d" }}
-      onClick={() => onOpen(pack.name)}
+      onClick={() => onOpen(packName)}
     >
       {/* Back glow */}
       <div className="absolute -inset-12 rounded-[40px] bg-gradient-to-br from-[#1cac64] to-emerald-400 opacity-35 blur-3xl -z-10" />
 
       <div className="relative w-full aspect-[140/200] rounded-[24px] overflow-hidden border-2 border-[#1cac64]/30 shadow-[0_0_48px_rgba(28,172,100,0.2),0_8px_32px_rgba(0,0,0,0.1)]">
 
-        {/* Grid background */}
-        <div
-          className="absolute inset-0 opacity-15"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(28,172,100,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(28,172,100,0.15) 1px, transparent 1px)",
-            backgroundSize: "18px 18px",
-          }}
-        />
+        {/* Background Banner / Grid */}
+        {bannerUrl ? (
+          <img src={bannerUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+        ) : (
+          <div
+            className="absolute inset-0 opacity-15"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(28,172,100,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(28,172,100,0.15) 1px, transparent 1px)",
+              backgroundSize: "18px 18px",
+            }}
+          />
+        )}
 
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a2e1a]/95 via-[#0a2e1a]/40 to-[#0a2e1a]/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a2e1a]/95 via-[#0a2e1a]/50 to-[#0a2e1a]/20" />
 
         {/* Scanlines */}
         <div
@@ -350,7 +347,7 @@ function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
             <LuSparkles className="text-[10px]" />
             Featured · Limited Drop
           </p>
-          <p className="text-base font-bold text-white">{pack.name}</p>
+          <p className="text-base font-bold text-white">{packName}</p>
 
           {/* Supply bar */}
           <div className="mt-2.5 w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
@@ -363,8 +360,8 @@ function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
           </div>
 
           <div className="flex items-center justify-between mt-2">
-            <span className="text-lg font-extrabold text-[#1cac64]">{pack.price} SOL</span>
-            <span className="text-[10px] text-white/60">{pack.supplyLeft.toLocaleString()} left</span>
+            <span className="text-lg font-extrabold text-[#1cac64]">{packPrice} SOL</span>
+            <span className="text-[10px] text-white/60">{supplyLeft.toLocaleString()} left</span>
           </div>
 
           {/* CTA */}
@@ -373,7 +370,7 @@ function FeaturedPack({ onOpen }: { onOpen: (n: string) => void }) {
             whileTap={{ scale: 0.97 }}
             className="mt-3 w-full rounded-xl bg-[#1cac64] text-white font-bold text-xs py-3
               shadow-[0_0_20px_rgba(28,172,100,0.35)] hover:shadow-[0_0_30px_rgba(28,172,100,0.5)] transition-shadow"
-            onClick={(e) => { e.stopPropagation(); onOpen(pack.name); }}
+            onClick={(e) => { e.stopPropagation(); onOpen(packName); }}
           >
             ✦ Open Pack
           </motion.button>

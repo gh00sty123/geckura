@@ -158,7 +158,17 @@ export function updateFavicon(logoVal: string | null | undefined, navbarColor?: 
   // Create a brand new favicon link tag to force the browser to update
   const link = document.createElement("link");
   link.rel = "icon";
-  link.type = resolvedLogo.endsWith(".ico") ? "image/x-icon" : "image/png";
+  if (resolvedLogo.endsWith(".ico")) {
+    link.type = "image/x-icon";
+  } else if (resolvedLogo.endsWith(".jpg") || resolvedLogo.endsWith(".jpeg")) {
+    link.type = "image/jpeg";
+  } else if (resolvedLogo.endsWith(".gif")) {
+    link.type = "image/gif";
+  } else if (resolvedLogo.endsWith(".svg")) {
+    link.type = "image/svg+xml";
+  } else {
+    link.type = "image/png";
+  }
   link.href = resolvedLogo;
   document.head.appendChild(link);
 }

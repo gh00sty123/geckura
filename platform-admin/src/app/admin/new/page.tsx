@@ -121,18 +121,29 @@ export default function NewProjectPage() {
       // Creator project request submission via Discord
       try {
         const formattedMsg = `
-==============================================
-GECKURA BOX - NEW PROJECT LAUNCH REQUEST
-==============================================
-Package Tier: ${selectedPackage.toUpperCase()}
-Project Name: ${name}
-Slug (URL Path): /${slug}
-Description: ${description}
-Logo URL: ${logoUri || "Not Provided"}
-Banner URL: ${bgUri || "Not Provided"}
-Creator Admin Wallet: ${adminWallet}
-Theme Color Accent: ${themeColor}
-==============================================
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🦎 **GECKURA BOX - NEW PROJECT LAUNCH REQUEST** 🦎
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 **Package Tier:** \`${selectedPackage.toUpperCase()}\`
+📛 **Project Name:** \`${name}\`
+🔗 **Slug (URL Path):** \`/${slug}\`
+🎨 **Theme Color:** \`${themeColor}\`
+
+📝 **Description:** 
+> *${description}*
+
+👤 **Creator Admin Wallet:**
+\`\`\`${adminWallet}\`\`\`
+
+🖼️ **Logo URL:**
+${logoUri || "Not Provided"}
+
+🖼️ **Banner URL:**
+${bgUri || "Not Provided"}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*Generated automatically by Geckura Launch Portal. Please paste this request in the support channel.*
         `.trim();
 
         await navigator.clipboard.writeText(formattedMsg);
@@ -145,7 +156,7 @@ Theme Color Accent: ${themeColor}
         ), { duration: 4500, icon: "💬" });
 
         setTimeout(() => {
-          window.open("https://discord.gg/geckura", "_blank");
+          window.open("https://discord.gg/YfxtrU8Sm", "_blank");
           setSubmitting(false);
         }, 1500);
       } catch (err) {
