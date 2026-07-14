@@ -416,6 +416,7 @@ export const closeBoxTx = async (
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
     signer: { pubkey: wallet.publicKey!, isSigner: true, isWritable: false },
     platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
+    system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
     params.slug,
     params.boxId

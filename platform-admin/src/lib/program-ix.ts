@@ -836,10 +836,11 @@ export function ixCloseBox(
 ): TransactionInstruction {
   return buildIx("close_box", {
     platform: { pubkey: platform, isSigner: false, isWritable: false },
-    project: { pubkey: project, isSigner: false, isWritable: false },
+    project: { pubkey: project, isSigner: false, isWritable: true },
     box_config: { pubkey: boxConfig, isSigner: false, isWritable: true },
     signer: { pubkey: signer, isSigner: true, isWritable: false },
     platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
+    system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [slug, boxId]);
 }
 

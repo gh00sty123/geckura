@@ -3,14 +3,17 @@
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FiExternalLink, FiCompass } from "react-icons/fi";
 import { fetchProjects, fetchAllBoxes } from "@/lib/program-ix";
 import { resolveIpfsUrl } from "@/lib/helpers";
 import Hero from "@/components/Hero";
 
 export default function HomePage() {
+  const router = useRouter();
   const [projects, setProjects] = useState<any[]>([]);
   const [boxes, setBoxes] = useState<any[]>([]);
+  const [geckuraBranding, setGeckuraBranding] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,6 +23,18 @@ export default function HomePage() {
         const bxs = await fetchAllBoxes();
         setProjects(projs || []);
         setBoxes(bxs || []);
+        
+        try {
+          const brandRes = await fetch("/api/branding?slug=geckura");
+          if (brandRes.ok) {
+            const data = await brandRes.json();
+            if (data.success && data.project) {
+              setGeckuraBranding(data.project);
+            }
+          }
+        } catch (brandErr) {
+          console.error("Failed to fetch branding for geckura project:", brandErr);
+        }
       } catch (err) {
         console.error("Error loading homepage directory:", err);
       } finally {
@@ -56,8 +71,22 @@ export default function HomePage() {
   const geckuraBoxes = useMemo(() => {
     const geckuraProj = projects.find(p => p.slug === "geckura");
     if (!geckuraProj) return [];
-    return boxes.filter(b => b.project?.toBase58?.() === geckuraProj.pubkey || b.project?.toString?.() === geckuraProj.pubkey);
-  }, [projects, boxes]);
+    
+    // Find all on-chain boxes for the geckura project
+    const onChain = boxes.filter(b => b.project?.toBase58?.() === geckuraProj.pubkey || b.project?.toString?.() === geckuraProj.pubkey);
+    
+    // Merge each on-chain box with the branding data from Supabase
+    return onChain.map(oc => {
+      const id = oc.boxId?.toNumber?.() ?? oc.boxId ?? 0;
+      const dbBox = geckuraBranding?.boxes?.find((db: any) => (db.box_id ?? db.boxId) === id);
+      return {
+        ...oc,
+        name: dbBox?.name || oc.name || `Gecko Pack #${id}`,
+        bannerUri: dbBox?.banner_uri || dbBox?.bannerUri || oc.bannerUri || null,
+        description: dbBox?.description || oc.description || "",
+      };
+    });
+  }, [projects, boxes, geckuraBranding]);
 
   const handleScrollToDirectory = () => {
     const el = document.getElementById("projects-directory");
@@ -70,7 +99,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#ebfde3] text-[#1a3a2a] pb-16">
       <div className="mx-auto max-w-[1440px] px-4 lg:px-6 py-6 lg:py-8 space-y-12">
         {/* ── HERO ── */}
-        <Hero liveBoxes={geckuraBoxes} onOpenPack={handleScrollToDirectory} />
+        <Hero liveBoxes={geckuraBoxes} onOpenPack={() => router.push("/geckura")} />
 
         {/* ── Directory Header ── */}
         <div id="projects-directory" className="space-y-4 pt-4">
