@@ -115,20 +115,41 @@ export default function ProjectLeaderboardPage() {
 
     async function loadData() {
       try {
-        const conn = new Connection(RPC, "confirmed");
+        // 1. Fetch database leaderboard first (zero delay!)
+        setProgressMsg("Loading rankings from database...");
+        let allEvents: ParsedEvent[] = [];
+        
+        const cached = leaderboardCache[slug];
+        const now = Date.now();
+        if (cached && now - cached.timestamp < 10000) { // 10s memory cache
+          allEvents = cached.events;
+        } else {
+          try {
+            const res = await fetch(`/api/leaderboard?slug=${slug}`);
+            if (res.ok) {
+              allEvents = await res.json();
+              leaderboardCache[slug] = {
+                events: allEvents,
+                timestamp: Date.now()
+              };
+            }
+          } catch (err) {
+            console.error("Failed to fetch off-chain leaderboard:", err);
+          }
+        }
 
-        // 1. Fetch project details
-        setProgressMsg("Retrieving storefront details...");
+        if (active) {
+          setEvents(allEvents.sort((a, b) => b.timestamp - a.timestamp));
+        }
+
+        // 2. Fetch project branding & custom point rules in background
+        const conn = new Connection(RPC, "confirmed");
         const [projectPDA] = PublicKey.findProgramAddressSync(
           [Buffer.from("project"), Buffer.from(slug)], PGID
         );
 
         try {
-          const projectAcc = await retryWithBackoff(
-            () => conn.getAccountInfo(projectPDA),
-            "getAccountInfo(leaderboard_project)"
-          );
-
+          const projectAcc = await conn.getAccountInfo(projectPDA);
           if (projectAcc && active) {
             const proj: any = new BorshAccountsCoder(IDL as any).decode("Project", projectAcc.data);
             
@@ -138,10 +159,9 @@ export default function ProjectLeaderboardPage() {
             let themeVal = proj?.themeColor || "";
             let navColor = "";
             let txtColor = "";
-            let mEden = "";
-            let disc = "";
             let twLink = "";
             let twUser = "";
+            
             if (typeof window !== "undefined") {
               const localBranding = localStorage.getItem(`project_branding_${slug}`);
               if (localBranding) {
@@ -174,132 +194,9 @@ export default function ProjectLeaderboardPage() {
               twitterLink: twLink || null,
             });
             document.title = `${nameVal} | Leaderboard`;
-          } else if (active) {
-            let nameVal = slug;
-            let bgVal = "";
-            let logoVal = "";
-            let themeVal = "";
-            let navColor = "";
-            let txtColor = "";
-            let twLink = "";
-            let twUser = "";
-            if (typeof window !== "undefined") {
-              const localBranding = localStorage.getItem(`project_branding_${slug}`);
-              if (localBranding) {
-                try {
-                  const parsed = JSON.parse(localBranding);
-                  nameVal = parsed.name || nameVal;
-                  bgVal = parsed.bgUri || "";
-                  logoVal = parsed.logoUri || "";
-                  themeVal = parsed.themeColor || "";
-                  navColor = parsed.navbarColor || "";
-                  txtColor = parsed.textColor || "";
-                  twLink = parsed.twitterLink || "";
-                  twUser = parsed.twitterUsername || "";
-                } catch {}
-              }
-            }
-            setProjectTitle(nameVal);
-            if (bgVal) setBgUri(bgVal);
-            updateFavicon(logoVal, navColor || null);
-            setBranding({
-              name: nameVal,
-              logoUrl: resolveIpfsUrl(logoVal) || null,
-              themeColor: themeVal || null,
-              navbarColor: navColor || null,
-              textColor: txtColor || null,
-              twitterUsername: twUser || null,
-              twitterLink: twLink || null,
-            });
-            document.title = `${nameVal} | Leaderboard`;
           }
         } catch (e) {
-          console.warn("Failed to fetch project details:", e);
-          let nameVal = slug;
-          let bgVal = "";
-          let logoVal = "";
-          let themeVal = "";
-          let navColor = "";
-          let txtColor = "";
-          let twLink = "";
-          let twUser = "";
-          if (typeof window !== "undefined") {
-            const localBranding = localStorage.getItem(`project_branding_${slug}`);
-            if (localBranding) {
-              try {
-                const parsed = JSON.parse(localBranding);
-                nameVal = parsed.name || nameVal;
-                bgVal = parsed.bgUri || "";
-                logoVal = parsed.logoUri || "";
-                themeVal = parsed.themeColor || "";
-                navColor = parsed.navbarColor || "";
-                txtColor = parsed.textColor || "";
-                twLink = parsed.twitterLink || "";
-                twUser = parsed.twitterUsername || "";
-              } catch {}
-            }
-          }
-          setProjectTitle(nameVal);
-          if (bgVal) setBgUri(bgVal);
-
-          updateFavicon(logoVal, navColor || null);
-          setBranding({
-            name: nameVal,
-            logoUrl: resolveIpfsUrl(logoVal) || null,
-            themeColor: themeVal || null,
-            navbarColor: navColor || null,
-            textColor: txtColor || null,
-            twitterUsername: twUser || null,
-            twitterLink: twLink || null,
-          });
-          document.title = `${nameVal} | Leaderboard`;
-        }
-
-        // 2. Fetch project mystery boxes to track SOL vs Token currencies
-        setProgressMsg("Reading box currency specifications...");
-        const allPkgs = await retryWithBackoff(
-          () => conn.getProgramAccounts(PGID),
-          "getProgramAccounts(leaderboard_boxes)"
-        );
-        const coder = new BorshAccountsCoder(IDL as any);
-        const solBoxesMap = new Map<string, boolean>();
-
-        for (const { pubkey, account } of allPkgs) {
-          try {
-            const b: any = coder.decode("BoxConfig", account.data);
-            const isMatch = b.project.equals(projectPDA);
-            if (isMatch) {
-              const price = b.priceLamports?.toNumber?.() ?? b.price_lamports?.toNumber?.() ?? b.priceLamports ?? b.price_lamports ?? 0;
-              solBoxesMap.set(pubkey.toBase58(), price > 0);
-            }
-          } catch {}
-        }
-
-        // 3. Fetch leaderboard records off-chain
-        setProgressMsg("Loading rankings from off-chain database...");
-        let allEvents: ParsedEvent[] = [];
-        
-        const cached = leaderboardCache[slug];
-        const now = Date.now();
-        if (cached && now - cached.timestamp < 10000) { // 10s memory cache
-          allEvents = cached.events;
-        } else {
-          try {
-            const res = await fetch(`/api/leaderboard?slug=${slug}`);
-            if (res.ok) {
-              allEvents = await res.json();
-              leaderboardCache[slug] = {
-                events: allEvents,
-                timestamp: Date.now()
-              };
-            }
-          } catch (err) {
-            console.error("Failed to fetch off-chain leaderboard:", err);
-          }
-        }
-
-        if (active) {
-          setEvents(allEvents.sort((a, b) => b.timestamp - a.timestamp));
+          console.warn("Failed to fetch project details in background:", e);
         }
       } catch (err) {
         console.error("Leaderboard loading failed:", err);

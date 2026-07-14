@@ -322,17 +322,33 @@ export async function GET(req: NextRequest) {
       } catch {}
     }
 
-    // Map database columns to match client expected JSON schema
-    const formattedRecords = records.map((r: any) => ({
-      slug: r.slug,
-      sig: r.sig,
-      user: r.user,
-      boxConfig: r.box_config || r.boxConfig,
-      timestamp: Number(r.timestamp),
-      isSolBox: r.is_sol_box || r.isSolBox,
-      username: profilesMap[r.user]?.username || null,
-      avatar: profilesMap[r.user]?.avatarUrl || null
-    }));
+    // Map database columns to match client expected JSON schema, filtering out legacy duplicates
+    const formattedRecords: any[] = [];
+    const compositeSigs = new Set<string>();
+
+    for (const r of records) {
+      if (r.sig && r.sig.includes("-")) {
+        const baseSig = r.sig.split("-")[0];
+        compositeSigs.add(baseSig);
+      }
+    }
+
+    for (const r of records) {
+      if (r.sig && !r.sig.includes("-") && compositeSigs.has(r.sig)) {
+        // Skip legacy plain signature record since we have the split composite records
+        continue;
+      }
+      formattedRecords.push({
+        slug: r.slug,
+        sig: r.sig,
+        user: r.user,
+        boxConfig: r.box_config || r.boxConfig,
+        timestamp: Number(r.timestamp),
+        isSolBox: r.is_sol_box || r.isSolBox,
+        username: profilesMap[r.user]?.username || null,
+        avatar: profilesMap[r.user]?.avatarUrl || null
+      });
+    }
 
     return NextResponse.json(formattedRecords);
   } catch (err: any) {

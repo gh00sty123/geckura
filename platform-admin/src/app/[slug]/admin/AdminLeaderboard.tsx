@@ -60,34 +60,9 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
     if (loading) return;
     if (!wallet.publicKey) return;
     setLoading(true);
-    setProgressMsg("Connecting to network...");
     
     try {
-      const conn = new Connection(RPC, "confirmed");
-      const [projectPDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("project"), Buffer.from(slug)], PGID
-      );
-
-      // Fetch project details to get custom ranking points
-      setProgressMsg("Reading project configuration...");
-      try {
-        const projectAcc = await retryWithBackoff(
-          () => conn.getAccountInfo(projectPDA),
-          "getAccountInfo(admin_leaderboard_project)"
-        );
-
-        if (projectAcc) {
-          const coder = new BorshAccountsCoder(IDL as any);
-          const proj: any = coder.decode("Project", projectAcc.data);
-          const title = proj?.name || slug;
-          setProjectTitle(title);
-          setSolRankingPoints(proj?.solRankingPoints ?? 2);
-          setTokenRankingPoints(proj?.tokenRankingPoints ?? 1);
-        }
-      } catch (err) {
-        console.warn("Failed to fetch project details:", err);
-      }
-
+      // 1. Fetch database rankings immediately (zero delay!)
       setProgressMsg("Loading rankings from database...");
       let allEvents = [];
       const cached = adminLeaderboardCache[slug];
@@ -109,6 +84,26 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
       
       setEvents(allEvents.sort((a: any, b: any) => b.timestamp - a.timestamp));
       setHasLoaded(true);
+
+      // 2. Fetch project details in the background
+      try {
+        const conn = new Connection(RPC, "confirmed");
+        const [projectPDA] = PublicKey.findProgramAddressSync(
+          [Buffer.from("project"), Buffer.from(slug)], PGID
+        );
+        const projectAcc = await conn.getAccountInfo(projectPDA);
+
+        if (projectAcc) {
+          const coder = new BorshAccountsCoder(IDL as any);
+          const proj: any = coder.decode("Project", projectAcc.data);
+          const title = proj?.name || slug;
+          setProjectTitle(title);
+          setSolRankingPoints(proj?.solRankingPoints ?? 2);
+          setTokenRankingPoints(proj?.tokenRankingPoints ?? 1);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch project details on-chain in background:", err);
+      }
     } catch (err) {
       console.error(err);
     } finally {
