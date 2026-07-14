@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
       discordLink,
       twitterLink,
       discordWebhookUrl,
+      discordRoleId,
     } = body;
 
     if (!slug || !name) {
@@ -171,6 +172,7 @@ export async function POST(req: NextRequest) {
         discord_link: discordLink || null,
         twitter_link: twitterLink || null,
         discord_webhook_url: discordWebhookUrl || null,
+        discord_role_id: discordRoleId || null,
         updated_at: new Date().toISOString(),
       }, { onConflict: "slug" });
 

@@ -527,6 +527,7 @@ export const updateProjectBrandingTx = async (
     twitterUsername?: string;
     twitterLink?: string;
     discordWebhookUrl?: string;
+    discordRoleId?: string;
   }
 ) => {
   if (!wallet.publicKey || !wallet.signMessage) {
@@ -560,6 +561,7 @@ export const updateProjectBrandingTx = async (
       twitterUsername: params.twitterUsername || "",
       twitterLink: params.twitterLink || "",
       discordWebhookUrl: params.discordWebhookUrl || "",
+      discordRoleId: params.discordRoleId || "",
     }),
   });
 

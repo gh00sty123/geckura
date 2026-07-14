@@ -120,9 +120,13 @@ function parseBoxOpenEventsFromLogs(logs: string[]): DecodedBoxOpenEvent[] {
   return events;
 }
 
-async function formatPrizeInfo(conn: Connection, event: DecodedBoxOpenEvent): Promise<{ name: string; amountStr: string }> {
+async function formatPrizeInfo(conn: Connection, event: DecodedBoxOpenEvent): Promise<{ name: string; amountStr: string; imageUrl: string }> {
   if (!event.won) {
-    return { name: "Better luck next time!", amountStr: "" };
+    return { 
+      name: "Better luck next time!", 
+      amountStr: "", 
+      imageUrl: "https://i.imgur.com/k2B11aA.png" // Closed Chest for Loss
+    };
   }
   
   let pType = "sol";
@@ -137,12 +141,20 @@ async function formatPrizeInfo(conn: Connection, event: DecodedBoxOpenEvent): Pr
   }
 
   if (pType === "sol") {
-    return { name: "Solana", amountStr: `${(event.amountWon / 1e9).toFixed(4)} SOL` };
+    return { 
+      name: "Solana (SOL)", 
+      amountStr: `${(event.amountWon / 1e9).toFixed(4)} SOL`,
+      imageUrl: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+    };
   }
 
   // Check common mints
   if (event.tokenMint === "EPjFWdd5AufqSSqeM2xzybapC8G4wEGGkZwyTDt1v") {
-    return { name: "USDC", amountStr: `${(event.amountWon / 1e6).toFixed(2)} USDC` };
+    return { 
+      name: "USDC", 
+      amountStr: `${(event.amountWon / 1e6).toFixed(2)} USDC`,
+      imageUrl: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2xzybapC8G4wEGGkZwyTDt1v/logo.png"
+    };
   }
 
   // Try fetching decimals dynamically
@@ -154,30 +166,46 @@ async function formatPrizeInfo(conn: Connection, event: DecodedBoxOpenEvent): Pr
     const formattedAmount = (event.amountWon / divider).toString();
     
     if (pType === "nft" || (decimals === 0 && event.amountWon === 1)) {
-      return { name: `NFT (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`, amountStr: `1 NFT` };
+      return { 
+        name: `NFT (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`, 
+        amountStr: `1 NFT`,
+        imageUrl: "https://i.imgur.com/8QO2HkQ.png" // Open Gold Chest
+      };
     }
     
-    return { name: `Token (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`, amountStr: `${formattedAmount}` };
+    return { 
+      name: `Token (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`, 
+      amountStr: `${formattedAmount}`,
+      imageUrl: "https://i.imgur.com/8QO2HkQ.png" // Open Gold Chest
+    };
   } catch (err) {
     console.warn("Failed to fetch mint info dynamically:", err);
     const formattedAmount = (event.amountWon / 1e9).toString();
-    return { name: `Token (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`, amountStr: `${formattedAmount} (decimals unknown)` };
+    return { 
+      name: `Token (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`, 
+      amountStr: `${formattedAmount} (decimals unknown)`,
+      imageUrl: "https://i.imgur.com/8QO2HkQ.png" // Open Gold Chest
+    };
   }
 }
 
 async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEvent, sig: string, slug: string) {
   try {
+    // Only notify on actual wins
+    if (!event.won) return;
+
     // Fetch project branding from database if configured
     let projectName = slug;
     let logoUri: string | null = null;
     let themeColorHex: string | null = null;
     let projectWebhookUrl: string | null = null;
+    let discordRoleId: string | null = null;
 
     if (isSupabaseConfigured) {
       try {
         const { data: projData } = await supabase
           .from("projects")
-          .select("name, logo_uri, theme_color, discord_webhook_url")
+          .select("name, logo_uri, theme_color, discord_webhook_url, discord_role_id")
           .eq("slug", slug)
           .single();
         if (projData) {
@@ -185,6 +213,7 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
           logoUri = projData.logo_uri || null;
           themeColorHex = projData.theme_color || null;
           projectWebhookUrl = projData.discord_webhook_url || null;
+          discordRoleId = projData.discord_role_id || null;
         }
       } catch (dbErr) {
         console.error("[Discord Webhook] Failed to fetch project branding:", dbErr);
@@ -212,9 +241,13 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
       } catch {}
     }
 
-    const { name, amountStr } = await formatPrizeInfo(conn, event);
+    const { name, amountStr, imageUrl } = await formatPrizeInfo(conn, event);
     const explorerUrl = `https://solscan.io/tx/${sig}`;
     const userExplorerUrl = `https://solscan.io/account/${walletStr}`;
+
+    // Build the storefront URL for this project
+    const siteBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mysterybox.geckura.app";
+    const boxSiteUrl = `${siteBaseUrl}/${slug}`;
 
     const rewardText = event.won 
       ? `🏆 **Won:** **${amountStr}** of **${name}**` 
@@ -226,6 +259,7 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
 ✨ **Result:** ${rewardText}
 
 🔗 **Transaction:** [View on Solscan](${explorerUrl})
+🎰 **Try Your Luck:** [Open a Box!](${boxSiteUrl})
     `.trim();
 
     // Convert hex color (e.g. #1cac64) to decimal for Discord Embed
@@ -238,22 +272,32 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
       }
     }
 
-    const embed = {
+    const embed: any = {
       title: event.won ? "🎉 New Mystery Box Win!" : "🎁 Mystery Box Opened",
+      url: boxSiteUrl,
       description,
       color: embedColor,
-      thumbnail: logoUri ? { url: logoUri } : undefined,
+      thumbnail: { url: imageUrl },
       timestamp: new Date().toISOString(),
       footer: {
         text: `${projectName} Draw Alerts`,
         icon_url: logoUri || undefined
       }
     };
+    // Use project logo as the author icon if available
+    if (logoUri) {
+      embed.author = {
+        name: projectName,
+        url: boxSiteUrl,
+        icon_url: logoUri
+      };
+    }
 
     const response = await fetch(targetWebhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        content: discordRoleId ? `<@&${discordRoleId}>` : undefined,
         username: `${projectName} Draw Bot`,
         avatar_url: logoUri || undefined,
         embeds: [embed]

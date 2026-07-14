@@ -483,6 +483,7 @@ function Inner({ slug }: { slug: string }) {
             decoded.discordLink = supabaseBranding.discord_link || "";
             decoded.twitterLink = supabaseBranding.twitter_link || "";
             decoded.discordWebhookUrl = supabaseBranding.discord_webhook_url || "";
+            decoded.discordRoleId = supabaseBranding.discord_role_id || "";
           } else if (typeof window !== "undefined" && decoded.slug) {
             const localBranding = localStorage.getItem(`project_branding_${decoded.slug}`);
             if (localBranding) {

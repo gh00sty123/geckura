@@ -34,6 +34,7 @@ export function ProjectBrandingModal({
   const [twitterUsername, setTwitterUsername] = useState(slugProj?.twitterUsername || "");
   const [twitterLink, setTwitterLink] = useState(slugProj?.twitterLink || "");
   const [discordWebhookUrl, setDiscordWebhookUrl] = useState(slugProj?.discordWebhookUrl || "");
+  const [discordRoleId, setDiscordRoleId] = useState(slugProj?.discordRoleId || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,6 +63,7 @@ export function ProjectBrandingModal({
         twitterUsername,
         twitterLink,
         discordWebhookUrl,
+        discordRoleId,
       });
       toast.success("Project branding updated successfully!", { id: "branding" });
       onRefresh();
@@ -161,7 +163,18 @@ export function ProjectBrandingModal({
                 className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
                 placeholder="https://discord.com/api/webhooks/..."
               />
-              <p className="text-[10px] text-[#3d6b4e] mt-1">Optional. The bot will post live box opening and win details directly to this channel.</p>
+              <p className="text-[10px] text-[#3d6b4e] mt-1">Optional. The bot will post live win details directly to this channel.</p>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-[#2d5a3f] uppercase tracking-wider mb-2">Discord Role ID to Tag</label>
+              <input
+                type="text"
+                value={discordRoleId}
+                onChange={e => setDiscordRoleId(e.target.value)}
+                className="w-full bg-[#ebfde3]/60 border border-[#1cac64]/15 rounded-xl px-4 py-3 text-sm text-[#0f2618] placeholder-[#6b9b7a] focus:outline-none focus:border-[#1cac64]/50 focus:ring-1 focus:ring-[#1cac64]/50 transition-all font-mono"
+                placeholder="e.g. 1234567890123456789"
+              />
+              <p className="text-[10px] text-[#3d6b4e] mt-1">Optional. Right-click a role in Discord → Copy Role ID. This role will be @mentioned on every win alert.</p>
             </div>
           </div>
 
