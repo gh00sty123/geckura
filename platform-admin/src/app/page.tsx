@@ -54,7 +54,7 @@ export default function HomePage() {
   }, [boxes]);
 
   const geckuraBoxes = useMemo(() => {
-    const geckuraProj = projects.find(p => p.slug === "geckurabox");
+    const geckuraProj = projects.find(p => p.slug === "geckura");
     if (!geckuraProj) return [];
     return boxes.filter(b => b.project?.toBase58?.() === geckuraProj.pubkey || b.project?.toString?.() === geckuraProj.pubkey);
   }, [projects, boxes]);

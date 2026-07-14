@@ -412,7 +412,7 @@ export const closeBoxTx = async (
 
   const ix = buildIx("close_box", {
     platform: { pubkey: platformPda, isSigner: false, isWritable: false },
-    project: { pubkey: projectPda, isSigner: false, isWritable: false },
+    project: { pubkey: projectPda, isSigner: false, isWritable: true },
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
     signer: { pubkey: wallet.publicKey!, isSigner: true, isWritable: false },
     platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
