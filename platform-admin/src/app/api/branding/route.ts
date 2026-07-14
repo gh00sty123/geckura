@@ -94,6 +94,7 @@ export async function POST(req: NextRequest) {
       magicEdenLink,
       discordLink,
       twitterLink,
+      discordWebhookUrl,
     } = body;
 
     if (!slug || !name) {
@@ -169,6 +170,7 @@ export async function POST(req: NextRequest) {
         magic_eden_link: magicEdenLink || null,
         discord_link: discordLink || null,
         twitter_link: twitterLink || null,
+        discord_webhook_url: discordWebhookUrl || null,
         updated_at: new Date().toISOString(),
       }, { onConflict: "slug" });
 

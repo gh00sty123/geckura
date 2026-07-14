@@ -482,6 +482,7 @@ function Inner({ slug }: { slug: string }) {
             decoded.magicEdenLink = supabaseBranding.magic_eden_link || "";
             decoded.discordLink = supabaseBranding.discord_link || "";
             decoded.twitterLink = supabaseBranding.twitter_link || "";
+            decoded.discordWebhookUrl = supabaseBranding.discord_webhook_url || "";
           } else if (typeof window !== "undefined" && decoded.slug) {
             const localBranding = localStorage.getItem(`project_branding_${decoded.slug}`);
             if (localBranding) {

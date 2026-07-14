@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useParams } from "next/navigation";
@@ -21,6 +21,8 @@ interface ParsedEvent {
   boxConfig: string;
   timestamp: number;
   isSolBox: boolean;
+  username?: string;
+  avatar?: string;
 }
 
 interface LeaderboardUser {
@@ -48,9 +50,26 @@ export default function ProjectLeaderboardPage() {
   const [tokenRankingPoints, setTokenRankingPoints] = useState(1);
   const [progressMsg, setProgressMsg] = useState("Fetching project activity...");
   const [bgUri, setBgUri] = useState("");
+  const [nftAvatars, setNftAvatars] = useState<Record<string, string>>({});
+  const fetchedWallets = useRef<Set<string>>(new Set());
 
   const getAvatar = (pubkey: string) => {
-    return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${pubkey.slice(0, 8)}`;
+    let sum = 0;
+    for (let i = 0; i < pubkey.length; i++) {
+      sum += pubkey.charCodeAt(i);
+    }
+    const index = sum % 6;
+    
+    // Curated premium collectible placeholders (themed as Geckura RPG collectibles with gradient backgrounds)
+    const premiumFallbacks = [
+      `https://api.dicebear.com/7.x/adventurer/svg?seed=GekHero-${sum % 100}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+      `https://api.dicebear.com/7.x/adventurer/svg?seed=GekSage-${(sum + 17) % 100}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+      `https://api.dicebear.com/7.x/adventurer/svg?seed=GekRogue-${(sum + 31) % 100}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+      `https://api.dicebear.com/7.x/adventurer/svg?seed=GekMage-${(sum + 59) % 100}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+      `https://api.dicebear.com/7.x/adventurer/svg?seed=GekKnight-${(sum + 73) % 100}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+      `https://api.dicebear.com/7.x/adventurer/svg?seed=GekAlchemist-${(sum + 89) % 100}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+    ];
+    return premiumFallbacks[index];
   };
 
   const getUsername = (pubkey: string) => {
@@ -304,23 +323,25 @@ export default function ProjectLeaderboardPage() {
     const secondsInPeriod = activeTab === "weekly" ? 7 * 86400 : 30 * 86400;
     const periodStart = now - secondsInPeriod;
 
-    const userMap = new Map<string, { points: number; opens: number }>();
+    const userMap = new Map<string, { points: number; opens: number; username?: string; avatar?: string }>();
 
     for (const ev of events) {
       if (ev.timestamp >= periodStart) {
         const pointsAwarded = ev.isSolBox ? solRankingPoints : tokenRankingPoints;
-        const current = userMap.get(ev.user) || { points: 0, opens: 0 };
+        const current = userMap.get(ev.user) || { points: 0, opens: 0, username: ev.username || undefined, avatar: ev.avatar || undefined };
         userMap.set(ev.user, {
           points: current.points + pointsAwarded,
           opens: current.opens + 1,
+          username: ev.username || current.username,
+          avatar: ev.avatar || current.avatar,
         });
       }
     }
 
     const sorted: LeaderboardUser[] = Array.from(userMap.entries()).map(([wallet, stats]) => ({
       wallet,
-      username: getUsername(wallet),
-      avatar: getAvatar(wallet),
+      username: stats.username || getUsername(wallet),
+      avatar: stats.avatar || getAvatar(wallet),
       points: stats.points,
       opens: stats.opens,
     })).sort((a, b) => b.points - a.points);

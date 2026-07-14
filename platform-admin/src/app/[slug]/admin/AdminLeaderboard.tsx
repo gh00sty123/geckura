@@ -187,10 +187,11 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
                     const userStr = (data.user ?? data.User)?.toBase58() ?? "";
                     const timestampVal = (data.timestamp ?? data.Timestamp)?.toNumber?.() ?? Number(data.timestamp ?? 0);
                     const isSolBox = !!solBoxesMap.get(boxCfgStr);
+                    const nonce = Number(data.nonce ?? 0);
 
                     newEvents.push({
                       slug,
-                      sig,
+                      sig: `${sig}-${nonce}`,
                       user: userStr,
                       boxConfig: boxCfgStr,
                       timestamp: timestampVal,

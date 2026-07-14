@@ -333,23 +333,41 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
     if (!hasDiscriminator(raw, "BoxReceipt")) throw new Error("Invalid BoxReceipt discriminator");
     let offset = 8;
     const user = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
-    const boxConfig = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
+    const project = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
     const purchased = raw.readUInt32LE(offset); offset += 4;
     const totalOpened = raw.readUInt32LE(offset); offset += 4;
     const nonce = Number(raw.readBigUInt64LE(offset)); offset += 8;
     const vecLen = raw.readUInt32LE(offset); offset += 4;
-    const claimablePrizes: { prizeIndex: number; prizeType: number; tokenMint: PublicKey; amount: number }[] = [];
+    const claimablePrizes: any[] = [];
     for (let i = 0; i < vecLen; i++) {
+      const boxConfig = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
       const prizeIndex = raw[offset]; offset += 1;
       const prizeType = raw[offset]; offset += 1;
       const tokenMint = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
       const amount = Number(raw.readBigUInt64LE(offset)); offset += 8;
-      claimablePrizes.push({ prizeIndex, prizeType, tokenMint, amount });
+      claimablePrizes.push({
+        boxConfig,
+        box_config: boxConfig,
+        prizeIndex,
+        prize_index: prizeIndex,
+        prizeType,
+        prize_type: prizeType,
+        tokenMint,
+        token_mint: tokenMint,
+        amount,
+      });
     }
     const bump = raw[offset];
     return {
-      user, boxConfig, purchased, totalOpened, nonce,
-      claimablePrizes, bump,
+      user,
+      project,
+      boxConfig: project, // For backward compatibility
+      box_config: project, // For backward compatibility
+      purchased,
+      totalOpened,
+      nonce,
+      claimablePrizes,
+      bump,
     } as T;
   }
 

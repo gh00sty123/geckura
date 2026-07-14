@@ -826,62 +826,53 @@ export default function ProjectView({ slug }: { slug: string }) {
       const sortedBoxes = result.sort((a, b) => a.boxId - b.boxId);
       setAllBoxes(sortedBoxes);
 
-      // Fetch Prize Items for each box
+      // Populate Prize Items map directly from BoxConfig
       const prizeItemMap: Record<string, any[]> = {};
       setProgressMsg("Reading prize pool configurations...");
-      // First fetch all program accounts once
-      const allProgramAccounts = await retryWithBackoff(() => conn.getProgramAccounts(PGID), "getProgramAccounts(prizeItems)");
       
       for (const box of sortedBoxes) {
         try {
-          const boxConfigPubkey = new PublicKey(box.pubkey);
-          
-          const boxPrizeItems: any[] = [];
-          
-          for (const { pubkey, account } of allProgramAccounts) {
-            try {
-              const p: any = coder.decode("PrizeItem", account.data);
-              const boxPk = p.boxConfig ?? p.box_config;
-              if (boxPk && boxPk.equals(boxConfigPubkey)) {
-                let prize_type: "Sol" | "SplToken" | "Nft" = "SplToken";
-                const rawType = p.prize_type ?? p.prizeType;
-                if (typeof rawType === "number") {
-                  if (rawType === 0) prize_type = "Sol";
-                  else if (rawType === 1) prize_type = "SplToken";
-                  else if (rawType === 2) prize_type = "Nft";
-                } else if (typeof rawType === "object" && rawType !== null) {
-                  const keys = Object.keys(rawType).map(k => k.toLowerCase());
-                  if (keys.includes("sol")) prize_type = "Sol";
-                  else if (keys.includes("spltoken") || keys.includes("token")) prize_type = "SplToken";
-                  else if (keys.includes("nft")) prize_type = "Nft";
-                }
-
-                const amtRaw = p.amount;
-                const amountNum = typeof amtRaw === 'string' 
-                  ? BigInt(amtRaw.startsWith('0x') ? amtRaw : `0x${amtRaw}`)
-                  : typeof amtRaw === 'bigint'
-                    ? amtRaw
-                    : BigInt(Number(amtRaw) || 0);
-                    
-                const tmRaw = p.token_mint ?? p.tokenMint;
-                const tokenMintStr = tmRaw?.toBase58?.() || String(tmRaw);
-                
-                boxPrizeItems.push({
-                  index: p.index,
-                  prize_type,
-                  token_mint: tokenMintStr,
-                  amount: amountNum,
-                  win_percentage: p.win_percentage ?? p.winPercentage,
-                  total_count: p.total_count ?? p.totalCount,
-                  claimed_count: p.claimed_count ?? p.claimedCount,
-                });
+          const boxConfigAccount = (pgAccs as any[]).find(a => a.pubkey.toBase58() === box.pubkey);
+          if (boxConfigAccount) {
+            const b: any = coder.decode("BoxConfig", boxConfigAccount.account.data);
+            const boxPrizeItems = (b.prizes || []).map((p: any) => {
+              let prize_type: "Sol" | "SplToken" | "Nft" = "SplToken";
+              const rawType = p.prizeType ?? p.prize_type;
+              if (typeof rawType === "number") {
+                if (rawType === 0) prize_type = "Sol";
+                else if (rawType === 1) prize_type = "SplToken";
+                else if (rawType === 2) prize_type = "Nft";
+              } else if (typeof rawType === "object" && rawType !== null) {
+                const keys = Object.keys(rawType).map(k => k.toLowerCase());
+                if (keys.includes("sol")) prize_type = "Sol";
+                else if (keys.includes("spltoken") || keys.includes("token")) prize_type = "SplToken";
+                else if (keys.includes("nft")) prize_type = "Nft";
               }
-            } catch {}
+              const amtRaw = p.amount;
+              const amountNum = typeof amtRaw === 'string'
+                ? BigInt(amtRaw.startsWith('0x') ? amtRaw : `0x${amtRaw}`)
+                : typeof amtRaw === 'bigint'
+                  ? amtRaw
+                  : BigInt(Number(amtRaw) || 0);
+              
+              const tmRaw = p.tokenMint ?? p.token_mint;
+              const tokenMintStr = tmRaw?.toBase58?.() || String(tmRaw);
+
+              return {
+                index: p.index,
+                prize_type,
+                token_mint: tokenMintStr,
+                amount: amountNum,
+                win_percentage: p.winPercentage ?? p.win_percentage ?? 0,
+                total_count: p.totalCount ?? p.total_count ?? 0,
+                claimed_count: p.claimedCount ?? p.claimed_count ?? 0,
+              };
+            });
+            boxPrizeItems.sort((a: any, b: any) => a.index - b.index);
+            prizeItemMap[box.pubkey] = boxPrizeItems;
           }
-          boxPrizeItems.sort((a, b) => a.index - b.index);
-          prizeItemMap[box.pubkey] = boxPrizeItems;
         } catch (e) {
-          console.error(`Failed to fetch prize items for box ${box.boxId}:`, e);
+          console.error(`Failed to decode prize items for box ${box.boxId}:`, e);
         }
       }
       setPrizeItems(prizeItemMap);
@@ -1561,14 +1552,14 @@ export default function ProjectView({ slug }: { slug: string }) {
               {/* Header */}
               <div className="p-6 border-b border-[#1cac64]/10 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-[#0f2618]">
+                  <h2 className="text-xl font-bold text-white">
                     {selectedBoxForRewards.name || `Pack #${selectedBoxForRewards.boxId}`}
                   </h2>
-                  <p className="text-xs text-[#3d6b4e] mt-1">Possible Rewards</p>
+                  <p className="text-xs text-gray-400 mt-1">Possible Rewards</p>
                 </div>
                 <button
                   onClick={() => setSelectedBoxForRewards(null)}
-                  className="p-2 rounded-xl hover:bg-[#1cac64]/6 transition-colors text-[#2d5a3f] hover:text-[#0f2618]"
+                  className="p-2 rounded-xl hover:bg-[#1cac64]/6 transition-colors text-gray-400 hover:text-white"
                 >
                   ✕
                 </button>
@@ -1605,8 +1596,8 @@ export default function ProjectView({ slug }: { slug: string }) {
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="text-base font-bold text-[#0f2618] truncate">{displayName}</p>
-                            <p className="text-sm text-[#2d5a3f] mt-1 font-mono">
+                            <p className="text-base font-bold text-white truncate">{displayName}</p>
+                            <p className="text-sm text-gray-300 mt-1 font-mono">
                               {isNothing 
                                 ? "Better luck next time!"
                                 : prize.prize_type === "Sol" 
@@ -1620,7 +1611,7 @@ export default function ProjectView({ slug }: { slug: string }) {
                               <span className="text-[11px] px-3 py-1 rounded-full bg-[#1cac64]/10 text-[#1cac64] border border-[#1cac64]/20 font-semibold">
                                 {prize.win_percentage}% Chance
                               </span>
-                              <span className="text-[11px] text-[#3d6b4e] font-medium">
+                              <span className="text-[11px] text-gray-400 font-medium">
                                 {remaining} / {prize.total_count ?? 0} available
                               </span>
                             </div>
@@ -1632,8 +1623,8 @@ export default function ProjectView({ slug }: { slug: string }) {
                 ) : (
                   <div className="text-center py-16">
                     <span className="text-5xl block mb-4">🎁</span>
-                    <p className="text-[#2d5a3f] text-sm">No rewards listed yet</p>
-                    <p className="text-[#4a7d5e] text-xs mt-2">Check back soon!</p>
+                    <p className="text-gray-300 text-sm">No rewards listed yet</p>
+                    <p className="text-gray-400 text-xs mt-2">Check back soon!</p>
                   </div>
                 )}
               </div>
@@ -2453,7 +2444,10 @@ const handleOpen = useCallback(async () => {
               <label className="text-xs text-[#2d5a3f] font-semibold uppercase tracking-wider block mb-3">
                 How many packs?
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className={`grid gap-2 ${
+                qtyOptions.length === 3 ? "grid-cols-3" :
+                qtyOptions.length === 2 ? "grid-cols-2" : "grid-cols-1"
+              }`}>
                 {qtyOptions.map(n => (
                   <motion.button
                     key={n}
