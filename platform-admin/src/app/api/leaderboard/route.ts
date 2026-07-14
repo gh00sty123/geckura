@@ -196,32 +196,37 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
       return;
     }
 
+    // Resolve player custom profile name
+    const walletStr = typeof event.user === "string" ? event.user : ((event.user as any).toBase58?.() || String(event.user));
+    let username = `${walletStr.slice(0, 6)}...${walletStr.slice(-6)}`;
+    if (isSupabaseConfigured) {
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("wallet", walletStr)
+          .single();
+        if (profile?.username) {
+          username = profile.username;
+        }
+      } catch {}
+    }
+
     const { name, amountStr } = await formatPrizeInfo(conn, event);
     const explorerUrl = `https://solscan.io/tx/${sig}`;
-    const userExplorerUrl = `https://solscan.io/account/${event.user}`;
+    const userExplorerUrl = `https://solscan.io/account/${walletStr}`;
 
-    const fields = [
-      {
-        name: "User Wallet",
-        value: `[\`${event.user.slice(0, 6)}...${event.user.slice(-6)}\`](${userExplorerUrl})`,
-        inline: true
-      },
-      {
-        name: "Project",
-        value: `**${projectName}**`,
-        inline: true
-      },
-      {
-        name: "Result",
-        value: event.won ? `🏆 **Won:** ${amountStr} of **${name}**` : "🎁 Better luck next time!",
-        inline: false
-      },
-      {
-        name: "Solscan Transaction",
-        value: `[View on Solscan](${explorerUrl})`,
-        inline: false
-      }
-    ];
+    const rewardText = event.won 
+      ? `🏆 **Won:** **${amountStr}** of **${name}**` 
+      : "🎁 **Better luck next time!**";
+
+    const description = `
+👤 **Player:** [${username}](${userExplorerUrl})
+📦 **Project:** **${projectName}**
+✨ **Result:** ${rewardText}
+
+🔗 **Transaction:** [View on Solscan](${explorerUrl})
+    `.trim();
 
     // Convert hex color (e.g. #1cac64) to decimal for Discord Embed
     let embedColor = event.won ? 3066993 : 10070709; // default green/grey
@@ -235,8 +240,8 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
 
     const embed = {
       title: event.won ? "🎉 New Mystery Box Win!" : "🎁 Mystery Box Opened",
+      description,
       color: embedColor,
-      fields,
       thumbnail: logoUri ? { url: logoUri } : undefined,
       timestamp: new Date().toISOString(),
       footer: {
@@ -465,12 +470,10 @@ export async function POST(req: NextRequest) {
       const conn = new Connection(RPC, "confirmed");
       const events = parseBoxOpenEventsFromLogs(txResult.logs);
 
-      if (DISCORD_WEBHOOK_URL) {
-        for (const ev of events) {
-          sendDiscordNotification(conn, ev, sig, slug).catch(err => {
-            console.error("[Discord Webhook] Async send failed:", err);
-          });
-        }
+      for (const ev of events) {
+        sendDiscordNotification(conn, ev, sig, slug).catch(err => {
+          console.error("[Discord Webhook] Async send failed:", err);
+        });
       }
 
       const recordsToInsert = [];

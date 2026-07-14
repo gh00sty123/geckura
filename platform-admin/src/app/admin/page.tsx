@@ -45,10 +45,12 @@ function Overview() {
   const [expandedRentSlug, setExpandedRentSlug] = useState<string | null>(null);
   const [loadingRent, setLoadingRent] = useState(false);
   const [pausingSlug, setPausingSlug] = useState<string | null>(null);
+  const [dbEventsCount, setDbEventsCount] = useState<number>(0);
 
 
   const platformStats = useMemo(() => {
-    const totalBoxesOpened = allBoxes.reduce((sum, box) => sum + (box.sold ?? 0), 0);
+    const onChainSum = allBoxes.reduce((sum, box) => sum + (box.sold ?? 0), 0);
+    const totalBoxesOpened = Math.max(dbEventsCount, onChainSum);
     let totalPlatformRevenueSol = 0;
 
     projects.forEach((project) => {
@@ -57,7 +59,13 @@ function Overview() {
         box.project?.toBase58?.() === project.pubkey || box.project === project.pubkey
       );
       const totalBoxesSoldForProject = projectBoxes.reduce((sum, box) => sum + (box.sold ?? 0), 0);
-      totalPlatformRevenueSol += totalBoxesSoldForProject * (feeLamportsPerBox / 1e9);
+      
+      const projectRatio = onChainSum > 0 ? (totalBoxesSoldForProject / onChainSum) : 0;
+      const resolvedProjectOpens = onChainSum > 0
+        ? Math.max(totalBoxesSoldForProject, Math.round(totalBoxesOpened * projectRatio))
+        : totalBoxesSoldForProject;
+
+      totalPlatformRevenueSol += resolvedProjectOpens * (feeLamportsPerBox / 1e9);
     });
 
     return {
@@ -65,7 +73,7 @@ function Overview() {
       totalBoxesOpened,
       totalPlatformRevenueSol,
     };
-  }, [projects, allBoxes]);
+  }, [projects, allBoxes, dbEventsCount]);
 
   const refresh = useCallback(async () => {
     setErr(null);
@@ -83,6 +91,17 @@ function Overview() {
       fetchAllBoxes(),
       fetchAllPrizeItems(),
     ]);
+    try {
+      const leaderRes = await fetch("/api/leaderboard");
+      if (leaderRes.ok) {
+        const data = await leaderRes.json();
+        if (Array.isArray(data)) {
+          setDbEventsCount(data.length);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to fetch database leaderboard stats:", e);
+    }
     setAllPrizeItems(allPrizeItemsData);
     const detailedProjects = await Promise.all(
       projectsData.map(async (p) => {

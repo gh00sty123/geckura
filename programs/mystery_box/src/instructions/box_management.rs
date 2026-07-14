@@ -177,7 +177,7 @@ pub fn close_box(ctx: Context<CloseBox>, _slug: String, _box_id: u64) -> Result<
 
     let signer_key = ctx.accounts.signer.key();
     require!(
-        signer_key == project.authority || signer_key == platform.authority,
+        signer_key == platform.authority,
         MysteryBoxError::Unauthorized
     );
 
