@@ -1678,6 +1678,8 @@ export default function ProjectView({ slug }: { slug: string }) {
 
 function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: LiveBox; index: number; onSelect: () => void; tokenMetaMap: Record<string, { symbol: string; name: string; decimals: number; image: string; isNFT?: boolean }>; onShowRewards: () => void }) {
   const { connected }  = useWallet();
+  const branding       = useProjectBranding();
+  const themeColor     = branding.themeColor || undefined;
   const now           = Math.floor(Date.now() / 1000);
   const sold          = box.sold || 0;
   const sup           = box.supply || 1;

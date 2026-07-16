@@ -151,25 +151,42 @@ export function updateFavicon(logoVal: string | null | undefined, navbarColor?: 
 
   if (!resolvedLogo) return;
 
-  // Find all existing favicon link tags and remove them
+  // Find all existing favicon link tags and update their href/type in-place
+  // to avoid removing DOM elements managed by React/Next.js (which causes a removeChild crash on state updates)
   const existingLinks = document.querySelectorAll("link[rel*='icon']");
-  existingLinks.forEach(el => el.remove());
-
-  // Create a brand new favicon link tag to force the browser to update
-  const link = document.createElement("link");
-  link.rel = "icon";
-  if (resolvedLogo.endsWith(".ico")) {
-    link.type = "image/x-icon";
-  } else if (resolvedLogo.endsWith(".jpg") || resolvedLogo.endsWith(".jpeg")) {
-    link.type = "image/jpeg";
-  } else if (resolvedLogo.endsWith(".gif")) {
-    link.type = "image/gif";
-  } else if (resolvedLogo.endsWith(".svg")) {
-    link.type = "image/svg+xml";
+  if (existingLinks.length > 0) {
+    existingLinks.forEach(el => {
+      const link = el as HTMLLinkElement;
+      link.href = resolvedLogo;
+      if (resolvedLogo.endsWith(".ico")) {
+        link.type = "image/x-icon";
+      } else if (resolvedLogo.endsWith(".jpg") || resolvedLogo.endsWith(".jpeg")) {
+        link.type = "image/jpeg";
+      } else if (resolvedLogo.endsWith(".gif")) {
+        link.type = "image/gif";
+      } else if (resolvedLogo.endsWith(".svg")) {
+        link.type = "image/svg+xml";
+      } else {
+        link.type = "image/png";
+      }
+    });
   } else {
-    link.type = "image/png";
+    // Create a brand new favicon link tag to force the browser to update
+    const link = document.createElement("link");
+    link.rel = "icon";
+    if (resolvedLogo.endsWith(".ico")) {
+      link.type = "image/x-icon";
+    } else if (resolvedLogo.endsWith(".jpg") || resolvedLogo.endsWith(".jpeg")) {
+      link.type = "image/jpeg";
+    } else if (resolvedLogo.endsWith(".gif")) {
+      link.type = "image/gif";
+    } else if (resolvedLogo.endsWith(".svg")) {
+      link.type = "image/svg+xml";
+    } else {
+      link.type = "image/png";
+    }
+    link.href = resolvedLogo;
+    document.head.appendChild(link);
   }
-  link.href = resolvedLogo;
-  document.head.appendChild(link);
 }
 
