@@ -1342,7 +1342,7 @@ export default function ProjectView({ slug }: { slug: string }) {
         </div>
 
         {/* Tabs */}
-        <div className="relative flex gap-1.5 mb-8 bg-black/20 backdrop-blur-lg rounded-2xl p-1 border border-[#1cac64]/10 mx-auto max-w-xl shadow-inner">
+        <div className="relative flex gap-1.5 mb-8 bg-black/20 backdrop-blur-lg rounded-2xl p-1 border border-[#1cac64]/10 mx-auto max-w-xl shadow-inner z-10">
           {(["active", "expired", "claims"] as const).map((tab) => {
             const isActive = activeTab === tab;
             let label = "";
@@ -1358,20 +1358,14 @@ export default function ProjectView({ slug }: { slug: string }) {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className="relative flex-1 py-3 text-xs sm:text-sm font-black transition-colors duration-300 cursor-pointer rounded-xl select-none focus:outline-none flex items-center justify-center gap-1.5 uppercase tracking-wide"
+                className="relative flex-1 py-3 text-xs sm:text-sm font-black transition-all duration-300 cursor-pointer rounded-xl select-none focus:outline-none flex items-center justify-center gap-1.5 uppercase tracking-wide"
                 style={{
-                  color: isActive ? "#ffffff" : "#4a7d5e"
+                  color: isActive ? "#ffffff" : "#4a7d5e",
+                  backgroundColor: isActive ? (themeColor || "#1cac64") : "transparent",
+                  boxShadow: isActive ? "0 4px 14px rgba(28, 172, 100, 0.3)" : "none"
                 }}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    className="absolute inset-0 rounded-xl shadow-[0_4px_14px_rgba(28,172,100,0.3)] z-0"
-                    style={{ backgroundColor: themeColor || "#1cac64" }}
-                    transition={{ type: "spring", stiffness: 350, damping: 28 }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center justify-center gap-1.5">
+                <span className="flex items-center justify-center gap-1.5">
                   {tab === "active" && "📦"}
                   {tab === "expired" && "⌛"}
                   {tab === "claims" && "🏆"}
