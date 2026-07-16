@@ -302,7 +302,7 @@ function FeaturedPack({ liveBox, onOpen }: { liveBox: any; onOpen: (n: string) =
 
         {/* Background Banner / Grid */}
         {bannerUrl ? (
-          <img src={bannerUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+          <img src={bannerUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           <div
             className="absolute inset-0 opacity-15"
@@ -314,12 +314,12 @@ function FeaturedPack({ liveBox, onOpen }: { liveBox: any; onOpen: (n: string) =
           />
         )}
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a2e1a]/95 via-[#0a2e1a]/50 to-[#0a2e1a]/20" />
+        {/* Gradient overlay - bottom heavy for text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a2e1a]/95 via-[#0a2e1a]/40 to-transparent" />
 
         {/* Scanlines */}
         <div
-          className="absolute inset-0 opacity-[0.04]"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.4) 2px, rgba(255,255,255,0.4) 3px)",
           }}
@@ -328,18 +328,6 @@ function FeaturedPack({ liveBox, onOpen }: { liveBox: any; onOpen: (n: string) =
         {/* Corner accents */}
         <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-[#1cac64]/40 rounded-tl-lg" />
         <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-[#1cac64]/40 rounded-tr-lg" />
-
-        {/* Center emblem */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <motion.div
-            animate={{ rotateY: [0, 360] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-            className="h-18 w-18 rounded-2xl bg-gradient-to-br from-[#1cac64]/20 to-emerald-500/15 border border-[#1cac64]/30 flex items-center justify-center backdrop-blur-sm"
-            style={{ width: 72, height: 72 }}
-          >
-            <LuSwords className="text-[#1cac64] text-4xl drop-shadow-[0_0_8px_rgba(28,172,100,0.4)]" />
-          </motion.div>
-        </div>
 
         {/* Bottom info panel */}
         <div className="absolute bottom-0 left-0 right-0 p-5">
