@@ -408,13 +408,6 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    if (!isSupabaseConfigured) {
-      if (Array.isArray(body)) {
-        return NextResponse.json({ success: true, added: body.length });
-      } else {
-        return NextResponse.json({ success: true });
-      }
-    }
     
     // Check for batch sync input (from Admin dashboard)
     if (Array.isArray(body)) {
@@ -487,12 +480,37 @@ export async function POST(req: NextRequest) {
       }
       
       if (recordsToInsert.length > 0) {
-        const { error: upsertErr } = await supabase
-          .from("leaderboard")
-          .upsert(recordsToInsert, { onConflict: "sig", ignoreDuplicates: true });
-          
-        if (upsertErr) {
-          return NextResponse.json({ error: upsertErr.message }, { status: 500 });
+        if (isSupabaseConfigured) {
+          const { error: upsertErr } = await supabase
+            .from("leaderboard")
+            .upsert(recordsToInsert, { onConflict: "sig", ignoreDuplicates: true });
+            
+          if (upsertErr) {
+            return NextResponse.json({ error: upsertErr.message }, { status: 500 });
+          }
+        } else {
+          const LEADERBOARD_FILE = path.join(process.cwd(), "src/lib/leaderboard_db.json");
+          try {
+            let currentRecords: any[] = [];
+            if (fs.existsSync(LEADERBOARD_FILE)) {
+              currentRecords = JSON.parse(fs.readFileSync(LEADERBOARD_FILE, "utf-8"));
+            }
+            for (const newRec of recordsToInsert) {
+              if (!currentRecords.some((r: any) => r.sig === newRec.sig)) {
+                currentRecords.push({
+                  slug: newRec.slug,
+                  sig: newRec.sig,
+                  user: newRec.user,
+                  boxConfig: newRec.box_config,
+                  timestamp: newRec.timestamp,
+                  isSolBox: newRec.is_sol_box
+                });
+              }
+            }
+            fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(currentRecords, null, 2), "utf-8");
+          } catch (fileErr) {
+            console.error("[Leaderboard File] Failed to write local leaderboard batch:", fileErr);
+          }
         }
       }
       
@@ -544,12 +562,37 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      const { error: upsertErr } = await supabase
-        .from("leaderboard")
-        .upsert(recordsToInsert, { onConflict: "sig", ignoreDuplicates: true });
+      if (isSupabaseConfigured) {
+        const { error: upsertErr } = await supabase
+          .from("leaderboard")
+          .upsert(recordsToInsert, { onConflict: "sig", ignoreDuplicates: true });
 
-      if (upsertErr) {
-        return NextResponse.json({ error: upsertErr.message }, { status: 500 });
+        if (upsertErr) {
+          return NextResponse.json({ error: upsertErr.message }, { status: 500 });
+        }
+      } else {
+        const LEADERBOARD_FILE = path.join(process.cwd(), "src/lib/leaderboard_db.json");
+        try {
+          let currentRecords: any[] = [];
+          if (fs.existsSync(LEADERBOARD_FILE)) {
+            currentRecords = JSON.parse(fs.readFileSync(LEADERBOARD_FILE, "utf-8"));
+          }
+          for (const newRec of recordsToInsert) {
+            if (!currentRecords.some((r: any) => r.sig === newRec.sig)) {
+              currentRecords.push({
+                slug: newRec.slug,
+                sig: newRec.sig,
+                user: newRec.user,
+                boxConfig: newRec.box_config,
+                timestamp: newRec.timestamp,
+                isSolBox: newRec.is_sol_box
+              });
+            }
+          }
+          fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(currentRecords, null, 2), "utf-8");
+        } catch (fileErr) {
+          console.error("[Leaderboard File] Failed to write local leaderboard:", fileErr);
+        }
       }
 
       return NextResponse.json({ success: true });
