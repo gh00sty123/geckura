@@ -970,7 +970,7 @@ function ProjectBoxGrid({
           const pastWindow = now > endTs;
           const canClose = (statusCode === 2 || pastWindow) && (sold === totalOpened);
           const active   = statusCode === 0;
-          const canEdit  = active && sold === 0;
+          const canEdit  = statusCode !== 2;
           const inRange  = active && now >= started && now <= endTs;
           const notStarted = now < started;
 
@@ -1033,7 +1033,7 @@ function ProjectBoxGrid({
                 <div className="flex gap-2 pt-2 border-t border-gray-700/50">
                   <button
                     onClick={() => setEditBox(b)} disabled={!canEdit}
-                    title={canEdit ? "Edit box" : "Edit when Active + 0 sold"}
+                    title={canEdit ? "Edit box" : "Cannot edit fully ended box"}
                     className="flex-1 text-xs px-2 py-1.5 rounded border border-gray-600 hover:bg-gray-700 transition disabled:opacity-30">Edit</button>
                   <button
                     onClick={() => setPrizeBox(b)}

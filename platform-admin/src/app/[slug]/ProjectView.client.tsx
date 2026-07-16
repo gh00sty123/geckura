@@ -1342,40 +1342,50 @@ export default function ProjectView({ slug }: { slug: string }) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 bg-black/85 rounded-2xl p-1.5 border border-white/5 mx-auto max-w-xl shadow-lg">
-          <button
-            onClick={() => setActiveTab("active")}
-            style={activeTab === "active" ? { backgroundColor: themeColor || "#1cac64", color: "#ffffff" } : {}}
-            className={`flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 cursor-pointer ${
-              activeTab === "active"
-                ? "shadow-[0_2px_10px_rgba(28,172,100,0.25)]"
-                : "text-gray-400 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            Active Packs ({activeBoxes.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("expired")}
-            style={activeTab === "expired" ? { backgroundColor: themeColor || "#1cac64", color: "#ffffff" } : {}}
-            className={`flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 cursor-pointer ${
-              activeTab === "expired"
-                ? "shadow-[0_2px_10px_rgba(28,172,100,0.25)]"
-                : "text-gray-400 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            Expired Packs ({endedBoxes.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("claims")}
-            style={activeTab === "claims" ? { backgroundColor: themeColor || "#1cac64", color: "#ffffff" } : {}}
-            className={`flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 cursor-pointer ${
-              activeTab === "claims"
-                ? "shadow-[0_2px_10px_rgba(28,172,100,0.25)]"
-                : "text-gray-400 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            My Claims {claimablePrizesData.length > 0 && `(${claimablePrizesData.length})`}
-          </button>
+        <div className="relative flex gap-1.5 mb-8 bg-black/20 backdrop-blur-lg rounded-2xl p-1 border border-[#1cac64]/10 mx-auto max-w-xl shadow-inner">
+          {(["active", "expired", "claims"] as const).map((tab) => {
+            const isActive = activeTab === tab;
+            let label = "";
+            if (tab === "active") {
+              label = `Active Packs (${activeBoxes.length})`;
+            } else if (tab === "expired") {
+              label = `Expired Packs (${endedBoxes.length})`;
+            } else {
+              label = `My Claims ${claimablePrizesData.length > 0 ? `(${claimablePrizesData.length})` : ""}`;
+            }
+
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className="relative flex-1 py-3 text-xs sm:text-sm font-black transition-colors duration-300 cursor-pointer rounded-xl select-none focus:outline-none flex items-center justify-center gap-1.5 uppercase tracking-wide"
+                style={{
+                  color: isActive ? "#ffffff" : "#4a7d5e"
+                }}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute inset-0 rounded-xl shadow-[0_4px_14px_rgba(28,172,100,0.3)] z-0"
+                    style={{ backgroundColor: themeColor || "#1cac64" }}
+                    transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center justify-center gap-1.5">
+                  {tab === "active" && "📦"}
+                  {tab === "expired" && "⌛"}
+                  {tab === "claims" && "🏆"}
+                  {label}
+                  {tab === "claims" && claimablePrizesData.length > 0 && (
+                    <span className="flex h-2 w-2 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {activeTab !== "claims" ? (
@@ -1383,16 +1393,17 @@ export default function ProjectView({ slug }: { slug: string }) {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="py-20 text-center rounded-3xl glass-panel"
+              className="py-20 text-center rounded-3xl glass-panel relative overflow-hidden"
             >
-              <span className="text-5xl block mb-4">📦</span>
-              <p className="text-[#2d5a3f] text-sm">
-                {activeTab === "active" ? "No active packs available yet." : "No expired packs yet."}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1cac64]/5 to-transparent pointer-events-none" />
+              <span className="text-5xl block mb-4 animate-pulse">📦</span>
+              <p className="text-[#2d5a3f] text-sm font-bold uppercase tracking-wider">
+                {activeTab === "active" ? "No active packs available yet" : "No expired packs yet"}
               </p>
-              <p className="text-[#4a7d5e] text-xs mt-1">Check back soon!</p>
+              <p className="text-[#4a7d5e] text-xs mt-2 leading-relaxed">Check back soon for the next loot drops!</p>
             </motion.div>
           ) : (
-            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 ${activeTab === "expired" ? "opacity-60" : ""}`}>
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 ${activeTab === "expired" ? "opacity-80" : ""}`}>
               {currentBoxes.map((b, i) => (
                 <BoxCard 
                   key={b.pubkey} 
@@ -1411,9 +1422,9 @@ export default function ProjectView({ slug }: { slug: string }) {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 max-w-4xl mx-auto"
           >
-            <div className="bg-[#111915] border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+            <div className="bg-[#111915]/90 border border-[#1cac64]/15 rounded-3xl p-6 shadow-xl relative overflow-hidden backdrop-blur-md">
               <div className="absolute top-0 right-0 w-64 h-64 bg-[#1cac64]/5 rounded-full blur-3xl pointer-events-none" />
-              <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <h3 className="text-lg font-black text-white mb-2 flex items-center gap-2 uppercase tracking-wide">
                 <span>🏆</span> My Claim Queue
               </h3>
               <p className="text-gray-400 text-sm leading-relaxed">
@@ -1422,10 +1433,11 @@ export default function ProjectView({ slug }: { slug: string }) {
             </div>
 
             {claimablePrizesData.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 border border-dashed border-white/5 rounded-3xl bg-black/20">
-                <span className="text-5xl mb-4">🎁</span>
-                <h4 className="text-base font-bold text-white">Your queue is empty</h4>
-                <p className="text-gray-400 text-sm max-w-xs text-center mt-1">
+              <div className="flex flex-col items-center justify-center py-20 border border-dashed border-[#1cac64]/20 rounded-3xl bg-black/10 backdrop-blur-sm relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1cac64]/5 to-transparent pointer-events-none" />
+                <span className="text-6xl mb-4 animate-bounce">🎁</span>
+                <h4 className="text-base font-black text-white uppercase tracking-wider">Your queue is empty</h4>
+                <p className="text-gray-400 text-xs max-w-xs text-center mt-2 leading-relaxed">
                   Open packs to accumulate prizes here. There are no claimable rewards waiting at this moment.
                 </p>
               </div>
@@ -1436,45 +1448,46 @@ export default function ProjectView({ slug }: { slug: string }) {
                   return (
                     <div
                       key={claimable.box.pubkey}
-                      className="relative overflow-hidden bg-[#111915]/90 border border-white/5 rounded-2xl p-6 transition-all duration-300 hover:border-white/10 group"
+                      className="relative overflow-hidden bg-black/40 backdrop-blur-md border border-[#1cac64]/15 rounded-3xl p-6 transition-all duration-300 hover:border-[#1cac64]/30 hover:shadow-[0_8px_30px_rgba(28,172,100,0.15)] group"
+                      style={themeColor ? { borderColor: `${themeColor}20` } : {}}
                     >
                       {/* Box Banner / Name */}
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center overflow-hidden border border-white/5">
+                      <div className="flex items-center gap-4 mb-5">
+                        <div className="w-14 h-14 rounded-2xl bg-black/40 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner">
                           {claimable.box.bannerUri && claimable.box.bannerUri.startsWith("http") ? (
                             <img src={claimable.box.bannerUri} alt={claimable.box.name} className="w-full h-full object-cover" />
                           ) : (
-                            <span className="text-2xl">🎁</span>
+                            <span className="text-3xl">🎁</span>
                           )}
                         </div>
                         <div>
-                          <h4 className="font-bold text-white text-base leading-tight group-hover:text-[#1cac64] transition-colors">
+                          <h4 className="font-extrabold text-white text-base leading-tight group-hover:text-[#1cac64] transition-colors">
                             {claimable.box.name}
                           </h4>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-400 font-mono mt-1 block">
                             {claimable.prizes.length} pending reward{claimable.prizes.length > 1 ? "s" : ""}
                           </span>
                         </div>
                       </div>
 
                       {/* Prizes List */}
-                      <div className="space-y-3 mb-6 bg-black/40 border border-white/5 rounded-xl p-4">
+                      <div className="space-y-2.5 mb-6 bg-black/30 border border-white/5 rounded-2xl p-4">
                         {claimable.prizes.map((prize, idx) => {
                           const meta = resolveTokenDetails(prize.tokenMint, tokenMetaMap);
                           const decimals = meta.decimals ?? 9;
                           const displayAmount = Number(prize.amount) / Math.pow(10, decimals);
                           
                           return (
-                            <div key={idx} className="flex items-center justify-between text-sm">
-                              <div className="flex items-center gap-2">
+                            <div key={idx} className="flex items-center justify-between text-sm py-1.5 border-b border-white/[0.03] last:border-b-0">
+                              <div className="flex items-center gap-2.5">
                                 {meta.image && meta.image.startsWith("http") ? (
-                                  <img src={meta.image} alt={meta.symbol} className="w-5 h-5 rounded-full" />
+                                  <img src={meta.image} alt={meta.symbol} className="w-6 h-6 rounded-full border border-white/10" />
                                 ) : (
-                                  <span className="text-base">🎁</span>
+                                  <span className="text-lg">🎁</span>
                                 )}
-                                <span className="text-gray-300 text-xs sm:text-sm">{meta.name}</span>
+                                <span className="text-gray-300 font-medium text-xs sm:text-sm">{meta.name}</span>
                               </div>
-                              <span className="font-bold text-white text-xs sm:text-sm">
+                              <span className="font-mono font-bold text-white text-xs sm:text-sm bg-white/5 px-2.5 py-0.5 rounded-lg border border-white/5">
                                 {displayAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 6 })} {meta.symbol}
                               </span>
                             </div>
@@ -1486,8 +1499,11 @@ export default function ProjectView({ slug }: { slug: string }) {
                       <button
                         onClick={() => handleClaim(claimable)}
                         disabled={isClaiming}
-                        style={!isClaiming ? { backgroundColor: themeColor || "#1cac64" } : {}}
-                        className={`w-full py-3.5 rounded-xl font-bold text-white transition-all duration-300 hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
+                        style={!isClaiming ? {
+                          background: themeColor ? `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)` : undefined,
+                          boxShadow: themeColor ? `0 4px 15px ${themeColor}30` : undefined,
+                        } : {}}
+                        className={`w-full py-3.5 rounded-2xl font-bold text-white transition-all duration-300 hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 shadow-lg cursor-pointer bg-gradient-to-r from-[#1cac64] to-emerald-500 ${
                           isClaiming ? "bg-gray-700" : ""
                         }`}
                       >
@@ -1745,30 +1761,50 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08, duration: 0.4 }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl bg-[#111]/80 border border-[#1cac64]/10
-        hover:border-[#1cac64]/20 transition-all duration-500 card-hover"
+      className={`group relative flex flex-col overflow-hidden rounded-2xl bg-black/45 border border-[#1cac64]/10
+        hover:border-[#1cac64]/30 transition-all duration-500 card-hover shadow-lg ${
+          remaining === 0 ? "opacity-75" : ""
+        }`}
+      style={themeColor ? {
+        borderColor: `${themeColor}20`,
+        boxShadow: `0 8px 32px 0 rgba(0, 0, 0, 0.25), 0 0 15px ${themeColor}10`
+      } : {}}
     >
       {/* Banner */}
       <div className="relative w-full overflow-hidden bg-gradient-to-br from-[#f4fef0] to-[#ebfde3]">
         {box.bannerUri ? (
-          <img src={resolveIpfsUrl(box.bannerUri)} alt={box.name}
-            className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+          <img
+            src={resolveIpfsUrl(box.bannerUri)}
+            alt={box.name}
+            className={`w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform duration-700 ease-out ${
+              remaining === 0 ? "grayscale opacity-40 contrast-75" : ""
+            }`}
+          />
         ) : (
           <div className="w-full aspect-[4/3] flex items-center justify-center">
             <span className="text-5xl opacity-20 group-hover:opacity-30 transition-opacity duration-500">🎁</span>
           </div>
         )}
 
+        {/* Lock overlay for sold out */}
+        {remaining === 0 && (
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px] flex items-center justify-center pointer-events-none z-10">
+            <span className="text-2xl font-black text-white/90 bg-black/60 border border-white/10 px-4 py-2 rounded-xl uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+              Sold Out
+            </span>
+          </div>
+        )}
+
         {/* Status badge */}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 z-20">
           <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-md ${statusClass}`}>
             {statusLabel}
           </span>
         </div>
 
         {/* Countdown timer */}
-        {active && hasTime && hasStarted && (
-          <div className="absolute bottom-3 left-3">
+        {active && hasTime && hasStarted && remaining > 0 && (
+          <div className="absolute bottom-3 left-3 z-20">
             <motion.span 
               className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-black/60 text-[#1cac64] border-[#1cac64]/20 backdrop-blur-md flex items-center gap-1.5 cursor-default"
               whileHover={{ scale: 1.05, backgroundColor: "rgba(0, 0, 0, 0.8)", borderColor: "rgba(28, 172, 100, 0.4)" }}
@@ -1780,7 +1816,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
         )}
 
         {/* Rewards Button */}
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 z-20">
           <motion.button
             onClick={(e) => { e.stopPropagation(); onShowRewards(); }}
             className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/[0.08] text-[#1a3a2a] border border-white/[0.12] hover:bg-[#1cac64]/15 hover:text-[#1cac64] hover:border-[#1cac64]/25 transition-all cursor-pointer"
@@ -1793,25 +1829,32 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-5 flex flex-col">
-        <h3 className="text-base font-bold text-white leading-snug group-hover:text-[#1cac64] transition-colors duration-300">
+      <div className="flex-grow p-5 flex flex-col relative">
+        {/* Subtle radial sheen glow inside the card */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.01] via-transparent to-transparent pointer-events-none" />
+
+        <h3 className="text-base font-bold text-white leading-snug group-hover:text-[#1cac64] transition-colors duration-300 relative z-10">
           {box.name || `Pack #${box.boxId}`}
         </h3>
         {box.description && (
-          <p className="text-xs text-[#a3d9b7] mt-1 line-clamp-2 leading-relaxed">{box.description}</p>
+          <p className="text-xs text-[#a3d9b7] mt-1.5 line-clamp-2 leading-relaxed relative z-10">{box.description}</p>
         )}
 
         {/* Progress bar */}
-        <div className="mt-4">
+        <div className="mt-5 relative z-10">
           <div className="flex justify-between text-[11px] mb-1.5">
             <span className="text-[#a3d9b7]/80">{sold} / {sup} opened</span>
             <span className={`font-mono font-semibold ${remaining <= 10 && active ? "text-amber-400" : remaining === 0 ? "text-red-400" : "text-[#1cac64]"}`}>
               {remaining > 0 ? `${remaining} left` : "Sold out"}
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-[#1cac64]/5 overflow-hidden">
+          <div className="h-1.5 rounded-full bg-white/5 overflow-hidden border border-white/5">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-[#1cac64] to-emerald-400"
+              className={`h-full rounded-full ${
+                remaining === 0 
+                  ? "bg-gradient-to-r from-gray-600 to-gray-500" 
+                  : "bg-gradient-to-r from-[#1cac64] to-emerald-400"
+              }`}
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -1820,7 +1863,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
         </div>
 
         {/* CTA & Accepted Currencies */}
-        <div className="mt-4 flex items-center justify-between gap-4">
+        <div className="mt-5 flex items-center justify-between gap-4 relative z-10">
           {/* Accepted payment tokens */}
           {payOptions.length > 0 && (
             <div className="flex-1">
@@ -1853,6 +1896,10 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
                 onClick={(e) => { e.stopPropagation(); onSelect(); }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                style={{
+                  background: themeColor ? `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)` : undefined,
+                  boxShadow: themeColor ? `0 0 20px ${themeColor}40` : undefined,
+                }}
                 className="text-xs font-bold text-black bg-gradient-to-r from-[#1cac64] to-emerald-400 px-4 py-2 rounded-xl whitespace-nowrap
                   shadow-[0_0_20px_rgba(28,172,100,0.25)] group-hover:shadow-[0_0_35px_rgba(28,172,100,0.4)] transition-shadow duration-500 cursor-pointer"
               >
@@ -1862,9 +1909,13 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
               <span className="text-[10px] text-purple-400 bg-purple-500/10 border border-purple-500/20 px-3 py-2 rounded-xl whitespace-nowrap">
                 Starts soon
               </span>
+            ) : remaining === 0 ? (
+              <span className="text-[10px] text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-xl whitespace-nowrap font-bold flex items-center gap-1">
+                🔒 Sold Out
+              </span>
             ) : (
-              <span className="text-[10px] text-[#3d6b4e] bg-[#1cac64]/4 border border-[#1cac64]/10 px-3 py-2 rounded-xl whitespace-nowrap">
-                Unavailable
+              <span className="text-[10px] text-gray-400 bg-white/5 border border-white/10 px-3 py-2 rounded-xl whitespace-nowrap">
+                Ended
               </span>
             )}
           </div>
