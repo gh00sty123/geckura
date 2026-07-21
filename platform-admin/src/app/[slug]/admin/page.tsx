@@ -72,11 +72,58 @@ async function getDecimalsForMint(mintAddress: string, walletAssets: any[] = [],
   }
 }
 
-// Fallback method using standard Solana JSON-RPC methods
+// Metaplex Metadata Layout Parser
+function parseMetaplexMetadata(data: Buffer | Uint8Array) {
+  try {
+    if (data.length < 319) return null;
+    
+    // Metaplex Metadata Data struct byte offsets:
+    // 0..1: Key (1 u8)
+    // 1..33: Update Authority (32)
+    // 33..65: Mint (32)
+    // 65..69: Name len (4)
+    // 69..101: Name (32)
+    // 101..105: Symbol len (4)
+    // 105..115: Symbol (10)
+    // 115..119: URI len (4)
+    // 119..319: URI (200)
+
+    const nameBytes = data.slice(69, 69 + 32);
+    const name = new TextDecoder().decode(nameBytes).replace(/\0/g, "").trim();
+    
+    const symbolBytes = data.slice(105, 105 + 10);
+    const symbol = new TextDecoder().decode(symbolBytes).replace(/\0/g, "").trim();
+    
+    const uriBytes = data.slice(119, 119 + 200);
+    let uri = new TextDecoder().decode(uriBytes).replace(/\0/g, "").trim();
+    const httpIdx = uri.indexOf("http");
+    if (httpIdx > 0) {
+      uri = uri.slice(httpIdx);
+    } else {
+      const ipfsIdx = uri.indexOf("ipfs://");
+      if (ipfsIdx > 0) {
+        uri = uri.slice(ipfsIdx);
+      } else {
+        const arIdx = uri.indexOf("ar://");
+        if (arIdx > 0) {
+          uri = uri.slice(arIdx);
+        }
+      }
+    }
+    
+    return { name, symbol, uri };
+  } catch (e) {
+    console.error("Failed to parse Metaplex metadata:", e);
+    return null;
+  }
+}
+
+// Fallback method using standard Solana JSON-RPC methods and Metaplex Metadata resolution
 async function fetchAssetsForOwnerFallback(ownerPk: PublicKey, rpcUrl: string): Promise<AssetInfo[]> {
   const conn = new Connection(rpcUrl, "confirmed");
   const tokenProg = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
   const token2022Prog = new PublicKey("TokenzQdBNbXtJU34e2qpQX29ZK4555eUBJ1ibh86uLC");
+  const METAPLEX_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
   const [tokens, tokens2022] = await Promise.all([
     retryWithBackoff(
@@ -91,7 +138,7 @@ async function fetchAssetsForOwnerFallback(ownerPk: PublicKey, rpcUrl: string): 
 
   const allTokenAccounts = [...tokens.value, ...tokens2022.value];
 
-  const parsed = allTokenAccounts.map((ta): AssetInfo | null => {
+  const parsedPromises = allTokenAccounts.map(async (ta): Promise<AssetInfo | null> => {
     const parsedData = ta.account.data;
     if (!parsedData || typeof parsedData !== 'object' || !('parsed' in parsedData)) {
       return null;
@@ -105,15 +152,37 @@ async function fetchAssetsForOwnerFallback(ownerPk: PublicKey, rpcUrl: string): 
     const isNFT = decimals === 0 && uiAmount === 1;
 
     let image = "";
-    if (mint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") {
-      image = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png";
-    }
-
-    const name = isNFT 
+    let name = isNFT 
       ? `NFT (${mint.slice(0, 4)}…${mint.slice(-4)})` 
       : mint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" 
         ? "USDC" 
         : `Token (${mint.slice(0, 4)}…${mint.slice(-4)})`;
+
+    if (mint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") {
+      image = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png";
+    } else {
+      try {
+        const [metadataPk] = PublicKey.findProgramAddressSync(
+          [Buffer.from("metadata"), METAPLEX_PROGRAM_ID.toBuffer(), new PublicKey(mint).toBuffer()],
+          METAPLEX_PROGRAM_ID
+        );
+        const accountInfo = await conn.getAccountInfo(metadataPk);
+        if (accountInfo && accountInfo.data) {
+          const parsed = parseMetaplexMetadata(accountInfo.data);
+          if (parsed && parsed.uri) {
+            name = parsed.name || name;
+            try {
+              const res = await fetch(resolveIpfsUrl(parsed.uri));
+              if (res.ok) {
+                const json = await res.json();
+                image = resolveIpfsUrl(json.image || image);
+                if (json.name) name = json.name;
+              }
+            } catch {}
+          }
+        }
+      } catch {}
+    }
 
     return {
       ata: ta.pubkey.toBase58(),
@@ -124,8 +193,9 @@ async function fetchAssetsForOwnerFallback(ownerPk: PublicKey, rpcUrl: string): 
       name,
       image
     };
-  }).filter((t): t is AssetInfo => t !== null && t.uiAmount > 0);
+  });
 
+  const parsed = (await Promise.all(parsedPromises)).filter((t): t is AssetInfo => t !== null && t.uiAmount > 0);
   return parsed;
 }
 
@@ -161,7 +231,6 @@ async function fetchAssetsForOwner(ownerPk: PublicKey, rpcUrl: string): Promise<
     
     const items = json.result?.items || [];
     
-    // If the node doesn't support getAssetsByOwner, it won't have standard result.items structure
     if (json.result === undefined && json.error) {
       throw new Error("Helius DAS not supported by this endpoint");
     }
@@ -180,22 +249,22 @@ async function fetchAssetsForOwner(ownerPk: PublicKey, rpcUrl: string): Promise<
       // Extract image
       let image = "";
       if (item.content?.links?.image) {
-        image = item.content.links.image;
+        image = resolveIpfsUrl(item.content.links.image);
       } else if (item.content?.files && item.content.files.length > 0) {
         const imgFile = item.content.files.find((f: any) => f.mime?.startsWith("image/") || f.type?.startsWith("image/"));
         if (imgFile?.uri) {
-          image = imgFile.uri;
+          image = resolveIpfsUrl(imgFile.uri);
         } else if (item.content.files[0]?.uri) {
-          image = item.content.files[0].uri;
+          image = resolveIpfsUrl(item.content.files[0].uri);
         }
       }
 
       if (!image && item.content?.json_uri) {
         try {
-          const res = await fetch(item.content.json_uri);
+          const res = await fetch(resolveIpfsUrl(item.content.json_uri));
           if (res.ok) {
             const resJson = await res.json();
-            image = resJson.image || "";
+            image = resolveIpfsUrl(resJson.image || "");
           }
         } catch {}
       }
@@ -242,14 +311,22 @@ async function fetchAssetsForOwner(ownerPk: PublicKey, rpcUrl: string): Promise<
 
 // React component to render asset images with fallback
 function AssetAvatar({ asset }: { asset: any }) {
-  const hasImage = asset.image && (asset.image.startsWith("http") || asset.image.startsWith("data:") || asset.image.startsWith("/"));
+  const resolvedImage = resolveIpfsUrl(asset.image);
+  const hasImage = Boolean(
+    resolvedImage && 
+    (resolvedImage.startsWith("http") || resolvedImage.startsWith("data:") || resolvedImage.startsWith("/"))
+  );
   const [imgFailed, setImgFailed] = useState(!hasImage);
   const isNFT = asset.isNFT;
 
-  if (!imgFailed && hasImage && asset.image) {
+  useEffect(() => {
+    setImgFailed(!hasImage);
+  }, [resolvedImage, hasImage]);
+
+  if (!imgFailed && hasImage && resolvedImage) {
     return (
       <img 
-        src={asset.image} 
+        src={resolvedImage} 
         alt={asset.name} 
         className={`w-8 h-8 object-cover ${isNFT ? 'rounded-lg' : 'rounded-full'} border border-[#1cac64]/20 shrink-0 bg-[#d9f5cc]`}
         onError={() => setImgFailed(true)}

@@ -209,16 +209,41 @@ export interface AssetInfo {
 // Metaplex Metadata Layout Parser
 function parseMetaplexMetadata(data: Buffer | Uint8Array) {
   try {
-    if (data.length < 307) return null;
+    if (data.length < 319) return null;
     
-    const nameBytes = data.slice(65, 65 + 32);
+    // Metaplex Metadata Data struct byte offsets:
+    // 0..1: Key (1 u8)
+    // 1..33: Update Authority (32)
+    // 33..65: Mint (32)
+    // 65..69: Name len (4)
+    // 69..101: Name (32)
+    // 101..105: Symbol len (4)
+    // 105..115: Symbol (10)
+    // 115..119: URI len (4)
+    // 119..319: URI (200)
+
+    const nameBytes = data.slice(69, 69 + 32);
     const name = new TextDecoder().decode(nameBytes).replace(/\0/g, "").trim();
     
-    const symbolBytes = data.slice(97, 97 + 10);
+    const symbolBytes = data.slice(105, 105 + 10);
     const symbol = new TextDecoder().decode(symbolBytes).replace(/\0/g, "").trim();
     
-    const uriBytes = data.slice(107, 107 + 200);
-    const uri = new TextDecoder().decode(uriBytes).replace(/\0/g, "").trim();
+    const uriBytes = data.slice(119, 119 + 200);
+    let uri = new TextDecoder().decode(uriBytes).replace(/\0/g, "").trim();
+    const httpIdx = uri.indexOf("http");
+    if (httpIdx > 0) {
+      uri = uri.slice(httpIdx);
+    } else {
+      const ipfsIdx = uri.indexOf("ipfs://");
+      if (ipfsIdx > 0) {
+        uri = uri.slice(ipfsIdx);
+      } else {
+        const arIdx = uri.indexOf("ar://");
+        if (arIdx > 0) {
+          uri = uri.slice(arIdx);
+        }
+      }
+    }
     
     return { name, symbol, uri };
   } catch (e) {
@@ -281,10 +306,10 @@ async function fetchAssetsForOwnerFallback(ownerPk: PublicKey, rpcUrl: string): 
           if (parsed && parsed.uri) {
             name = parsed.name || name;
             try {
-              const res = await fetch(parsed.uri);
+              const res = await fetch(resolveIpfsUrl(parsed.uri));
               if (res.ok) {
                 const json = await res.json();
-                image = json.image || image;
+                image = resolveIpfsUrl(json.image || image);
                 if (json.name) name = json.name;
               }
             } catch {}
