@@ -814,6 +814,10 @@ export function getSolanaErrorDetails(err: any): string {
     }
   }
 
+  if (msg.includes("0x177e") || msg.includes("6014") || msg.includes("InsufficientFunds")) {
+    return "Insufficient funds in prize vault or missing prize token account (InsufficientFunds).";
+  }
+
   if (msg.includes("insufficient funds for rent") || msg.includes("insufficient balance for rent")) {
     return "Insufficient SOL balance for rent-exempt minimum of new accounts.";
   }

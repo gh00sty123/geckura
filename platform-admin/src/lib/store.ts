@@ -46,6 +46,9 @@ function parseSolanaError(err: any): string {
     return match[1].trim();
   }
 
+  if (msg.includes("0x177e") || msg.includes("6014") || msg.includes("InsufficientFunds")) {
+    return "Insufficient funds in prize vault or missing prize token account (InsufficientFunds).";
+  }
   if (msg.includes("0x1777") || msg.includes("6007")) {
     return "The payment amount is insufficient.";
   }

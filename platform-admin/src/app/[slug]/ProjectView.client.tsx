@@ -134,7 +134,9 @@ function parseSolanaError(err: any): string {
     return match[1].trim();
   }
 
-  // Fallback exact mapping of standard program errors
+  if (msg.includes("0x177e") || msg.includes("6014") || msg.includes("InsufficientFunds")) {
+    return "Insufficient funds in prize vault or missing prize token account (InsufficientFunds).";
+  }
   if (msg.includes("0x1777") || msg.includes("6007")) {
     return "The payment amount is insufficient.";
   }
@@ -1027,8 +1029,8 @@ export default function ProjectView({ slug }: { slug: string }) {
   const handleClaim = async (claimable: typeof claimablePrizesData[0]) => {
     const boxIdKey = claimable.box.pubkey;
     setClaimingStates(prev => ({ ...prev, [boxIdKey]: true }));
+    const conn = new Connection(RPC, "confirmed");
     try {
-      const conn = new Connection(RPC, "confirmed");
       const tx = new Transaction();
 
       const [platformPda] = await platformPDA();
@@ -1119,7 +1121,21 @@ export default function ProjectView({ slug }: { slug: string }) {
       await fetchClaimablePrizes();
     } catch (err: any) {
       console.error("[Claim] Error claiming prizes:", err);
-      toast.error(`Claim failed: ${err.message || err}`);
+      if (err instanceof SendTransactionError) {
+        try {
+          const logs = await err.getLogs(conn);
+          Object.defineProperty(err, "logs", { value: logs, configurable: true, writable: true });
+          console.error("[Claim SendTransactionError Logs]", logs);
+        } catch (logErr) {
+          console.error("Failed to retrieve SendTransactionError logs in handleClaim:", logErr);
+        }
+      } else if (err && typeof (err as any).getLogs === "function") {
+        try {
+          console.error("[Claim Error Logs]", (err as any).getLogs());
+        } catch {}
+      }
+      const msg = parseSolanaError(err);
+      toast.error(`Claim failed: ${msg}`);
     } finally {
       setClaimingStates(prev => ({ ...prev, [boxIdKey]: false }));
     }
