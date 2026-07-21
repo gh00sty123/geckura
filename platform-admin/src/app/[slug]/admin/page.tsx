@@ -312,24 +312,39 @@ async function fetchAssetsForOwner(ownerPk: PublicKey, rpcUrl: string): Promise<
 // React component to render asset images with fallback
 function AssetAvatar({ asset }: { asset: any }) {
   const resolvedImage = resolveIpfsUrl(asset.image);
+  const [currentSrc, setCurrentSrc] = useState(resolvedImage);
   const hasImage = Boolean(
-    resolvedImage && 
-    (resolvedImage.startsWith("http") || resolvedImage.startsWith("data:") || resolvedImage.startsWith("/"))
+    currentSrc && 
+    (currentSrc.startsWith("http") || currentSrc.startsWith("data:") || currentSrc.startsWith("/"))
   );
   const [imgFailed, setImgFailed] = useState(!hasImage);
   const isNFT = asset.isNFT;
 
   useEffect(() => {
-    setImgFailed(!hasImage);
-  }, [resolvedImage, hasImage]);
+    const res = resolveIpfsUrl(asset.image);
+    setCurrentSrc(res);
+    setImgFailed(!res || !(res.startsWith("http") || res.startsWith("data:") || res.startsWith("/")));
+  }, [asset.image]);
 
-  if (!imgFailed && hasImage && resolvedImage) {
+  const handleImageError = () => {
+    if (currentSrc.includes("gateway.irys.xyz/")) {
+      setCurrentSrc(currentSrc.replace("gateway.irys.xyz/", "arweave.net/"));
+    } else if (currentSrc.includes("ipfs.io/ipfs/")) {
+      setCurrentSrc(currentSrc.replace("ipfs.io/ipfs/", "cloudflare-ipfs.com/ipfs/"));
+    } else if (currentSrc.includes("cloudflare-ipfs.com/ipfs/")) {
+      setCurrentSrc(currentSrc.replace("cloudflare-ipfs.com/ipfs/", "gateway.pinata.cloud/ipfs/"));
+    } else {
+      setImgFailed(true);
+    }
+  };
+
+  if (!imgFailed && hasImage && currentSrc) {
     return (
       <img 
-        src={resolvedImage} 
+        src={currentSrc} 
         alt={asset.name} 
         className={`w-8 h-8 object-cover ${isNFT ? 'rounded-lg' : 'rounded-full'} border border-[#1cac64]/20 shrink-0 bg-[#d9f5cc]`}
-        onError={() => setImgFailed(true)}
+        onError={handleImageError}
       />
     );
   }

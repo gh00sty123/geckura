@@ -131,6 +131,12 @@ export function resolveIpfsUrl(url: string | null | undefined): string {
     }
     return `https://ipfs.io/ipfs/${path}`;
   }
+  if (trimmed.startsWith("ar://")) {
+    return `https://arweave.net/${trimmed.slice(5)}`;
+  }
+  if (trimmed.includes("gateway.irys.xyz/")) {
+    return trimmed.replace("gateway.irys.xyz/", "arweave.net/");
+  }
   return trimmed;
 }
 
