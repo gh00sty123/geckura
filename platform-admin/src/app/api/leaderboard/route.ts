@@ -10,7 +10,17 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+const DEFAULT_DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1526660578867675156/QKVdqrV2dw-ZsCQhQX-mIL_7I-9lAMl4g5eh9THUkQJJZbSCuk-HjioishNkzJCewlpf";
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || DEFAULT_DISCORD_WEBHOOK_URL;
+
+const KNOWN_PROGRAM_IDS = [
+  "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv",
+  "AEQrvbZvGwGcat5FXDXXZD71NiQsWNfdxvDFvdigxL5t",
+  "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"
+];
+if (process.env.NEXT_PUBLIC_PROGRAM_ID && !KNOWN_PROGRAM_IDS.includes(process.env.NEXT_PUBLIC_PROGRAM_ID)) {
+  KNOWN_PROGRAM_IDS.push(process.env.NEXT_PUBLIC_PROGRAM_ID);
+}
 
 const eventCoder = new BorshEventCoder(IDL as any);
 
@@ -56,31 +66,53 @@ const verifyOnChainTx = async (
 ): Promise<{ isValid: boolean; logs: string[] }> => {
   try {
     const conn = new Connection(RPC, "confirmed");
-    const tx = await conn.getParsedTransaction(sig, {
-      maxSupportedTransactionVersion: 0,
-      commitment: "confirmed"
-    });
-    if (!tx || !tx.meta || tx.meta.err) return { isValid: false, logs: [] };
-    
-    // Ensure the program ID is involved
-    const accountKeys = tx.transaction.message.accountKeys.map(k => k.pubkey.toBase58());
-    if (!accountKeys.includes(expectedProgramId)) return { isValid: false, logs: [] };
-    
-    // Ensure the user was a signer of the transaction
-    const signers = tx.transaction.message.accountKeys.filter(k => k.signer).map(k => k.pubkey.toBase58());
-    if (!signers.includes(expectedUser)) return { isValid: false, logs: [] };
-    
-    // Ensure logs indicate a box open event or instruction
+    let tx: any = null;
+
+    // Retry up to 3 times with 800ms delay to account for RPC index lag
+    for (let attempt = 0; attempt < 3; attempt++) {
+      tx = await conn.getParsedTransaction(sig, {
+        maxSupportedTransactionVersion: 0,
+        commitment: "confirmed"
+      });
+      if (tx && tx.meta && !tx.meta.err) break;
+      await new Promise(r => setTimeout(r, 800));
+    }
+
+    if (!tx || !tx.meta || tx.meta.err) {
+      console.warn(`[Leaderboard Verify] Could not find parsed tx or tx had error for sig: ${sig}`);
+      return { isValid: false, logs: [] };
+    }
+
+    const accountKeys = tx.transaction.message.accountKeys.map((k: any) => 
+      typeof k === "string" ? k : (k.pubkey?.toBase58?.() || String(k.pubkey || k))
+    );
+
+    const matchesProgram = accountKeys.some((pk: string) => KNOWN_PROGRAM_IDS.includes(pk) || pk === expectedProgramId);
+    if (!matchesProgram) {
+      console.warn(`[Leaderboard Verify] Tx ${sig} does not involve any known program ID. Keys:`, accountKeys);
+      return { isValid: false, logs: [] };
+    }
+
+    const isUserInvolved = accountKeys.includes(expectedUser);
+    if (!isUserInvolved) {
+      console.warn(`[Leaderboard Verify] Tx ${sig} does not involve user ${expectedUser}. Keys:`, accountKeys);
+      return { isValid: false, logs: [] };
+    }
+
     const logs = tx.meta.logMessages || [];
-    const hasOpenLog = logs.some(log => 
+    const hasOpenLog = logs.some((log: string) => 
       log.includes("BoxOpenEvent") || 
       log.includes("Program data:") || 
       log.includes("Instruction: open_box") ||
       log.includes("Instruction: request_open") || 
-      log.includes("Instruction: reveal_open")
+      log.includes("Instruction: reveal_open") ||
+      log.includes("Instruction:")
     );
-    if (!hasOpenLog) return { isValid: false, logs: [] };
-    
+    if (!hasOpenLog) {
+      console.warn(`[Leaderboard Verify] Tx ${sig} does not contain open box logs. Logs:`, logs);
+      return { isValid: false, logs: [] };
+    }
+
     return { isValid: true, logs };
   } catch (err) {
     console.error("Error verifying on-chain transaction:", err);
@@ -94,8 +126,8 @@ function parseBoxOpenEventsFromLogs(logs: string[]): DecodedBoxOpenEvent[] {
     if (log.includes("Program data: ")) {
       try {
         const base64Str = log.split("Program data: ")[1].trim();
-        const buf = Buffer.from(base64Str, "base64");
-        const event = eventCoder.decode(buf as any);
+        // Pass base64 string directly to eventCoder.decode (passing a Buffer causes base64.decode to fail in Anchor)
+        const event = eventCoder.decode(base64Str);
         if (event && event.name === "BoxOpenEvent") {
           const data = event.data as any;
           events.push({
@@ -453,25 +485,28 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
       }
     }
 
+    const validLogo = (logoUri && typeof logoUri === "string" && logoUri.startsWith("http")) ? logoUri : undefined;
+    const validImage = (imageUrl && typeof imageUrl === "string" && imageUrl.startsWith("http")) ? imageUrl : "https://i.imgur.com/8QO2HkQ.png";
+
     const embed: any = {
       title: event.won ? "🎉 New Mystery Box Win!" : "🎁 Mystery Box Opened",
       url: boxSiteUrl,
       description,
       color: embedColor,
-      thumbnail: { url: imageUrl },
-      image: { url: imageUrl },
+      thumbnail: { url: validImage },
+      image: { url: validImage },
       timestamp: new Date().toISOString(),
       footer: {
         text: `${projectName} Draw Alerts`,
-        icon_url: logoUri || undefined
+        icon_url: validLogo
       }
     };
     // Use project logo as the author icon if available
-    if (logoUri) {
+    if (validLogo) {
       embed.author = {
         name: projectName,
         url: boxSiteUrl,
-        icon_url: logoUri
+        icon_url: validLogo
       };
     }
 
@@ -481,7 +516,7 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
       body: JSON.stringify({
         content: discordRoleId ? `<@&${discordRoleId}>` : undefined,
         username: "Geckura Draws",
-        avatar_url: logoUri || undefined,
+        avatar_url: validLogo,
         embeds: [embed]
       })
     });

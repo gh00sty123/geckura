@@ -482,7 +482,7 @@ export async function sendIx(
   const tx = new Transaction().add(ix);
 
   tx.feePayer = wallet.publicKey;
-  tx.recentBlockhash = (await retryWithBackoff(() => conn.getLatestBlockhash(), "getLatestBlockhash(sendIx)")).blockhash;
+  tx.recentBlockhash = (await retryWithBackoff(() => conn.getLatestBlockhash("confirmed"), "getLatestBlockhash(sendIx)")).blockhash;
 
   try {
     const signed = await wallet.signTransaction(tx as any);
@@ -515,7 +515,7 @@ export async function sendTx(
   const conn = new Connection(RPC_URL, "confirmed");
 
   tx.feePayer = wallet.publicKey;
-  tx.recentBlockhash = (await retryWithBackoff(() => conn.getLatestBlockhash(), "getLatestBlockhash(sendTx)")).blockhash;
+  tx.recentBlockhash = (await retryWithBackoff(() => conn.getLatestBlockhash("confirmed"), "getLatestBlockhash(sendTx)")).blockhash;
 
   try {
     const signed = await wallet.signTransaction(tx as any);

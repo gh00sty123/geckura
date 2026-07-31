@@ -83,6 +83,14 @@ function parseSolanaError(err: any): string {
     return "No unopened boxes available to open.";
   }
 
+  if (
+    msg.includes("Blockhash not found") ||
+    msg.includes("blockhash not found") ||
+    msg.includes("BlockhashNotFound")
+  ) {
+    return "Transaction expired while waiting for wallet confirmation. Please try again and approve the wallet prompt quickly.";
+  }
+
   if (msg.includes("User rejected")) {
     return "Transaction signature rejected by user.";
   }
@@ -186,7 +194,7 @@ function makeConn(): Connection {
 /** Latest blockhash — wraps retryWithBackoff so TS inference quirk is scoped here */
 async function latestBlockhash(conn: Connection): Promise<{ blockhash: string }> {
   return (await retryWithBackoff(
-    () => conn.getLatestBlockhash(), "getLatestBlockhash",
+    () => conn.getLatestBlockhash("confirmed"), "getLatestBlockhash",
   )) as unknown as { blockhash: string };
 }
 

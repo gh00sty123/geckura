@@ -171,6 +171,15 @@ function parseSolanaError(err: any): string {
     return "No unopened boxes available to open.";
   }
 
+  if (
+    msg.includes("Blockhash not found") ||
+    msg.includes("blockhash not found") ||
+    msg.includes("BlockhashNotFound") ||
+    msg.includes("blockhash")
+  ) {
+    return "Transaction expired while waiting for wallet confirmation. Please try again and approve the wallet prompt quickly.";
+  }
+
   // Wallet user rejection
   if (msg.includes("User rejected")) {
     return "Transaction signature rejected by user.";
@@ -1126,7 +1135,7 @@ export default function ProjectView({ slug }: { slug: string }) {
 
       tx.feePayer = wallet.publicKey || undefined;
       const { blockhash } = await retryWithBackoff(
-        () => conn.getLatestBlockhash(),
+        () => conn.getLatestBlockhash("confirmed"),
         "getLatestBlockhash",
       ) as { blockhash: string };
       tx.recentBlockhash = blockhash;
@@ -1579,6 +1588,7 @@ export default function ProjectView({ slug }: { slug: string }) {
             }}
             vaultAssets={vaultAssets}
             tokenMetaMap={tokenMetaMap}
+            claimablePrizesCount={claimablePrizesData.reduce((acc: number, c: any) => acc + (c.prizes?.length || 0), 0)}
           />
         )}
       </AnimatePresence>
@@ -1970,7 +1980,7 @@ function BoxCard({ box, index, onSelect, tokenMetaMap, onShowRewards }: { box: L
    OPEN BOX MODAL — Quantity selector, price breakdown, tx flow
 ═══════════════════════════════════════════════════════════════════════ */
 
-function OpenBoxModal({ box, slug, onClose, vaultAssets, tokenMetaMap, project }: { box: LiveBox; slug: string; onClose: () => void; vaultAssets: AssetInfo[]; tokenMetaMap: Record<string, { symbol: string; name: string; decimals: number; image: string; isNFT?: boolean }>; project: any }) {
+function OpenBoxModal({ box, slug, onClose, vaultAssets, tokenMetaMap, project, claimablePrizesCount = 0 }: { box: LiveBox; slug: string; onClose: () => void; vaultAssets: AssetInfo[]; tokenMetaMap: Record<string, { symbol: string; name: string; decimals: number; image: string; isNFT?: boolean }>; project: any; claimablePrizesCount?: number }) {
   const wallet = useWallet();
   const branding = useProjectBranding();
   const logoUrl = branding.logoUrl || resolveIpfsUrl((project?.logoUri || project?.logo_uri || project?.logo_url) as string | undefined) || undefined;
@@ -2069,6 +2079,13 @@ function OpenBoxModal({ box, slug, onClose, vaultAssets, tokenMetaMap, project }
 const handleOpen = useCallback(async () => {
       if (!wallet.publicKey || !wallet.signTransaction) {
         toast.error("Connect your wallet first");
+        return;
+      }
+      if (claimablePrizesCount >= 10) {
+        const warnMsg = "Your receipt storage is full (10 pending prizes). Please claim your rewards in the 'My Claims' tab before opening more boxes!";
+        toast.error(warnMsg);
+        setErrMsg(warnMsg);
+        setPhase("error");
         return;
       }
       setPhase("signing"); setErrMsg(""); setWonRewards(null);
@@ -2222,7 +2239,7 @@ const handleOpen = useCallback(async () => {
 
         tx.feePayer = wallet.publicKey || undefined;
         const { blockhash } = await retryWithBackoff(
-          () => conn.getLatestBlockhash(),
+          () => conn.getLatestBlockhash("confirmed"),
           "getLatestBlockhash",
         ) as { blockhash: string };
         tx.recentBlockhash = blockhash;
