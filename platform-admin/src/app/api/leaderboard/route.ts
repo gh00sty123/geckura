@@ -120,7 +120,54 @@ function parseBoxOpenEventsFromLogs(logs: string[]): DecodedBoxOpenEvent[] {
   return events;
 }
 
+const METAPLEX_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
+
+function resolveIpfsUrl(url: string): string {
+  if (!url) return "";
+  if (url.startsWith("ipfs://")) {
+    return url.replace("ipfs://", "https://ipfs.io/ipfs/");
+  }
+  if (url.startsWith("ar://")) {
+    return url.replace("ar://", "https://arweave.net/");
+  }
+  return url;
+}
+
+function parseMetaplexMetadata(data: Buffer | Uint8Array) {
+  try {
+    if (data.length < 319) return null;
+    const nameBytes = data.slice(69, 69 + 32);
+    const name = new TextDecoder().decode(nameBytes).replace(/\0/g, "").trim();
+    const symbolBytes = data.slice(105, 105 + 10);
+    const symbol = new TextDecoder().decode(symbolBytes).replace(/\0/g, "").trim();
+    const uriBytes = data.slice(119, 119 + 200);
+    let uri = new TextDecoder().decode(uriBytes).replace(/\0/g, "").trim();
+    const httpIdx = uri.indexOf("http");
+    if (httpIdx >= 0) {
+      uri = uri.slice(httpIdx);
+    } else {
+      const ipfsIdx = uri.indexOf("ipfs://");
+      if (ipfsIdx >= 0) uri = uri.slice(ipfsIdx);
+      else {
+        const arIdx = uri.indexOf("ar://");
+        if (arIdx >= 0) uri = uri.slice(arIdx);
+      }
+    }
+    return { name, symbol, uri };
+  } catch (e) {
+    return null;
+  }
+}
+
+function formatNumberWithCommas(num: number): string {
+  if (Number.isInteger(num)) {
+    return num.toLocaleString("en-US");
+  }
+  return num.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 4 });
+}
+
 async function formatPrizeInfo(conn: Connection, event: DecodedBoxOpenEvent): Promise<{ name: string; amountStr: string; imageUrl: string }> {
+  const defaultChestImage = "https://i.imgur.com/8QO2HkQ.png";
   if (!event.won) {
     return { 
       name: "Better luck next time!", 
@@ -140,60 +187,194 @@ async function formatPrizeInfo(conn: Connection, event: DecodedBoxOpenEvent): Pr
     else if (prizeTypeRaw === 2) pType = "nft";
   }
 
-  if (pType === "sol") {
+  const mintStr = event.tokenMint || "";
+
+  // Geckura $GAURA Token
+  if (mintStr.startsWith("5xUbTjh")) {
+    const rawVal = event.amountWon;
+    const divided = rawVal >= 1000000 ? rawVal / 1e6 : rawVal;
+    return {
+      name: "$GAURA",
+      amountStr: `${formatNumberWithCommas(divided)} $GAURA`,
+      imageUrl: "https://gateway.irys.xyz/6-zHeDEpHIOc_nbiMzOykATzSEZp4jkT369BIQigRMo"
+    };
+  }
+
+  // Geckura Free Mint Ticket
+  if (mintStr.startsWith("8734tKb8")) {
+    const rawVal = event.amountWon;
+    const divided = rawVal >= 1000000 ? rawVal / 1e6 : rawVal;
+    const freeMintVal = divided > 0 ? divided : 1;
+    return {
+      name: "Geckura Free Mint",
+      amountStr: `${formatNumberWithCommas(freeMintVal)} Free Mint Ticket${freeMintVal > 1 ? "s" : ""}`,
+      imageUrl: "https://gateway.irys.xyz/YPWTFjbx1MQw3vfdgSCWi6Ki_0BTTpDK3UdW75sp63E"
+    };
+  }
+
+  if (pType === "sol" || !event.tokenMint || event.tokenMint === "11111111111111111111111111111111") {
+    const solVal = event.amountWon > 1e6 ? event.amountWon / 1e9 : event.amountWon;
     return { 
       name: "Solana (SOL)", 
-      amountStr: `${(event.amountWon / 1e9).toFixed(4)} SOL`,
+      amountStr: `${formatNumberWithCommas(solVal)} SOL`,
       imageUrl: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
     };
   }
 
   // Check common mints
   if (event.tokenMint === "EPjFWdd5AufqSSqeM2xzybapC8G4wEGGkZwyTDt1v") {
+    const usdcVal = event.amountWon > 1e4 ? event.amountWon / 1e6 : event.amountWon;
     return { 
       name: "USDC", 
-      amountStr: `${(event.amountWon / 1e6).toFixed(2)} USDC`,
+      amountStr: `${formatNumberWithCommas(usdcVal)} USDC`,
       imageUrl: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2xzybapC8G4wEGGkZwyTDt1v/logo.png"
     };
   }
 
-  // Try fetching decimals dynamically
+  // Try fetching mint info & Metaplex metadata dynamically
   try {
     const mintPk = new PublicKey(event.tokenMint);
-    const mintInfo = await getMint(conn, mintPk);
-    const decimals = mintInfo.decimals;
-    const divider = Math.pow(10, decimals);
-    const formattedAmount = (event.amountWon / divider).toString();
-    
-    if (pType === "nft" || (decimals === 0 && event.amountWon === 1)) {
-      return { 
-        name: `NFT (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`, 
-        amountStr: `1 NFT`,
-        imageUrl: "https://i.imgur.com/8QO2HkQ.png" // Open Gold Chest
-      };
+    let decimals = 0;
+    try {
+      const mintInfo = await getMint(conn, mintPk);
+      decimals = mintInfo.decimals;
+    } catch {}
+
+    const divider = decimals > 0 ? Math.pow(10, decimals) : 1;
+    let numVal = event.amountWon > 0 && decimals > 0 ? event.amountWon / divider : event.amountWon;
+    if (numVal === 0) numVal = 1;
+
+    let tokenName = pType === "nft" ? "NFT" : `Token (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`;
+    let assetImage = defaultChestImage;
+
+    // Fetch Metaplex metadata on-chain for exact token/NFT name & image
+    try {
+      const [metadataPk] = PublicKey.findProgramAddressSync(
+        [Buffer.from("metadata"), METAPLEX_PROGRAM_ID.toBuffer(), mintPk.toBuffer()],
+        METAPLEX_PROGRAM_ID
+      );
+      const accInfo = await conn.getAccountInfo(metadataPk);
+      if (accInfo && accInfo.data) {
+        const parsedMeta = parseMetaplexMetadata(accInfo.data);
+        if (parsedMeta) {
+          if (parsedMeta.name) tokenName = parsedMeta.name;
+          if (parsedMeta.uri) {
+            const uriUrl = resolveIpfsUrl(parsedMeta.uri);
+            const metaRes = await fetch(uriUrl).catch(() => null);
+            if (metaRes && metaRes.ok) {
+              const json = await metaRes.json().catch(() => null);
+              if (json && json.image) {
+                assetImage = resolveIpfsUrl(json.image);
+              }
+              if (json && json.name) tokenName = json.name;
+            }
+          }
+        }
+      }
+    } catch (metaErr) {
+      console.warn("Could not fetch Metaplex metadata:", metaErr);
     }
-    
+
+    const amountStr = pType === "nft" ? `1 ${tokenName}` : `${formatNumberWithCommas(numVal)} ${tokenName}`;
     return { 
-      name: `Token (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`, 
-      amountStr: `${formattedAmount}`,
-      imageUrl: "https://i.imgur.com/8QO2HkQ.png" // Open Gold Chest
+      name: tokenName, 
+      amountStr,
+      imageUrl: assetImage 
     };
   } catch (err) {
     console.warn("Failed to fetch mint info dynamically:", err);
-    const formattedAmount = (event.amountWon / 1e9).toString();
     return { 
-      name: `Token (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`, 
-      amountStr: `${formattedAmount} (decimals unknown)`,
-      imageUrl: "https://i.imgur.com/8QO2HkQ.png" // Open Gold Chest
+      name: `Asset (${event.tokenMint.slice(0, 4)}...${event.tokenMint.slice(-4)})`, 
+      amountStr: `${formatNumberWithCommas(event.amountWon)}`,
+      imageUrl: defaultChestImage
     };
+  }
+}
+
+const SOLD_OUT_FILE = path.join(process.cwd(), "src/lib/sold_out_boxes.json");
+const notifiedSoldOutBoxes = new Set<string>();
+
+function loadSoldOutBoxes(): Set<string> {
+  try {
+    if (fs.existsSync(SOLD_OUT_FILE)) {
+      const data = JSON.parse(fs.readFileSync(SOLD_OUT_FILE, "utf-8"));
+      if (Array.isArray(data)) {
+        data.forEach((id: string) => notifiedSoldOutBoxes.add(id));
+      }
+    }
+  } catch {}
+  return notifiedSoldOutBoxes;
+}
+
+function saveSoldOutBox(boxPkStr: string) {
+  notifiedSoldOutBoxes.add(boxPkStr);
+  try {
+    const list = Array.from(notifiedSoldOutBoxes);
+    fs.writeFileSync(SOLD_OUT_FILE, JSON.stringify(list, null, 2), "utf-8");
+  } catch {}
+}
+
+loadSoldOutBoxes();
+
+async function checkAndSendSoldOutNotification(
+  conn: Connection,
+  boxConfigPkStr: string,
+  slug: string,
+  targetWebhookUrl: string,
+  discordRoleId: string | null,
+  projectName: string,
+  logoUri: string | null
+) {
+  try {
+    if (!boxConfigPkStr || notifiedSoldOutBoxes.has(boxConfigPkStr)) return;
+    const boxPk = new PublicKey(boxConfigPkStr);
+    const accInfo = await conn.getAccountInfo(boxPk);
+    if (!accInfo) return;
+
+    const coder = new BorshAccountsCoder(IDL as any);
+    const boxConfig: any = coder.decode("BoxConfig", accInfo.data);
+    if (!boxConfig) return;
+
+    const sold = Number(boxConfig.sold ?? 0);
+    const supply = Number(boxConfig.supply ?? 0);
+
+    if (supply > 0 && sold >= supply) {
+      saveSoldOutBox(boxConfigPkStr);
+      const boxName = boxConfig.name || "Mystery Box";
+      const siteBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mysterybox.geckura.app";
+      const boxSiteUrl = `${siteBaseUrl}/${slug}`;
+
+      const embed = {
+        title: "🔥 BOX SOLD OUT! 📦",
+        url: boxSiteUrl,
+        description: `🎉 **The "${boxName}" box for ${projectName} is now 100% SOLD OUT!**\n\n📦 **Total Supply:** **${sold} / ${supply}** claimed!\n\nThank you to everyone who participated! 🚀`,
+        color: 15158332,
+        timestamp: new Date().toISOString(),
+        footer: {
+          text: `${projectName} Sold Out Announcement`,
+          icon_url: logoUri || undefined
+        }
+      };
+
+      await fetch(targetWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: discordRoleId ? `<@&${discordRoleId}>` : undefined,
+          username: "Geckura Draws",
+          avatar_url: logoUri || undefined,
+          embeds: [embed]
+        })
+      });
+      console.log(`[Discord Webhook] Sent Box Sold Out notification for box ${boxConfigPkStr}`);
+    }
+  } catch (err) {
+    console.error("[Discord SoldOut Webhook] Error sending sold out notification:", err);
   }
 }
 
 async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEvent, sig: string, slug: string) {
   try {
-    // Only notify on actual wins
-    if (!event.won) return;
-
     // Fetch project branding from database if configured
     let projectName = slug;
     let logoUri: string | null = null;
@@ -250,7 +431,7 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
     const boxSiteUrl = `${siteBaseUrl}/${slug}`;
 
     const rewardText = event.won 
-      ? `🏆 **Won:** **${amountStr}** of **${name}**` 
+      ? `🏆 **Won:** **${amountStr}**` 
       : "🎁 **Better luck next time!**";
 
     const description = `
@@ -278,6 +459,7 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
       description,
       color: embedColor,
       thumbnail: { url: imageUrl },
+      image: { url: imageUrl },
       timestamp: new Date().toISOString(),
       footer: {
         text: `${projectName} Draw Alerts`,
@@ -298,7 +480,7 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         content: discordRoleId ? `<@&${discordRoleId}>` : undefined,
-        username: `${projectName} Draw Bot`,
+        username: "Geckura Draws",
         avatar_url: logoUri || undefined,
         embeds: [embed]
       })
@@ -307,11 +489,15 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
     if (!response.ok) {
       console.error("[Discord Webhook] Failed to post message:", await response.text());
     }
+
+    // Check if box is sold out and broadcast notification if so
+    if (event.boxConfig) {
+      await checkAndSendSoldOutNotification(conn, event.boxConfig, slug, targetWebhookUrl, discordRoleId, projectName, logoUri);
+    }
   } catch (err) {
     console.error("[Discord Webhook] Error sending notification:", err);
   }
 }
-
 
 const PROFILES_FILE = path.join(process.cwd(), "src/lib/profiles_db.json");
 
@@ -532,9 +718,29 @@ export async function POST(req: NextRequest) {
       const conn = new Connection(RPC, "confirmed");
       const events = parseBoxOpenEventsFromLogs(txResult.logs);
 
-      for (const ev of events) {
-        sendDiscordNotification(conn, ev, sig, slug).catch(err => {
-          console.error("[Discord Webhook] Async send failed:", err);
+      if (events.length > 0) {
+        for (const ev of events) {
+          sendDiscordNotification(conn, ev, sig, slug).catch(err => {
+            console.error("[Discord Webhook] Async send failed:", err);
+          });
+        }
+      } else {
+        // Fallback Discord notification in case logs parsed 0 events but tx was verified
+        const fallbackEv: DecodedBoxOpenEvent = {
+          boxConfig,
+          user,
+          prizeIndex: 0,
+          slot: 0,
+          nonce: 0,
+          roll: 0,
+          won: true,
+          prizeType: "sol",
+          tokenMint: "",
+          amountWon: 0,
+          timestamp: timestamp || Math.floor(Date.now() / 1000)
+        };
+        sendDiscordNotification(conn, fallbackEv, sig, slug).catch(err => {
+          console.error("[Discord Webhook] Async send fallback failed:", err);
         });
       }
 
