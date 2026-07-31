@@ -2460,7 +2460,8 @@ const handleOpen = useCallback(async () => {
           user: wallet.publicKey.toBase58(),
           boxConfig: boxConfigPubkey.toBase58(),
           isSolBox: isPaySol,
-          timestamp: Math.floor(Date.now() / 1000)
+          timestamp: Math.floor(Date.now() / 1000),
+          wonRewards: rewardsList
         })
       }).catch(err => console.error("[Leaderboard] Error recording event:", err));
       

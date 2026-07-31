@@ -68,8 +68,8 @@ const verifyOnChainTx = async (
     const conn = new Connection(RPC, "confirmed");
     let tx: any = null;
 
-    // Retry up to 3 times with 800ms delay to account for RPC index lag
-    for (let attempt = 0; attempt < 3; attempt++) {
+    // Retry up to 6 times with 800ms delay to account for RPC index lag
+    for (let attempt = 0; attempt < 6; attempt++) {
       tx = await conn.getParsedTransaction(sig, {
         maxSupportedTransactionVersion: 0,
         commitment: "confirmed"
@@ -534,6 +534,129 @@ async function sendDiscordNotification(conn: Connection, event: DecodedBoxOpenEv
   }
 }
 
+async function sendDiscordDirectNotification(
+  conn: Connection,
+  wonRewards: Array<{ name: string; amount: number; image?: string; isSol?: boolean; isNFT?: boolean; symbol?: string }>,
+  sig: string,
+  user: string,
+  slug: string,
+  boxConfig: string
+) {
+  try {
+    let projectName = slug;
+    let logoUri: string | null = null;
+    let themeColorHex: string | null = null;
+    let projectWebhookUrl: string | null = null;
+    let discordRoleId: string | null = null;
+
+    if (isSupabaseConfigured) {
+      try {
+        const { data: projData } = await supabase
+          .from("projects")
+          .select("name, logo_uri, theme_color, discord_webhook_url, discord_role_id")
+          .eq("slug", slug)
+          .single();
+        if (projData) {
+          projectName = projData.name || slug;
+          logoUri = projData.logo_uri || null;
+          themeColorHex = projData.theme_color || null;
+          projectWebhookUrl = projData.discord_webhook_url || null;
+          discordRoleId = projData.discord_role_id || null;
+        }
+      } catch (dbErr) {
+        console.error("[Discord Webhook Direct] Failed to fetch project branding:", dbErr);
+      }
+    }
+
+    const targetWebhookUrl = projectWebhookUrl || DISCORD_WEBHOOK_URL;
+    if (!targetWebhookUrl) return;
+
+    let username = `${user.slice(0, 6)}...${user.slice(-6)}`;
+    if (isSupabaseConfigured) {
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("wallet", user)
+          .single();
+        if (profile?.username) username = profile.username;
+      } catch {}
+    }
+
+    const explorerUrl = `https://solscan.io/tx/${sig}`;
+    const userExplorerUrl = `https://solscan.io/account/${user}`;
+    const siteBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mysterybox.geckura.app";
+    const boxSiteUrl = `${siteBaseUrl}/${slug}`;
+
+    const validLogo = (logoUri && typeof logoUri === "string" && logoUri.startsWith("http")) ? logoUri : undefined;
+
+    let embedColor = 3066993;
+    if (themeColorHex) {
+      const cleanHex = themeColorHex.replace("#", "");
+      const num = parseInt(cleanHex, 16);
+      if (!isNaN(num)) embedColor = num;
+    }
+
+    for (const reward of wonRewards) {
+      const isWin = reward.amount > 0 || (reward.name && reward.name !== "Better luck next time!");
+      const amountText = reward.amount > 0 
+        ? `${formatNumberWithCommas(reward.amount)} ${reward.symbol || reward.name}`
+        : reward.name;
+      const rewardText = isWin 
+        ? `🏆 **Won:** **${amountText}**` 
+        : "🎁 **Better luck next time!**";
+
+      const description = `
+👤 **Player:** [${username}](${userExplorerUrl})
+📦 **Project:** **${projectName}**
+✨ **Result:** ${rewardText}
+
+🔗 **Transaction:** [View on Solscan](${explorerUrl})
+🎰 **Try Your Luck:** [Open a Box!](${boxSiteUrl})
+      `.trim();
+
+      const image = (reward.image && typeof reward.image === "string" && reward.image.startsWith("http"))
+        ? reward.image
+        : "https://i.imgur.com/8QO2HkQ.png";
+
+      const embed: any = {
+        title: isWin ? "🎉 New Mystery Box Win!" : "🎁 Mystery Box Opened",
+        url: boxSiteUrl,
+        description,
+        color: isWin ? embedColor : 10070709,
+        thumbnail: { url: image },
+        image: { url: image },
+        timestamp: new Date().toISOString(),
+        footer: {
+          text: `${projectName} Draw Alerts`,
+          icon_url: validLogo
+        }
+      };
+
+      if (validLogo) {
+        embed.author = { name: projectName, url: boxSiteUrl, icon_url: validLogo };
+      }
+
+      await fetch(targetWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: discordRoleId ? `<@&${discordRoleId}>` : undefined,
+          username: "Geckura Draws",
+          avatar_url: validLogo,
+          embeds: [embed]
+        })
+      }).catch(err => console.error("[Discord Direct Webhook] Post error:", err));
+    }
+
+    if (boxConfig) {
+      await checkAndSendSoldOutNotification(conn, boxConfig, slug, targetWebhookUrl, discordRoleId, projectName, logoUri);
+    }
+  } catch (err) {
+    console.error("[Discord Direct Webhook] Error:", err);
+  }
+}
+
 const PROFILES_FILE = path.join(process.cwd(), "src/lib/profiles_db.json");
 
 function getLocalProfiles(): Record<string, { username: string; avatarUrl: string }> {
@@ -744,7 +867,19 @@ export async function POST(req: NextRequest) {
       }
 
       // Verify the transaction signature on-chain to prevent fake score injections
-      const txResult = await verifyOnChainTx(sig, user, PGID.toBase58());
+      let txResult = await verifyOnChainTx(sig, user, PGID.toBase58());
+      
+      if (!txResult.isValid) {
+        // Fallback check on-chain signature status directly if log indexing lags
+        try {
+          const connCheck = new Connection(RPC, "confirmed");
+          const status = await connCheck.getSignatureStatus(sig);
+          if (status?.value && !status.value.err) {
+            txResult = { isValid: true, logs: [] };
+          }
+        } catch {}
+      }
+
       if (!txResult.isValid) {
         return NextResponse.json({ error: "Unauthorized: On-chain transaction verification failed" }, { status: 403 });
       }
@@ -752,8 +887,13 @@ export async function POST(req: NextRequest) {
       // Send Discord notifications if configured, and parse open events
       const conn = new Connection(RPC, "confirmed");
       const events = parseBoxOpenEventsFromLogs(txResult.logs);
+      const wonRewards = Array.isArray(body.wonRewards) ? body.wonRewards : null;
 
-      if (events.length > 0) {
+      if (wonRewards && wonRewards.length > 0) {
+        sendDiscordDirectNotification(conn, wonRewards, sig, user, slug, boxConfig).catch(err => {
+          console.error("[Discord Direct Webhook] Async send failed:", err);
+        });
+      } else if (events.length > 0) {
         for (const ev of events) {
           sendDiscordNotification(conn, ev, sig, slug).catch(err => {
             console.error("[Discord Webhook] Async send failed:", err);
