@@ -12,10 +12,7 @@ const ATA_PROG = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
  *  extension's approval popup.  Type safety ensures callers pass real wallet. */
 type WalletState = WalletContextState;
 
-function toProjectId(slug: string | number): number {
-  const n = Number(slug);
-  return !isNaN(n) && n > 0 ? n : 1;
-}
+import { toProjectId } from "@/lib/program";
 
 export const createProjectTx = async (
   wallet: WalletState,

@@ -31,8 +31,24 @@ export async function platformPDA(): Promise<[PublicKey, number]> {
   return PublicKey.findProgramAddress([PLATFORM_SEED], PROGRAM_ID);
 }
 
-export async function projectPDA(slug: string): Promise<[PublicKey, number]> {
-  return PublicKey.findProgramAddress([Buffer.from("project"), Buffer.from(slug)], PROGRAM_ID);
+export function toProjectId(slug: string | number | bigint): number {
+  if (typeof slug === "number") return slug;
+  if (typeof slug === "bigint") return Number(slug);
+  const n = Number(slug);
+  if (!isNaN(n) && n > 0) return n;
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) {
+    hash = (hash << 5) - hash + slug.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash) || 1;
+}
+
+export async function projectPDA(slug: string | number | bigint): Promise<[PublicKey, number]> {
+  const pId = toProjectId(slug);
+  const buf = Buffer.alloc(8);
+  buf.writeBigUInt64LE(BigInt(pId), 0);
+  return PublicKey.findProgramAddress([Buffer.from("project"), buf], PROGRAM_ID);
 }
 
 export async function boxPDA(project: PublicKey, boxId: number | bigint): Promise<[PublicKey, number]> {
