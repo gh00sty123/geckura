@@ -40,8 +40,8 @@ export default function NewProjectPage() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const pkg = params.get("package");
-      if (pkg === "basic" || pkg === "free" || pkg === "pro" || pkg === "enterprise") {
-        setSelectedPackage(pkg === "free" ? "basic" : pkg);
+      if (pkg === "basic" || pkg === "pro" || pkg === "enterprise") {
+        setSelectedPackage(pkg);
       }
     }
   }, []);
