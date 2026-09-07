@@ -1,5 +1,5 @@
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import { buildIx, sendIx, sendTx, platformPDA, projectPDA, boxPDA, vaultPDA, ixCloseBox, ixCloseProject, PROGRAM_ID, buildConn, retryWithBackoff, decodeAccount, ixClaimPrizes, boxStatusToCode, ixCloseReceipt, ixCloseVaultTokenAccount, ixInitializeVault } from "@/lib/program-ix";
+import { buildIx, sendIx, sendTx, platformPDA, projectPDA, boxPDA, vaultPDA, ixCloseBox, ixCloseProject, PROGRAM_ID, buildConn, retryWithBackoff, decodeAccount, ixClaimPrizes, boxStatusToCode, ixCloseReceipt, ixCloseVaultTokenAccount, ixInitializeVault, ixInitializePlatform } from "@/lib/program-ix";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { WalletContextState } from "@solana/wallet-adapter-react";
 
@@ -30,10 +30,19 @@ export const createProjectTx = async (
   const [platformPda] = await platformPDA();
   const [projectPda] = await projectPDA(params.slug);
 
+  const conn = buildConn();
+  const platformAcc = await conn.getAccountInfo(platformPda);
+  const tx = new Transaction();
+
+  if (!platformAcc) {
+    const TREASURY = new PublicKey("FBPFAtDxCwPEKb5kUp779TdFQU3hyPmfjT2LwtrkKscq");
+    tx.add(ixInitializePlatform(platformPda, wallet.publicKey!, TREASURY));
+  }
+
   const ix = buildIx("create_project", {
-    platform: { pubkey: platformPda, isSigner: false, isWritable: true },
+    platform: { pubkey: platformPda, isSigner: false, isWritable: false },
     project: { pubkey: projectPda, isSigner: false, isWritable: true },
-    super_admin: { pubkey: wallet.publicKey!, isSigner: true, isWritable: false },
+    super_admin: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
     toProjectId(params.slug),
@@ -44,7 +53,9 @@ export const createProjectTx = async (
     params.rentClaimMode,
   ]);
 
-  await sendIx(ix, wallet);
+  tx.add(ix);
+
+  await sendTx(tx, wallet);
 };
 
 export const updateProjectFeesTx = async (

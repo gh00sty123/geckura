@@ -423,7 +423,7 @@ export function ixInitializePlatform(
 ): TransactionInstruction {
   return buildIx("initialize_platform", {
     platform: { pubkey: platform, isSigner: false, isWritable: true },
-    super_admin: { pubkey: superAdmin, isSigner: true, isWritable: false },
+    super_admin: { pubkey: superAdmin, isSigner: true, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [treasury]);
 }
