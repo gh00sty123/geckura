@@ -434,9 +434,9 @@ export function ixCreateProject(
   feeWallet2: PublicKey, feeLamports: number, rentClaimMode: number = 0,
 ): TransactionInstruction {
   return buildIx("create_project", {
-    platform: { pubkey: platform, isSigner: false, isWritable: true },
+    platform: { pubkey: platform, isSigner: false, isWritable: false },
     project: { pubkey: project, isSigner: false, isWritable: true },
-    super_admin: { pubkey: superAdmin, isSigner: true, isWritable: false },
+    super_admin: { pubkey: superAdmin, isSigner: true, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [projectId, authority, feeWallet, feeWallet2, feeLamports, rentClaimMode]);
 }
