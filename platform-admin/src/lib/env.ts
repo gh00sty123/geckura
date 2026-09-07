@@ -1,12 +1,12 @@
 export const RPC_URL =
   process.env.NEXT_PUBLIC_RPC_URL ||
   process.env.RPC_URL ||
-  "https://api.devnet.solana.com";
+  "https://api.mainnet-beta.solana.com";
 
 export const NETWORK =
   process.env.NEXT_PUBLIC_SOLANA_NETWORK ||
   process.env.SOLANA_NETWORK ||
-  "devnet";
+  "mainnet-beta";
 
 export const PROGRAM_ID =
   process.env.NEXT_PUBLIC_PROGRAM_ID ||
