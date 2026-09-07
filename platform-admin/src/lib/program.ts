@@ -46,9 +46,9 @@ export function toProjectId(slug: string | number | bigint): number {
 
 export async function projectPDA(slug: string | number | bigint): Promise<[PublicKey, number]> {
   const pId = toProjectId(slug);
-  const buf = Buffer.alloc(8);
-  buf.writeBigUInt64LE(BigInt(pId), 0);
-  return PublicKey.findProgramAddress([Buffer.from("project"), buf], PROGRAM_ID);
+  const u8 = new Uint8Array(8);
+  new DataView(u8.buffer).setBigUint64(0, BigInt(pId), true);
+  return PublicKey.findProgramAddress([Buffer.from("project"), Buffer.from(u8)], PROGRAM_ID);
 }
 
 export async function boxPDA(project: PublicKey, boxId: number | bigint): Promise<[PublicKey, number]> {

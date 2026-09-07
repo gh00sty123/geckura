@@ -64,9 +64,9 @@ export function useProjectAddress(slug: string) {
       hash |= 0;
     }
     const pId = Math.abs(hash) || 1;
-    const buf = Buffer.alloc(8);
-    buf.writeBigUInt64LE(BigInt(pId), 0);
-    return PublicKey.findProgramAddressSync([Buffer.from("project"), buf], PROGRAM_ID);
+    const buf = new Uint8Array(8);
+    new DataView(buf.buffer).setBigUint64(0, BigInt(pId), true);
+    return PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(buf)], PROGRAM_ID);
   }, [slug]);
 }
 

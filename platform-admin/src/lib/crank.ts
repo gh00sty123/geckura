@@ -183,13 +183,13 @@ async function runCrank() {
         requestHash.copy(hashInput, 32);
         receipt.boxConfig.toBuffer().copy(hashInput, 64);
         
-        const nonceBuf = Buffer.alloc(8);
-        nonceBuf.writeBigUInt64LE(BigInt(receipt.nonce));
-        nonceBuf.copy(hashInput, 96);
+        const nonceBuf = new Uint8Array(8);
+        new DataView(nonceBuf.buffer).setBigUint64(0, BigInt(receipt.nonce), true);
+        Buffer.from(nonceBuf).copy(hashInput, 96);
 
-        const slotBuf = Buffer.alloc(8);
-        slotBuf.writeBigUInt64LE(BigInt(requestSlot));
-        slotBuf.copy(hashInput, 104);
+        const slotBuf = new Uint8Array(8);
+        new DataView(slotBuf.buffer).setBigUint64(0, BigInt(requestSlot), true);
+        Buffer.from(slotBuf).copy(hashInput, 104);
 
         const randomVal = fnv1a(hashInput);
 
@@ -265,9 +265,9 @@ async function runCrank() {
         }
         const pId = project.projectId ?? project.project_id ?? project.id ?? 1;
         const pIdNum = typeof pId === "number" ? pId : Number(pId) || 1;
-        const buf = Buffer.alloc(8);
-        buf.writeBigUInt64LE(BigInt(pIdNum), 0);
-        const [projectPubkey] = PublicKey.findProgramAddressSync([Buffer.from("project"), buf], PROGRAM_ID);
+        const buf = new Uint8Array(8);
+        new DataView(buf.buffer).setBigUint64(0, BigInt(pIdNum), true);
+        const [projectPubkey] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(buf)], PROGRAM_ID);
         const [vaultPk] = PublicKey.findProgramAddressSync([Buffer.from("vault"), projectPk.toBuffer()], PROGRAM_ID);
 
         let vaultTokenAccount: PublicKey | undefined;

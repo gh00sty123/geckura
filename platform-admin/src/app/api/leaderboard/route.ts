@@ -48,10 +48,10 @@ const getProjectAuthority = async (slug: string): Promise<string | null> => {
       hash |= 0;
     }
     const pId = Math.abs(hash) || 1;
-    const buf = Buffer.alloc(8);
-    buf.writeBigUInt64LE(BigInt(pId), 0);
+    const buf = new Uint8Array(8);
+    new DataView(buf.buffer).setBigUint64(0, BigInt(pId), true);
     const [projectPDA] = PublicKey.findProgramAddressSync(
-      [Buffer.from("project"), buf],
+      [Buffer.from("project"), Buffer.from(buf)],
       PGID
     );
     const accountInfo = await conn.getAccountInfo(projectPDA);

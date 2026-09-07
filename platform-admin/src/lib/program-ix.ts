@@ -580,17 +580,21 @@ export function toProjectId(slug: string | number | bigint): number {
   return Math.abs(hash) || 1;
 }
 
+export function u64ToBuffer(val: number | bigint | string): Buffer {
+  const big = BigInt(val);
+  const u8 = new Uint8Array(8);
+  new DataView(u8.buffer).setBigUint64(0, big, true);
+  return Buffer.from(u8);
+}
+
 export async function projectPDA(projectId: number | bigint | string) {
   const pId = toProjectId(projectId);
-  const buf = Buffer.alloc(8);
-  buf.writeBigUInt64LE(BigInt(pId), 0);
+  const buf = u64ToBuffer(pId);
   return PublicKey.findProgramAddressSync([Buffer.from("project"), buf], PROGRAM_ID);
 }
 
 export async function boxPDA(project: PublicKey, boxId: bigint | number) {
-  const buf = typeof boxId === "bigint"
-    ? Buffer.from(new Uint8Array(new BigUint64Array([boxId]).buffer))
-    : Buffer.from(new Uint8Array(new BigUint64Array([BigInt(boxId)]).buffer));
+  const buf = u64ToBuffer(boxId);
   return PublicKey.findProgramAddressSync([Buffer.from("box"), project.toBuffer(), buf], PROGRAM_ID);
 }
 
