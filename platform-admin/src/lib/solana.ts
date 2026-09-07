@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { decodeAccount as decodeRawAccount } from "@/lib/program-ix";
 
-export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
-export const PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv"
-);
+import { RPC_URL as ENV_RPC_URL, PROGRAM_ID as ENV_PROGRAM_ID } from "@/lib/env";
+
+export const RPC_URL = ENV_RPC_URL;
+export const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);
 export const SYS = PublicKey.default;
 
 function getConn() { return new Connection(RPC_URL, "confirmed"); }

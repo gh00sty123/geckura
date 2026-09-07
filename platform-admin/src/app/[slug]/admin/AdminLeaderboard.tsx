@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { BorshAccountsCoder, BorshCoder, EventParser } from "@coral-xyz/anchor";
 
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 interface ParsedEvent {

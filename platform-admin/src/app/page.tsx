@@ -256,7 +256,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto pt-4">
-            {/* Basic / Free Plan */}
+            {/* Basic Plan */}
             <motion.div
               whileHover={{ y: -6 }}
               className="relative flex flex-col justify-between glass-panel rounded-3xl p-8 border border-[#1cac64]/10 hover:border-[#1cac64]/25 transition-all"
@@ -267,7 +267,8 @@ export default function HomePage() {
                   <p className="text-xs text-[#6b9b7a] mt-1">For new projects starting out</p>
                 </div>
                 <div className="flex items-baseline gap-1 text-[#1a3a2a]">
-                  <span className="text-4xl font-black">Free</span>
+                  <span className="text-4xl font-black">1 SOL</span>
+                  <span className="text-xs text-[#6b9b7a] font-medium">/ lifetime</span>
                 </div>
                 <hr className="border-[#1cac64]/10" />
                 <ul className="space-y-3.5 text-xs text-[#3d6b4e]">
@@ -290,9 +291,9 @@ export default function HomePage() {
                 </ul>
               </div>
               <div className="pt-8">
-                <Link href="/admin/new?package=free">
+                <Link href="/admin/new?package=basic">
                   <button className="w-full py-3 rounded-xl bg-[#1cac64]/5 border border-[#1cac64]/15 hover:bg-[#1cac64]/10 text-[#1a3a2a] font-bold text-xs uppercase tracking-wider transition-all cursor-pointer">
-                    Get Started Free
+                    Get Started Basic
                   </button>
                 </Link>
               </div>
@@ -314,7 +315,7 @@ export default function HomePage() {
                   <p className="text-xs text-[#3d6b4e] mt-1 font-medium">For growing projects & launches</p>
                 </div>
                 <div className="flex items-baseline gap-1 text-[#1a3a2a]">
-                  <span className="text-4xl font-black">1 SOL</span>
+                  <span className="text-4xl font-black">2 SOL</span>
                   <span className="text-xs text-[#6b9b7a] font-medium">/ lifetime</span>
                 </div>
                 <hr className="border-[#1cac64]/10" />

@@ -5,7 +5,7 @@ import crypto from "crypto";
 import IDL from "@/lib/idl.json";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 // Fetch project authority from Solana blockchain

@@ -8,13 +8,13 @@ import * as path from "path";
 import IDL from "@/lib/idl.json";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 const DEFAULT_DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1526660578867675156/QKVdqrV2dw-ZsCQhQX-mIL_7I-9lAMl4g5eh9THUkQJJZbSCuk-HjioishNkzJCewlpf";
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || DEFAULT_DISCORD_WEBHOOK_URL;
 
 const KNOWN_PROGRAM_IDS = [
-  "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv",
+  "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD",
   "AEQrvbZvGwGcat5FXDXXZD71NiQsWNfdxvDFvdigxL5t",
   "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"
 ];

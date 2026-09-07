@@ -106,7 +106,7 @@ function Overview() {
     const detailedProjects = await Promise.all(
       projectsData.map(async (p) => {
         try {
-          const programId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+          const programId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
           const [projectPda] = await PublicKey.findProgramAddressSync(
             [Buffer.from("project"), Buffer.from(p.slug)],
             programId

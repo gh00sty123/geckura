@@ -64,7 +64,7 @@ impl PlatformConfig {
 
 #[account]
 pub struct Project {
-    pub slug: String,
+    pub project_id: u64,
     pub authority: Pubkey,
     pub fee_wallet: Pubkey,
     pub fee_lamports: u64,
@@ -74,13 +74,12 @@ pub struct Project {
     pub rent_claim_mode: u8,
     pub fee_wallet_2: Pubkey,
     pub active_boxes_count: u32,
-    // Reserved padding for future schema fields (decreased by 4 bytes to keep size same)
+    // Reserved padding for future schema fields
     pub reserved: [u8; 27],
 }
 
 impl Project {
-    pub const INIT_SPACE: usize = STRING_PREFIX_SIZE
-        + SLUG_MAX_LEN
+    pub const INIT_SPACE: usize = U64_SIZE
         + PUBKEY_SIZE
         + PUBKEY_SIZE
         + U64_SIZE
@@ -88,7 +87,8 @@ impl Project {
         + U8_SIZE
         + U8_SIZE // rent_claim_mode
         + PUBKEY_SIZE
-        + 31; // reserved padding
+        + U32_SIZE
+        + 27; // reserved padding
     pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE;
 }
 
@@ -110,7 +110,7 @@ pub struct BoxConfig {
     pub status: BoxStatus,
     pub bump: u8,
     pub prizes_count: u8,
-    pub prizes: Vec<PrizeItem>,
+    pub prizes: [PrizeItem; 20],
 }
 
 impl BoxConfig {
@@ -128,8 +128,9 @@ impl BoxConfig {
         + I64_SIZE
         + U8_SIZE
         + U8_SIZE
-        + U8_SIZE; // prizes_count
-    pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE + 4 + (20 * PrizeItem::INIT_SPACE);
+        + U8_SIZE // prizes_count
+        + (20 * PrizeItem::INIT_SPACE);
+    pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE;
 }
 
 #[account]
@@ -154,6 +155,20 @@ pub struct PrizeItem {
     pub claimed_count: u32,
 }
 
+impl Default for PrizeItem {
+    fn default() -> Self {
+        Self {
+            index: 0,
+            prize_type: PrizeType::Sol,
+            token_mint: Pubkey::default(),
+            amount: 0,
+            win_percentage: 0,
+            total_count: 0,
+            claimed_count: 0,
+        }
+    }
+}
+
 impl PrizeItem {
     pub const INIT_SPACE: usize = U8_SIZE
         + U8_SIZE
@@ -166,18 +181,27 @@ impl PrizeItem {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
 pub struct ClaimablePrize {
-    pub box_config: Pubkey,
+    pub box_id: u64,
     pub prize_index: u8,
     pub prize_type: PrizeType,
-    pub token_mint: Pubkey,
     pub amount: u64,
 }
 
+impl Default for ClaimablePrize {
+    fn default() -> Self {
+        Self {
+            box_id: 0,
+            prize_index: 0,
+            prize_type: PrizeType::Sol,
+            amount: 0,
+        }
+    }
+}
+
 impl ClaimablePrize {
-    pub const INIT_SPACE: usize = PUBKEY_SIZE  // box_config
+    pub const INIT_SPACE: usize = U64_SIZE  // box_id
         + U8_SIZE                          // prize_index
         + U8_SIZE                          // prize_type
-        + PUBKEY_SIZE                      // token_mint
         + U64_SIZE;                        // amount
 }
 
@@ -188,18 +212,19 @@ pub struct BoxReceipt {
     pub purchased: u32,
     pub total_opened: u32,
     pub nonce: u64,
-    pub claimable_prizes: Vec<ClaimablePrize>,
+    pub claimable_count: u8,
+    pub claimable_prizes: [ClaimablePrize; 20],
     pub bump: u8,
 }
 
 impl BoxReceipt {
-    pub const MAX_CLAIMABLE_PRIZES: usize = 10;
+    pub const MAX_CLAIMABLE_PRIZES: usize = 20;
     pub const INIT_SPACE: usize = PUBKEY_SIZE // user
         + PUBKEY_SIZE                      // project
         + U32_SIZE                         // purchased
         + U32_SIZE                         // total_opened
         + U64_SIZE                         // nonce
-        + 4                                // vector length prefix
+        + U8_SIZE                          // claimable_count
         + (Self::MAX_CLAIMABLE_PRIZES * ClaimablePrize::INIT_SPACE)
         + U8_SIZE;                         // bump
     pub const SPACE: usize = DISCRIMINATOR_SIZE + Self::INIT_SPACE;
@@ -218,25 +243,4 @@ pub struct BoxOpenEvent {
     pub token_mint: Pubkey,
     pub amount_won: u64,
     pub timestamp: i64,
-}
-
-pub fn validate_close_authority(
-    signer_key: Pubkey,
-    project_authority: Pubkey,
-    platform_authority: Pubkey,
-    rent_claim_mode: u8,
-    platform_treasury: Pubkey,
-    rent_destination: Pubkey,
-) -> Result<()> {
-    require!(
-        signer_key == project_authority || signer_key == platform_authority,
-        crate::errors::MysteryBoxError::Unauthorized
-    );
-    let expected_dest = if signer_key == platform_authority && rent_claim_mode == 1 {
-        platform_treasury
-    } else {
-        project_authority
-    };
-    require_keys_eq!(rent_destination, expected_dest, crate::errors::MysteryBoxError::Unauthorized);
-    Ok(())
 }

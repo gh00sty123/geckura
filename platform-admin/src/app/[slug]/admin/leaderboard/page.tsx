@@ -53,7 +53,7 @@ function AdminLeaderboardPageInner({ slug }: { slug: string }) {
   const fetchProject = async () => {
     try {
       const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
       const [pk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
 
       const acc = await retryWithBackoff(() => conn.getAccountInfo(pk), "getAccountInfo(project)");

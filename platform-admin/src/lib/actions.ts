@@ -12,6 +12,11 @@ const ATA_PROG = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
  *  extension's approval popup.  Type safety ensures callers pass real wallet. */
 type WalletState = WalletContextState;
 
+function toProjectId(slug: string | number): number {
+  const n = Number(slug);
+  return !isNaN(n) && n > 0 ? n : 1;
+}
+
 export const createProjectTx = async (
   wallet: WalletState,
   params: {
@@ -34,7 +39,7 @@ export const createProjectTx = async (
     super_admin: { pubkey: wallet.publicKey!, isSigner: true, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
-    params.slug,
+    toProjectId(params.slug),
     params.authority,
     params.feeWallet,
     params.feeWallet2,
@@ -59,7 +64,7 @@ export const updateProjectFeesTx = async (
     platform: { pubkey: platformPda, isSigner: false, isWritable: true },
     project: { pubkey: projectPda, isSigner: false, isWritable: true },
     super_admin: { pubkey: wallet.publicKey!, isSigner: true, isWritable: false },
-  }, [slug, feeLamports, feeWallet, feeWallet2]);
+  }, [toProjectId(slug), feeLamports, feeWallet, feeWallet2]);
 
   await sendIx(ix, wallet);
 };
@@ -97,7 +102,7 @@ export const createBoxTx = async (
     tenant: { pubkey: wallet.publicKey!,  isSigner: true, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
-    params.slug,
+    toProjectId(params.slug),
     params.boxId,
     params.priceLamports,
     mints,
@@ -134,7 +139,7 @@ export const createPrizeItemTx = async (
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
     tenant: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
   }, [
-    params.slug,
+    toProjectId(params.slug),
     params.boxId,
     params.prizeIndex,
     params.prizeType,
@@ -191,7 +196,7 @@ export const createBoxWithPrizesTx = async (
     tenant: { pubkey: wallet.publicKey!,  isSigner: true, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
-    params.box.slug,
+    toProjectId(params.box.slug),
     params.box.boxId,
     params.box.priceLamports,
     mints,
@@ -219,7 +224,7 @@ export const createBoxWithPrizesTx = async (
       box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
       tenant: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
     }, [
-      params.box.slug,
+      toProjectId(params.box.slug),
       params.box.boxId,
       prize.prizeIndex,
       prize.prizeType,
@@ -242,7 +247,7 @@ export const createBoxWithPrizesTx = async (
         box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
         tenant: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
       }, [
-        params.box.slug,
+        toProjectId(params.box.slug),
         params.box.boxId,
         prize.prizeIndex,
         prize.prizeType,
@@ -294,7 +299,7 @@ export const depositPrizeTx = async (
     associated_token_program: { pubkey: ATA_PROG, isSigner: false, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
-    params.slug,
+    toProjectId(params.slug),
     params.prizeIndex,
     params.boxId,
     { deposit: {} },
@@ -340,7 +345,7 @@ export const withdrawPrizeTx = async (
     associated_token_program: { pubkey: ATA_PROG, isSigner: false, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
-    params.slug,
+    toProjectId(params.slug),
     params.prizeIndex,
     params.boxId,
     { withdraw: {} },
@@ -379,7 +384,7 @@ export const updateBoxTx = async (
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
     tenant: { pubkey: wallet.publicKey!,  isSigner: true, isWritable: false },
   }, [
-    params.slug,
+    toProjectId(params.slug),
     params.boxId,
     params.priceLamports,
     mints,
@@ -418,7 +423,7 @@ export const closeBoxTx = async (
     platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
-    params.slug,
+    toProjectId(params.slug),
     params.boxId
   ]);
 
@@ -441,7 +446,7 @@ export const withdrawVaultSolTx = async (
     authority: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   }, [
-    params.slug,
+    toProjectId(params.slug),
     params.amountLamports
   ]);
 
@@ -492,7 +497,7 @@ export const withdrawVaultTokenTx = async (
     authority: { pubkey: wallet.publicKey!, isSigner: true, isWritable: true },
     token_program: { pubkey: TOKEN_PROG, isSigner: false, isWritable: false },
   }, [
-    params.slug,
+    toProjectId(params.slug),
     params.amount
   ]);
   tx.add(ix);

@@ -1,13 +1,16 @@
 [package]
 name = "mystery_box"
 version = "0.1.0"
-anchor_version = "1.0.1"
+anchor_version = "0.30.1"
 
 [programs.localnet]
-mystery_box = "AEQrvbZvGwGcat5FXDXXZD71NiQsWNfdxvDFvdigxL5t"
+mystery_box = "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"
 
 [programs.devnet]
-mystery_box = "AEQrvbZvGwGcat5FXDXXZD71NiQsWNfdxvDFvdigxL5t"
+mystery_box = "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"
+
+[programs.mainnet]
+mystery_box = "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"
 
 [provider]
 cluster = "localnet"

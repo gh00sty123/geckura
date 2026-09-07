@@ -9,7 +9,7 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import IDL from "@/lib/idl.json";
 import { buildIx, platformPDA, projectPDA, boxPDA, vaultPDA } from "@/lib/program-ix";
 
-const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 // Load keeper keypair from environment variables

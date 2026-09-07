@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "installCommand": "npm --prefix platform-admin install",
+  "buildCommand": "npm --prefix platform-admin run build",
+  "outputDirectory": "platform-admin/.next"
+}

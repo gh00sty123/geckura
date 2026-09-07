@@ -33,15 +33,15 @@ export default function NewProjectPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedPackage, setSelectedPackage] = useState("free");
+  const [selectedPackage, setSelectedPackage] = useState("basic");
 
   // Read preselected package from query params safely on client mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const pkg = params.get("package");
-      if (pkg === "free" || pkg === "pro" || pkg === "enterprise") {
-        setSelectedPackage(pkg);
+      if (pkg === "basic" || pkg === "free" || pkg === "pro" || pkg === "enterprise") {
+        setSelectedPackage(pkg === "free" ? "basic" : pkg);
       }
     }
   }, []);
@@ -200,8 +200,8 @@ ${bgUri || "Not Provided"}
               onChange={(e) => setSelectedPackage(e.target.value)}
               className="w-full bg-[#d9f5cc] border border-gray-700 rounded-lg px-4 py-3 text-[#0f2618] cursor-pointer"
             >
-              <option value="free">Basic (Free)</option>
-              <option value="pro">Pro (1 SOL)</option>
+              <option value="basic">Basic (1 SOL)</option>
+              <option value="pro">Pro (2 SOL)</option>
               <option value="enterprise">Enterprise (4 SOL)</option>
             </select>
           </div>

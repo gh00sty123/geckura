@@ -204,7 +204,7 @@ function getGeckuraProjectPk(projects: AppUIState["allProjects"]): string {
     projects.find(p => p.slug === GECKURA_DEFAULT_SLUG)?.pubkey
     || PublicKey.findProgramAddressSync(
       [Buffer.from("project"), Buffer.from(GECKURA_DEFAULT_SLUG)],
-      new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv"),
+      new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"),
     )[0].toBase58()
   );
 }
@@ -231,7 +231,7 @@ export const useAppStore = create<AppUIState>((set, get) => ({
     const conn = makeConn();
     try {
       const allPkgs = await retryWithBackoff(
-        () => conn.getProgramAccounts(new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv")),
+        () => conn.getProgramAccounts(new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD")),
         "getProgramAccounts(frontend)",
       );
       const projects = await fetchProjects();
@@ -300,7 +300,7 @@ export const useAppStore = create<AppUIState>((set, get) => ({
     toast.loading("Purchasing box…", { id: "buy-box" });
     const conn = makeConn();
     try {
-      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
       const projectPk = new PublicKey(box.project);
       const receiptPk = PublicKey.findProgramAddressSync(
         [Buffer.from("receipt"), wallet.publicKey.toBuffer(), projectPk.toBuffer()],
@@ -375,7 +375,7 @@ export const useAppStore = create<AppUIState>((set, get) => ({
     toast.loading("Opening box…", { id: "open-box" });
     const conn = makeConn();
     try {
-      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
       const projectPk = new PublicKey(box.project);
       const receiptPk  = PublicKey.findProgramAddressSync(
         [Buffer.from("receipt"), wallet.publicKey.toBuffer(), projectPk.toBuffer()],

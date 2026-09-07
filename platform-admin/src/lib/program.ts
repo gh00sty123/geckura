@@ -22,10 +22,10 @@ export function useProgram(connection: Connection | null, wallet: any): Program 
 
 /* PDAs */
 
+import { PROGRAM_ID as ENV_PROGRAM_ID } from "@/lib/env";
+
 export const PLATFORM_SEED = Buffer.from("platform");
-export const PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv"
-);
+export const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);
 
 export async function platformPDA(): Promise<[PublicKey, number]> {
   return PublicKey.findProgramAddress([PLATFORM_SEED], PROGRAM_ID);

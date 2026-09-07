@@ -5,10 +5,10 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import * as borsh from "borsh";
 import IDL from "@/lib/idl.json";
 
-const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
-export const PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv"
-);
+import { RPC_URL as ENV_RPC_URL, PROGRAM_ID as ENV_PROGRAM_ID } from "@/lib/env";
+
+const RPC_URL = ENV_RPC_URL;
+export const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);
 export { RPC_URL };
 
 // ── Borsh encoder (BinaryWriter) — avoids @coral-xyz/anchor encode() / Node 24 issue
@@ -201,7 +201,7 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
   if (schema === "Project") {
     if (!hasDiscriminator(raw, "Project")) throw new Error("Invalid Project discriminator");
     let offset = 8;
-    const slug = readString(raw, offset); offset = slug.offset;
+    const projectId = readU64(raw, offset); offset = projectId.offset;
     const authority = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
     const feeWallet = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
     const feeLamports = readU64(raw, offset); offset = feeLamports.offset;
@@ -209,8 +209,11 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
     const bump = raw[offset]; offset += 1;
     const rentClaimMode = raw[offset]; offset += 1;
     const feeWallet2 = new PublicKey(raw.subarray(offset, offset + 32)); offset += 32;
+    const activeBoxesCount = raw.readUInt32LE(offset); offset += 4;
 
-    let name = slug.value;
+    const projectIdStr = String(projectId.value);
+    let slug = projectIdStr;
+    let name = `Project #${projectId.value}`;
     let description = "";
     let logoUri = "";
     let bgUri = "";
@@ -219,12 +222,12 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
     let solRankingPointsVal = 2;
     let tokenRankingPointsVal = 1;
 
-    if (typeof window !== "undefined" && slug.value) {
-      const localBranding = localStorage.getItem(`project_branding_${slug.value}`);
+    if (typeof window !== "undefined" && projectIdStr) {
+      const localBranding = localStorage.getItem(`project_branding_${projectIdStr}`);
       if (localBranding) {
         try {
           const parsed = JSON.parse(localBranding);
-          name = parsed.name || slug.value || "";
+          name = parsed.name || name;
           description = parsed.description || "";
           logoUri = parsed.logoUri || "";
           bgUri = parsed.bgUri || "";
@@ -236,12 +239,14 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
     }
 
     return {
-      slug: slug.value,
+      projectId: projectId.value,
+      slug,
       authority,
       feeWallet,
       feeWallet2,
       feeLamports: feeLamports.value,
       isActive,
+      activeBoxesCount,
       solRankingPoints: solRankingPointsVal,
       tokenRankingPoints: tokenRankingPointsVal,
       bump,
@@ -425,20 +430,20 @@ export function ixInitializePlatform(
 
 export function ixCreateProject(
   platform: PublicKey, project: PublicKey, superAdmin: PublicKey,
-  slug: string, authority: PublicKey, feeWallet: PublicKey,
-  feeLamports: number, solRankingPoints: number, tokenRankingPoints: number,
+  projectId: number | bigint, authority: PublicKey, feeWallet: PublicKey,
+  feeWallet2: PublicKey, feeLamports: number, rentClaimMode: number = 0,
 ): TransactionInstruction {
   return buildIx("create_project", {
     platform: { pubkey: platform, isSigner: false, isWritable: true },
     project: { pubkey: project, isSigner: false, isWritable: true },
     super_admin: { pubkey: superAdmin, isSigner: true, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-  }, [slug, authority, feeWallet, feeLamports, solRankingPoints, tokenRankingPoints]);
+  }, [projectId, authority, feeWallet, feeWallet2, feeLamports, rentClaimMode]);
 }
 
 export function ixCreateBox(
   platform: PublicKey, project: PublicKey, boxConfig: PublicKey, tenant: PublicKey,
-  slug: string, boxId: number, priceLamports: number, mints: PublicKey[], prices: number[],
+  projectId: number | bigint, boxId: number, priceLamports: number, mints: PublicKey[], prices: number[],
   supply: number, startTime: number, endTime: number,
 ): TransactionInstruction {
   while (mints.length < 3) mints.push(PublicKey.default);
@@ -449,22 +454,23 @@ export function ixCreateBox(
     box_config: { pubkey: boxConfig, isSigner: false, isWritable: true },
     tenant: { pubkey: tenant, isSigner: true, isWritable: false },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-  }, [slug, boxId, priceLamports, mints, prices, supply, startTime, endTime]);
+  }, [projectId, boxId, priceLamports, mints, prices, supply, startTime, endTime]);
 }
 
 export function ixUpdateProjectFees(
   platform: PublicKey,
   project: PublicKey,
   superAdmin: PublicKey,
-  slug: string,
-  newFeeWallet: PublicKey,
+  projectId: number | bigint,
   newFeeLamports: number,
+  newFeeWallet: PublicKey,
+  newFeeWallet2: PublicKey,
 ): TransactionInstruction {
   return buildIx("update_project_fees", {
     platform: { pubkey: platform, isSigner: false, isWritable: true },
     project: { pubkey: project, isSigner: false, isWritable: true },
     super_admin: { pubkey: superAdmin, isSigner: true, isWritable: false },
-  }, [slug, newFeeWallet, newFeeLamports]);
+  }, [projectId, newFeeLamports, newFeeWallet, newFeeWallet2]);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -546,8 +552,15 @@ export async function platformPDA() {
   return PublicKey.findProgramAddressSync([Buffer.from("platform")], PROGRAM_ID);
 }
 
-export async function projectPDA(slug: string) {
-  return PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], PROGRAM_ID);
+export async function projectPDA(projectId: number | bigint | string) {
+  let idBytes: Buffer;
+  const num = Number(projectId);
+  if (!isNaN(num) && num > 0) {
+    idBytes = Buffer.from(new Uint8Array(new BigUint64Array([BigInt(num)]).buffer));
+  } else {
+    idBytes = Buffer.from(new Uint8Array(new BigUint64Array([BigInt(1)]).buffer));
+  }
+  return PublicKey.findProgramAddressSync([Buffer.from("project"), idBytes], PROGRAM_ID);
 }
 
 export async function boxPDA(project: PublicKey, boxId: bigint | number) {
@@ -835,9 +848,10 @@ export function ixCloseBox(
   boxConfig: PublicKey,
   signer: PublicKey,
   platformTreasury: PublicKey,
-  slug: string,
+  projectId: number | bigint | string,
   boxId: number,
 ): TransactionInstruction {
+  const pId = typeof projectId === "number" || typeof projectId === "bigint" ? projectId : (Number(projectId) || 1);
   return buildIx("close_box", {
     platform: { pubkey: platform, isSigner: false, isWritable: false },
     project: { pubkey: project, isSigner: false, isWritable: true },
@@ -845,22 +859,21 @@ export function ixCloseBox(
     signer: { pubkey: signer, isSigner: true, isWritable: false },
     platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-  }, [slug, boxId]);
+  }, [pId, boxId]);
 }
-
-
 
 export function ixCloseProject(
   platform: PublicKey,
   project: PublicKey,
   superAdmin: PublicKey,
-  slug: string,
+  projectId: number | bigint | string,
 ): TransactionInstruction {
+  const pId = typeof projectId === "number" || typeof projectId === "bigint" ? projectId : (Number(projectId) || 1);
   return buildIx("close_project", {
     platform: { pubkey: platform, isSigner: false, isWritable: false },
     project: { pubkey: project, isSigner: false, isWritable: true },
     super_admin: { pubkey: superAdmin, isSigner: true, isWritable: true },
-  }, [slug]);
+  }, [pId]);
 }
 
 export function ixOpenBox(
@@ -872,11 +885,12 @@ export function ixOpenBox(
   user: PublicKey,
   feeWallet: PublicKey,
   tenantWallet: PublicKey,
-  slug: string,
+  projectId: number | bigint | string,
   boxId: number,
   quantity: number,
   remainingAccounts?: { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }[]
 ): TransactionInstruction {
+  const pId = typeof projectId === "number" || typeof projectId === "bigint" ? projectId : (Number(projectId) || 1);
   return buildIx("open_box", {
     platform: { pubkey: platform, isSigner: false, isWritable: false },
     project: { pubkey: project, isSigner: false, isWritable: false },
@@ -888,8 +902,8 @@ export function ixOpenBox(
     tenant_wallet: { pubkey: tenantWallet, isSigner: false, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     slot_hashes: { pubkey: new PublicKey("SysvarS1otHashes111111111111111111111111111"), isSigner: false, isWritable: false },
-    instructions: { pubkey: new PublicKey("Sysvar1nstructions1111111111111111111111111"), isSigner: false, isWritable: false },
-  }, [slug, boxId, quantity], remainingAccounts);
+    instructions: { pubkey: new PublicKey("Sysvar1nstructions11111111111111111111111"), isSigner: false, isWritable: false },
+  }, [pId, boxId, quantity], remainingAccounts);
 }
 
 export function ixClaimPrizes(
@@ -898,9 +912,10 @@ export function ixClaimPrizes(
   receipt: PublicKey,
   vault: PublicKey,
   user: PublicKey,
-  slug: string,
+  projectId: number | bigint | string,
   remainingAccounts?: { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }[]
 ): TransactionInstruction {
+  const pId = typeof projectId === "number" || typeof projectId === "bigint" ? projectId : (Number(projectId) || 1);
   return buildIx("claim_prizes", {
     platform: { pubkey: platform, isSigner: false, isWritable: false },
     project: { pubkey: project, isSigner: false, isWritable: false },
@@ -909,7 +924,7 @@ export function ixClaimPrizes(
     user: { pubkey: user, isSigner: true, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     token_program: { pubkey: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"), isSigner: false, isWritable: false },
-  }, [slug], remainingAccounts);
+  }, [pId], remainingAccounts);
 }
 
 export function ixCloseReceipt(
@@ -918,8 +933,9 @@ export function ixCloseReceipt(
   receipt: PublicKey,
   user: PublicKey,
   platformTreasury: PublicKey,
-  slug: string,
+  projectId: number | bigint | string,
 ): TransactionInstruction {
+  const pId = typeof projectId === "number" || typeof projectId === "bigint" ? projectId : (Number(projectId) || 1);
   return buildIx("close_receipt", {
     platform: { pubkey: platform, isSigner: false, isWritable: false },
     project: { pubkey: project, isSigner: false, isWritable: false },
@@ -927,7 +943,7 @@ export function ixCloseReceipt(
     user: { pubkey: user, isSigner: true, isWritable: true },
     platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
     system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-  }, [slug]);
+  }, [pId]);
 }
 
 export function ixCloseVaultTokenAccount(
@@ -937,8 +953,9 @@ export function ixCloseVaultTokenAccount(
   vaultTokenAccount: PublicKey,
   platformTreasury: PublicKey,
   signer: PublicKey,
-  slug: string,
+  projectId: number | bigint | string,
 ): TransactionInstruction {
+  const pId = typeof projectId === "number" || typeof projectId === "bigint" ? projectId : (Number(projectId) || 1);
   return buildIx("close_vault_token_account", {
     platform: { pubkey: platform, isSigner: false, isWritable: false },
     project: { pubkey: project, isSigner: false, isWritable: false },
@@ -947,7 +964,7 @@ export function ixCloseVaultTokenAccount(
     platform_treasury: { pubkey: platformTreasury, isSigner: false, isWritable: true },
     signer: { pubkey: signer, isSigner: true, isWritable: true },
     token_program: { pubkey: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"), isSigner: false, isWritable: false },
-  }, [slug]);
+  }, [pId]);
 }
 
 

@@ -4,7 +4,7 @@ import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import * as fs from "fs";
 
 async function main() {
-  const adminSecret = JSON.parse(fs.readFileSync("../../authority.json", "utf-8"));
+  const adminSecret = JSON.parse(fs.readFileSync("../authority.json", "utf-8"));
   const adminKeypair = Keypair.fromSecretKey(Uint8Array.from(adminSecret));
   
   const mainnetProvider = new anchor.AnchorProvider(
@@ -13,8 +13,8 @@ async function main() {
     { commitment: "confirmed" }
   );
 
-  const idl = JSON.parse(fs.readFileSync("./src/lib/idl.json", "utf-8"));
-  const programId = new PublicKey("AEQrvbZvGwGcat5FXDXXZD71NiQsWNfdxvDFvdigxL5t");
+  const idl = JSON.parse(fs.readFileSync("platform-admin/src/lib/idl.json", "utf-8"));
+  const programId = new PublicKey("5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
   const program = new Program(idl, mainnetProvider);
 
   console.log("Super Admin Pubkey:", adminKeypair.publicKey.toBase58());

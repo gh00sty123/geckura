@@ -503,7 +503,7 @@ function Inner({ slug }: { slug: string }) {
       const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
       const conn = new Connection(rpcUrl, "confirmed");
       
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
       const [projPk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
       const [vaultPk] = PublicKey.findProgramAddressSync([Buffer.from("vault"), projPk.toBuffer()], pgId);
 
@@ -539,7 +539,7 @@ function Inner({ slug }: { slug: string }) {
     if (!connected || !publicKey) { setSlugLoaded(false); setSlugBoxes([]); return; }
     try {
       const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
       const [pk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
 
       // Fetch branding from Supabase via API route
@@ -897,7 +897,7 @@ function Inner({ slug }: { slug: string }) {
 
   /* ── Render ──────────────────────────────────────────────────────────────── */
   /* Derive project PDA once here so both header and modals share it */
-  const pgId  = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+  const pgId  = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
   const projPda = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId)[0].toBase58();
 
   return (
@@ -1743,7 +1743,7 @@ function CreateBoxModal({
       /* ---- derive next box ID ---- */
       setStep("Resolving box ID…");
       const conn    = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
-      const pgId    = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+      const pgId    = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
       const [projPk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
       const allBoxes = await retryWithBackoff(() => conn.getProgramAccounts(pgId), "getProgramAccounts");
       const projectBoxes: number[] = [];
@@ -2347,7 +2347,7 @@ function VaultManager({
   rentClaimMode?: number;
 }) {
   const wallet = useWallet();
-  const pgId   = useMemo(() => new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv"), []);
+  const pgId   = useMemo(() => new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"), []);
   const conn   = useMemo(() => new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed"), []);
   const projPk = useMemo(() => PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId)[0], [slug, pgId]);
   const vaultPk = useMemo(
@@ -2417,7 +2417,7 @@ function VaultManager({
     setActionErr("");
     setTxLoading(true);
     try {
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
       const [platform] = PublicKey.findProgramAddressSync([Buffer.from("platform")], pgId);
       const [project]  = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
       const [vault]    = PublicKey.findProgramAddressSync([Buffer.from("vault"), project.toBuffer()], pgId);
