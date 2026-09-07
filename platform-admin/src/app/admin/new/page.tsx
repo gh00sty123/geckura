@@ -112,7 +112,7 @@ export default function NewProjectPage() {
         if (errorMsg.includes("cancelled") || errorMsg.includes("rejected")) {
           toast.error("Transaction cancelled");
         } else {
-          toast.error("Failed to create project");
+          toast.error(errorMsg || "Failed to create project");
         }
       } finally {
         setSubmitting(false);

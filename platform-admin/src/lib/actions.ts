@@ -31,6 +31,11 @@ export const createProjectTx = async (
   const [projectPda] = await projectPDA(params.slug);
 
   const conn = buildConn();
+  const projectAcc = await conn.getAccountInfo(projectPda);
+  if (projectAcc) {
+    throw new Error(`Project with slug "${params.slug}" already exists on-chain! Please choose a unique slug.`);
+  }
+
   const platformAcc = await conn.getAccountInfo(platformPda);
   const tx = new Transaction();
 
