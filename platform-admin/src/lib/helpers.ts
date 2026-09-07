@@ -57,7 +57,17 @@ export function usePlatformAddress() {
 }
 
 export function useProjectAddress(slug: string) {
-  return useMemo(() => PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], PROGRAM_ID), [slug]);
+  return useMemo(() => {
+    let hash = 0;
+    for (let i = 0; i < slug.length; i++) {
+      hash = (hash << 5) - hash + slug.charCodeAt(i);
+      hash |= 0;
+    }
+    const pId = Math.abs(hash) || 1;
+    const buf = Buffer.alloc(8);
+    buf.writeBigUInt64LE(BigInt(pId), 0);
+    return PublicKey.findProgramAddressSync([Buffer.from("project"), buf], PROGRAM_ID);
+  }, [slug]);
 }
 
 export function useBoxAddress(project: PublicKey, boxId: number | bigint) {

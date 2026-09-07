@@ -441,6 +441,21 @@ export function ixCreateProject(
   }, [projectId, authority, feeWallet, feeWallet2, feeLamports, rentClaimMode]);
 }
 
+export function ixInitializeVault(
+  project: PublicKey,
+  vault: PublicKey,
+  tenant: PublicKey,
+  projectId: number | bigint | string,
+): TransactionInstruction {
+  const pId = typeof projectId === "number" || typeof projectId === "bigint" ? projectId : (Number(projectId) || 1);
+  return buildIx("initialize_vault", {
+    project: { pubkey: project, isSigner: false, isWritable: false },
+    vault: { pubkey: vault, isSigner: false, isWritable: true },
+    tenant: { pubkey: tenant, isSigner: true, isWritable: true },
+    system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  }, [pId]);
+}
+
 export function ixCreateBox(
   platform: PublicKey, project: PublicKey, boxConfig: PublicKey, tenant: PublicKey,
   projectId: number | bigint, boxId: number, priceLamports: number, mints: PublicKey[], prices: number[],
@@ -552,15 +567,24 @@ export async function platformPDA() {
   return PublicKey.findProgramAddressSync([Buffer.from("platform")], PROGRAM_ID);
 }
 
-export async function projectPDA(projectId: number | bigint | string) {
-  let idBytes: Buffer;
-  const num = Number(projectId);
-  if (!isNaN(num) && num > 0) {
-    idBytes = Buffer.from(new Uint8Array(new BigUint64Array([BigInt(num)]).buffer));
-  } else {
-    idBytes = Buffer.from(new Uint8Array(new BigUint64Array([BigInt(1)]).buffer));
+export function toProjectId(slug: string | number | bigint): number {
+  if (typeof slug === "number") return slug;
+  if (typeof slug === "bigint") return Number(slug);
+  const n = Number(slug);
+  if (!isNaN(n) && n > 0) return n;
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) {
+    hash = (hash << 5) - hash + slug.charCodeAt(i);
+    hash |= 0;
   }
-  return PublicKey.findProgramAddressSync([Buffer.from("project"), idBytes], PROGRAM_ID);
+  return Math.abs(hash) || 1;
+}
+
+export async function projectPDA(projectId: number | bigint | string) {
+  const pId = toProjectId(projectId);
+  const buf = Buffer.alloc(8);
+  buf.writeBigUInt64LE(BigInt(pId), 0);
+  return PublicKey.findProgramAddressSync([Buffer.from("project"), buf], PROGRAM_ID);
 }
 
 export async function boxPDA(project: PublicKey, boxId: bigint | number) {

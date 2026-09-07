@@ -198,15 +198,23 @@ async function latestBlockhash(conn: Connection): Promise<{ blockhash: string }>
   )) as unknown as { blockhash: string };
 }
 
-/** Derive the Geckura default project PDA from chain data or known slug */
 function getGeckuraProjectPk(projects: AppUIState["allProjects"]): string {
-  return (
-    projects.find(p => p.slug === GECKURA_DEFAULT_SLUG)?.pubkey
-    || PublicKey.findProgramAddressSync(
-      [Buffer.from("project"), Buffer.from(GECKURA_DEFAULT_SLUG)],
-      new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"),
-    )[0].toBase58()
-  );
+  if (projects && projects.length > 0) {
+    const found = projects.find(p => p.slug === GECKURA_DEFAULT_SLUG);
+    if (found) return found.pubkey;
+  }
+  let hash = 0;
+  for (let i = 0; i < GECKURA_DEFAULT_SLUG.length; i++) {
+    hash = (hash << 5) - hash + GECKURA_DEFAULT_SLUG.charCodeAt(i);
+    hash |= 0;
+  }
+  const pId = Math.abs(hash) || 1;
+  const buf = Buffer.alloc(8);
+  buf.writeBigUInt64LE(BigInt(pId), 0);
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("project"), buf],
+    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"),
+  )[0].toBase58();
 }
 
 export const useAppStore = create<AppUIState>((set, get) => ({

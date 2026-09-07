@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiAward, FiClock, FiShield, FiTrendingUp, FiUser, FiActivity } from "react-icons/fi";
 import Link from "next/link";
-import { retryWithBackoff, fetchProjects, PROGRAM_ID as PGID } from "@/lib/program-ix";
+import { retryWithBackoff, fetchProjects, projectPDA, PROGRAM_ID as PGID } from "@/lib/program-ix";
 import IDL from "@/lib/idl.json";
 import { resolveIpfsUrl, updateFavicon } from "@/lib/helpers";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
@@ -144,12 +144,10 @@ export default function ProjectLeaderboardPage() {
 
         // 2. Fetch project branding & custom point rules in background
         const conn = new Connection(RPC, "confirmed");
-        const [projectPDA] = PublicKey.findProgramAddressSync(
-          [Buffer.from("project"), Buffer.from(slug)], PGID
-        );
+        const [projectPda] = await projectPDA(slug);
 
         try {
-          const projectAcc = await conn.getAccountInfo(projectPDA);
+          const projectAcc = await conn.getAccountInfo(projectPda);
           if (projectAcc && active) {
             const proj: any = new BorshAccountsCoder(IDL as any).decode("Project", projectAcc.data);
             

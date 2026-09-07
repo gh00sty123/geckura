@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { retryWithBackoff } from "@/lib/program-ix";
+import { retryWithBackoff, projectPDA } from "@/lib/program-ix";
 import IDL from "@/lib/idl.json";
 import { FiDownload, FiUsers, FiActivity, FiAward } from "react-icons/fi";
 import { motion } from "framer-motion";
@@ -88,10 +88,8 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
       // 2. Fetch project details in the background
       try {
         const conn = new Connection(RPC, "confirmed");
-        const [projectPDA] = PublicKey.findProgramAddressSync(
-          [Buffer.from("project"), Buffer.from(slug)], PGID
-        );
-        const projectAcc = await conn.getAccountInfo(projectPDA);
+        const [projectPda] = await projectPDA(slug);
+        const projectAcc = await conn.getAccountInfo(projectPda);
 
         if (projectAcc) {
           const coder = new BorshAccountsCoder(IDL as any);
@@ -119,9 +117,7 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
     
     try {
       const conn = new Connection(RPC, "confirmed");
-      const [projectPDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("project"), Buffer.from(slug)], PGID
-      );
+      const [projectPda] = await projectPDA(slug);
 
       setProgressMsg("Reading box configurations...");
       const allPkgs = await retryWithBackoff(
@@ -135,7 +131,7 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
       for (const { pubkey, account } of allPkgs) {
         try {
           const b: any = coder.decode("BoxConfig", account.data);
-          if (b.project.equals(projectPDA)) {
+          if (b.project.equals(projectPda)) {
             const price = b.priceLamports?.toNumber?.() ?? b.price_lamports?.toNumber?.() ?? b.priceLamports ?? b.price_lamports ?? 0;
             solBoxesMap.set(pubkey.toBase58(), price > 0);
           }

@@ -1,5 +1,5 @@
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import { buildIx, sendIx, sendTx, platformPDA, projectPDA, boxPDA, vaultPDA, ixCloseBox, ixCloseProject, PROGRAM_ID, buildConn, retryWithBackoff, decodeAccount, ixClaimPrizes, boxStatusToCode, ixCloseReceipt, ixCloseVaultTokenAccount } from "@/lib/program-ix";
+import { buildIx, sendIx, sendTx, platformPDA, projectPDA, boxPDA, vaultPDA, ixCloseBox, ixCloseProject, PROGRAM_ID, buildConn, retryWithBackoff, decodeAccount, ixClaimPrizes, boxStatusToCode, ixCloseReceipt, ixCloseVaultTokenAccount, ixInitializeVault } from "@/lib/program-ix";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { WalletContextState } from "@solana/wallet-adapter-react";
 
@@ -284,6 +284,28 @@ export const depositPrizeTx = async (
     ATA_PROG
   )[0];
 
+  const conn = buildConn();
+  const tx = new Transaction();
+
+  // 1. Initialize vault PDA if not initialized yet
+  const vaultInfo = await conn.getAccountInfo(vaultPda).catch(() => null);
+  if (!vaultInfo) {
+    tx.add(ixInitializeVault(projectPda, vaultPda, wallet.publicKey!, params.slug));
+  }
+
+  // 2. Initialize vault ATA if not initialized yet
+  const vaultAtaInfo = await conn.getAccountInfo(vaultAta).catch(() => null);
+  if (!vaultAtaInfo) {
+    tx.add(
+      createAssociatedTokenAccountInstruction(
+        wallet.publicKey!,
+        vaultAta,
+        vaultPda,
+        params.tokenMint
+      )
+    );
+  }
+
   const ix = buildIx("manage_prize", {
     project: { pubkey: projectPda, isSigner: false, isWritable: false },
     box_config: { pubkey: boxConfigPda, isSigner: false, isWritable: true },
@@ -303,7 +325,8 @@ export const depositPrizeTx = async (
     params.amount
   ]);
 
-  await sendIx(ix, wallet);
+  tx.add(ix);
+  await sendTx(tx, wallet);
 };
 
 export const withdrawPrizeTx = async (

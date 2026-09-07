@@ -263,7 +263,11 @@ async function runCrank() {
           console.error("Failed to decode Project!");
           continue;
         }
-        const [projectPubkey] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(project.slug)], PROGRAM_ID);
+        const pId = project.projectId ?? project.project_id ?? project.id ?? 1;
+        const pIdNum = typeof pId === "number" ? pId : Number(pId) || 1;
+        const buf = Buffer.alloc(8);
+        buf.writeBigUInt64LE(BigInt(pIdNum), 0);
+        const [projectPubkey] = PublicKey.findProgramAddressSync([Buffer.from("project"), buf], PROGRAM_ID);
         const [vaultPk] = PublicKey.findProgramAddressSync([Buffer.from("vault"), projectPk.toBuffer()], PROGRAM_ID);
 
         let vaultTokenAccount: PublicKey | undefined;
@@ -301,7 +305,7 @@ async function runCrank() {
           ...(vaultTokenAccount ? { vault_token_account: vaultTokenAccount } : {}),
           ...(userTokenAccount ? { user_token_account: userTokenAccount } : {}),
           ...(tokenProgram ? { token_program: tokenProgram } : {}),
-        }, [project.slug, Number(boxConfig.boxId)], remainingAccounts);
+        }, [pIdNum, Number(boxConfig.boxId)], remainingAccounts);
 
         const tx = new Transaction().add(new TransactionInstruction({
           programId: ixRaw.programId,

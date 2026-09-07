@@ -51,9 +51,9 @@ export const IXD = {
   openBox:            Buffer.from([225, 220, 10, 104, 173, 151, 214, 199]),
 } as const;
 
-/** PDA lookups */
+import { projectPDA } from "@/lib/program";
 export async function pdaPlatform() { return PublicKey.findProgramAddress([Buffer.from("platform")], PROGRAM_ID); }
-export async function pdaProject(slug: string) { return PublicKey.findProgramAddress([Buffer.from("project"), Buffer.from(slug)], PROGRAM_ID); }
+export async function pdaProject(slug: string | number | bigint) { return projectPDA(slug); }
 export async function pdaBox(project: PublicKey, boxId: number | bigint) {
   const id = typeof boxId === "number" ? Buffer.from(new Uint8Array(new BigUint64Array([BigInt(boxId)]).buffer)) : Buffer.from(new Uint8Array(new BigUint64Array([boxId]).buffer));
   return PublicKey.findProgramAddress([Buffer.from("box"), project.toBuffer(), id], PROGRAM_ID);

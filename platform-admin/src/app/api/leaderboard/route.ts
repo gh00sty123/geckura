@@ -42,8 +42,16 @@ interface DecodedBoxOpenEvent {
 const getProjectAuthority = async (slug: string): Promise<string | null> => {
   try {
     const conn = new Connection(RPC, "confirmed");
+    let hash = 0;
+    for (let i = 0; i < slug.length; i++) {
+      hash = (hash << 5) - hash + slug.charCodeAt(i);
+      hash |= 0;
+    }
+    const pId = Math.abs(hash) || 1;
+    const buf = Buffer.alloc(8);
+    buf.writeBigUInt64LE(BigInt(pId), 0);
     const [projectPDA] = PublicKey.findProgramAddressSync(
-      [Buffer.from("project"), Buffer.from(slug)],
+      [Buffer.from("project"), buf],
       PGID
     );
     const accountInfo = await conn.getAccountInfo(projectPDA);

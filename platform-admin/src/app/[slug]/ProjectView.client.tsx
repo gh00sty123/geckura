@@ -698,11 +698,9 @@ export default function ProjectView({ slug }: { slug: string }) {
       }
 
       const conn = new Connection(RPC, "confirmed");
-      const [projectPDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("project"), Buffer.from(slug)], PGID,
-      );
+      const [projPda] = await projectPDA(slug);
 
-      const acc = await retryWithBackoff(() => conn.getAccountInfo(projectPDA), "getAccountInfo(publicPage)");
+      const acc = await retryWithBackoff(() => conn.getAccountInfo(projPda), "getAccountInfo(publicPage)");
       setProgressMsg("Scanning storefront packages...");
       const pgAccs = await retryWithBackoff(() => conn.getProgramAccounts(PGID), "getProgramAccounts(publicPage)");
 
