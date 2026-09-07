@@ -531,19 +531,27 @@ export async function sendTx(
   wallet: ReturnType<typeof useWallet>,
 ): Promise<string> {
   if (!wallet.publicKey) throw new Error("Wallet not connected");
-  if (!wallet.signTransaction) throw new Error("Wallet not ready — signTransaction unavailable");
 
   const conn = new Connection(RPC_URL, "confirmed");
 
-  tx.feePayer = wallet.publicKey;
-  tx.recentBlockhash = (await retryWithBackoff(() => conn.getLatestBlockhash("confirmed"), "getLatestBlockhash(sendTx)")).blockhash;
+  tx.feePayer = tx.feePayer || wallet.publicKey;
+  const { blockhash } = await retryWithBackoff(() => conn.getLatestBlockhash("confirmed"), "getLatestBlockhash(sendTx)");
+  tx.recentBlockhash = blockhash;
 
   try {
-    const signed = await wallet.signTransaction(tx as any);
-    const sig = await retryWithBackoff(() => conn.sendRawTransaction(
-      signed.serialize(),
-      { skipPreflight: false, preflightCommitment: "confirmed" },
-    ), "sendRawTransaction(sendTx)");
+    let sig: string;
+    if (typeof wallet.sendTransaction === "function") {
+      sig = await wallet.sendTransaction(tx, conn, { skipPreflight: false });
+    } else if (typeof wallet.signTransaction === "function") {
+      const signed = await wallet.signTransaction(tx as any);
+      sig = await retryWithBackoff(() => conn.sendRawTransaction(
+        signed.serialize(),
+        { skipPreflight: false, preflightCommitment: "confirmed" },
+      ), "sendRawTransaction(sendTx)");
+    } else {
+      throw new Error("Wallet does not support sending transactions");
+    }
+
     await retryWithBackoff(() => conn.confirmTransaction(sig, "confirmed"), "confirmTransaction(sendTx)");
     return sig;
   } catch (err) {
@@ -812,25 +820,6 @@ export function getSolanaErrorDetails(err: any): string {
 
   let msg = err.detail?.message || err.message || String(err);
 
-  // Clean up user rejection/cancellation messages
-  if (
-    msg.includes("User rejected the request") ||
-    msg.includes("rejected") ||
-    err.name === "WalletSignTransactionError" ||
-    msg.includes("WalletSignTransactionError")
-  ) {
-    return "Transaction cancelled by user.";
-  }
-
-  // Clean up disconnected port errors
-  if (
-    msg.includes("disconnected port") ||
-    msg.includes("disconnected") ||
-    msg.includes("Disconnected")
-  ) {
-    return "Wallet connection lost. Please reload the page or reconnect your wallet.";
-  }
-
   let logs: string[] = [];
   if (Array.isArray(err.logs)) {
     logs = err.logs;
@@ -840,7 +829,7 @@ export function getSolanaErrorDetails(err: any): string {
     } catch { }
   }
 
-  if (Array.isArray(logs)) {
+  if (Array.isArray(logs) && logs.length > 0) {
     for (const log of logs) {
       if (log.includes("Error Message:")) {
         const index = log.indexOf("Error Message:");
@@ -852,7 +841,28 @@ export function getSolanaErrorDetails(err: any): string {
       if (log.includes("insufficient funds for rent") || log.includes("insufficient balance for rent")) {
         return "Insufficient SOL balance for rent-exempt minimum of new accounts.";
       }
+      if (log.includes("already in use")) {
+        return "Account or project already exists on-chain.";
+      }
     }
+  }
+
+  // Clean up user rejection/cancellation messages
+  if (
+    msg.includes("User rejected the request") ||
+    msg.includes("User cancelled") ||
+    msg.includes("User rejected")
+  ) {
+    return "Transaction cancelled by user.";
+  }
+
+  // Clean up disconnected port errors
+  if (
+    msg.includes("disconnected port") ||
+    msg.includes("disconnected") ||
+    msg.includes("Disconnected")
+  ) {
+    return "Wallet connection lost. Please reload the page or reconnect your wallet.";
   }
 
   if (msg.includes("0x177e") || msg.includes("6014") || msg.includes("InsufficientFunds")) {
