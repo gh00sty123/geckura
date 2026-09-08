@@ -6,7 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { decodeAccount, fetchProjects, retryWithBackoff, ixInitializePlatform, platformPDA, projectPDA, projectPDASync, PROGRAM_ID, sendIx, buildIx, getSolanaErrorDetails, boxStatusToCode, toUnixSeconds, unixToDatetimeLocal, datetimeLocalToUnix } from "@/lib/program-ix";
-import { createBoxTx, createPrizeItemTx, createBoxWithPrizesTx, depositPrizeTx, withdrawPrizeTx, withdrawVaultSolTx, withdrawVaultTokenTx, closeVaultTokenAccountTx, updateProjectBrandingTx, migrateProjectToV2Tx } from "@/lib/actions";
+import { createBoxTx, createPrizeItemTx, createBoxWithPrizesTx, depositPrizeTx, withdrawPrizeTx, withdrawVaultSolTx, withdrawVaultTokenTx, closeVaultTokenAccountTx, updateProjectBrandingTx, migrateProjectToV2Tx, updateBoxTx, updateBoxBrandingTx, closeBoxTx } from "@/lib/actions";
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction, createTransferInstruction } from "@solana/spl-token";
 import { useSetProjectBranding } from "@/lib/ProjectBrandingProvider";
 import toast from "react-hot-toast";
@@ -1270,7 +1270,6 @@ function EditModal({
     if (!wallet.publicKey) return;
     setLoading(true); setErr("");
     try {
-      const { updateBoxTx } = await import("@/lib/actions");
       const mintsPk: PublicKey[] = [];
       for (let i = 0; i < selectedMints.length; i++) {
         const sm = selectedMints[i];
@@ -1337,7 +1336,6 @@ function EditModal({
       });
 
       try {
-        const { updateBoxBrandingTx } = await import("@/lib/actions");
         await updateBoxBrandingTx(wallet, {
           slug,
           boxId: id,
@@ -1469,7 +1467,6 @@ function CloseModal({ box, slug, onClose, onDone }: { box: any; slug: string; on
     if (!wallet.publicKey) return;
     setLoading(true); setErr("");
     try {
-      const { closeBoxTx } = await import("@/lib/actions");
       await closeBoxTx(wallet, { slug, boxId: id });
       onDone();
     } catch (e: any) { setErr(getSolanaErrorDetails(e)); }
@@ -1882,7 +1879,6 @@ function CreateBoxModal({
       toast.success(`Box "${name.trim()}" created successfully with rewards!`);
 
       try {
-        const { updateBoxBrandingTx } = await import("@/lib/actions");
         await updateBoxBrandingTx(wallet, {
           slug,
           boxId: nextId,

@@ -11,19 +11,18 @@ import {
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useProjectBranding } from "@/lib/ProjectBrandingProvider";
 import dynamic from "next/dynamic";
-
-const WalletMultiButton = dynamic(
-  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
-  { ssr: false }
-);
 import { TwitterXIcon } from "@/components/SocialIcons";
 import Image from "next/image";
 import { Connection } from "@solana/web3.js";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useAppStore, type Notification } from "@/lib/store";
-
 import { RPC_URL } from "@/lib/env";
+
+const WalletMultiButton = dynamic(
+  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  { ssr: false }
+);
 
 const RPC = RPC_URL;
 const EXPLORER_BASE = "https://explorer.solana.com/address";
