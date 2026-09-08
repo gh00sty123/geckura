@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction } from "@solana/spl-token";
+import { RPC_URL } from "@/lib/env";
 
 function parseSolanaError(err: any): string {
   if (err instanceof SendTransactionError) {
@@ -181,9 +182,6 @@ export interface AppUIState {
   markNotificationRead: (id: string) => void;
   clearAllNotifications: () => void;
 }
-
-import { RPC_URL } from "@/lib/env";
-
 const GECKURA_DEFAULT_SLUG = "geckura";
 const RPC = RPC_URL;
 

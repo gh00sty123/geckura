@@ -3,6 +3,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { Buffer } from "buffer";
 import { useMemo } from "react";
 import IDL from "@/lib/idl.json";
+import { PROGRAM_ID as ENV_PROGRAM_ID } from "@/lib/env";
 
 export function getProgram(connection: Connection, wallet: any): Program | null {
   try {
@@ -21,8 +22,6 @@ export function useProgram(connection: Connection | null, wallet: any): Program 
 }
 
 /* PDAs */
-
-import { PROGRAM_ID as ENV_PROGRAM_ID } from "@/lib/env";
 
 export const PLATFORM_SEED = Buffer.from("platform");
 export const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);

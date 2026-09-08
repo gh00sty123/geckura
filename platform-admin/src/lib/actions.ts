@@ -2,6 +2,7 @@ import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { buildIx, sendIx, sendTx, platformPDA, projectPDA, boxPDA, vaultPDA, ixCloseBox, ixCloseProject, PROGRAM_ID, buildConn, retryWithBackoff, decodeAccount, ixClaimPrizes, boxStatusToCode, ixCloseReceipt, ixCloseVaultTokenAccount, ixInitializeVault, ixInitializePlatform } from "@/lib/program-ix";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { WalletContextState } from "@solana/wallet-adapter-react";
+import { toProjectId } from "@/lib/program";
 
 // Constants for token and associated token programs
 const TOKEN_PROG = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
@@ -11,8 +12,6 @@ const ATA_PROG = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
  *  and pass it to sendIx, which calls wallet.signTransaction to trigger the
  *  extension's approval popup.  Type safety ensures callers pass real wallet. */
 type WalletState = WalletContextState;
-
-import { toProjectId } from "@/lib/program";
 
 export const createProjectTx = async (
   wallet: WalletState,

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { decodeAccount as decodeRawAccount } from "@/lib/program-ix";
+import { projectPDA } from "@/lib/program";
 
 import { RPC_URL as ENV_RPC_URL, PROGRAM_ID as ENV_PROGRAM_ID } from "@/lib/env";
 
@@ -51,7 +52,6 @@ export const IXD = {
   openBox:            Buffer.from([225, 220, 10, 104, 173, 151, 214, 199]),
 } as const;
 
-import { projectPDA } from "@/lib/program";
 export async function pdaPlatform() { return PublicKey.findProgramAddress([Buffer.from("platform")], PROGRAM_ID); }
 export async function pdaProject(slug: string | number | bigint) { return projectPDA(slug); }
 export async function pdaBox(project: PublicKey, boxId: number | bigint) {
