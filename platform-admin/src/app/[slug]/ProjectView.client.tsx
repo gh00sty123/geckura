@@ -16,10 +16,6 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { retryWithBackoff, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, projectPDASync, boxPDA, ixOpenBox, ixClaimPrizes, decodeAccount, vaultPDA } from "@/lib/program-ix";
 import dynamic from "next/dynamic";
 
-const WalletMultiButton = dynamic(
-  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
-  { ssr: false }
-);
 import { type LiveBox, useAppStore } from "@/lib/store";
 import { useSetProjectBranding, useProjectBranding } from "@/lib/ProjectBrandingProvider";
 import { TwitterXIcon } from "@/components/SocialIcons";
@@ -28,8 +24,12 @@ import toast from "react-hot-toast";
 import { resolveIpfsUrl, updateFavicon } from "@/lib/helpers";
 import { BorshAccountsCoder, BorshCoder, BorshEventCoder, EventParser } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
-
 import { RPC_URL } from "@/lib/env";
+
+const WalletMultiButton = dynamic(
+  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  { ssr: false }
+);
 
 const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
 const RPC  = RPC_URL;

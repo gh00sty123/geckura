@@ -677,18 +677,39 @@ export async function fetchProjects(): Promise<{ pubkey: string; name: string; s
   for (const { pubkey, account } of accounts) {
     try {
       const d = decodeAccount<any>("Project", account.data);
-      let name = d.name || d.slug || "";
+      let slugVal = d.slug || "";
+      if (!slugVal || slugVal === "90124834" || slugVal.startsWith("90124834")) {
+        slugVal = "geckura";
+      }
+
+      let name = d.name && !d.name.startsWith("Project #") ? d.name : "";
       let description = d.description || "";
       let logoUri = d.logoUri || "";
       let bgUri = d.bgUri || "";
       let themeColor = d.themeColor || "";
 
-      if (typeof window !== "undefined" && d.slug) {
-        const localBranding = localStorage.getItem(`project_branding_${d.slug}`);
+      if (typeof window !== "undefined" && slugVal) {
+        try {
+          const res = await fetch(`/api/branding?slug=${slugVal}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.project) {
+              const sb = data.project;
+              name = sb.name || name;
+              description = sb.description || description;
+              logoUri = sb.logo_uri || logoUri;
+              bgUri = sb.bg_uri || bgUri;
+              themeColor = sb.theme_color || themeColor;
+              if (sb.slug) slugVal = sb.slug;
+            }
+          }
+        } catch {}
+
+        const localBranding = localStorage.getItem(`project_branding_${slugVal}`);
         if (localBranding) {
           try {
             const parsed = JSON.parse(localBranding);
-            name = name || parsed.name || d.slug || "";
+            name = name || parsed.name || "";
             description = description || parsed.description || "";
             logoUri = logoUri || parsed.logoUri || "";
             bgUri = bgUri || parsed.bgUri || "";
@@ -697,10 +718,15 @@ export async function fetchProjects(): Promise<{ pubkey: string; name: string; s
         }
       }
 
+      if (!name || name.startsWith("Project #")) {
+        const displaySlug = (slugVal || "").trim();
+        name = displaySlug ? displaySlug.charAt(0).toUpperCase() + displaySlug.slice(1) : `Project #${d.projectId || slugVal}`;
+      }
+
       result.push({
         pubkey: pubkey.toBase58(),
         name,
-        slug: d.slug ?? "",
+        slug: slugVal,
         description,
         logoUri,
         bgUri,
