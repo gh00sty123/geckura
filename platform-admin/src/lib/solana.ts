@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { decodeAccount as decodeRawAccount } from "@/lib/program-ix";
-import { projectPDA } from "@/lib/program";
+import { projectPDA } from "@/lib/program-ix";
 
 import { RPC_URL as ENV_RPC_URL, PROGRAM_ID as ENV_PROGRAM_ID } from "@/lib/env";
 
