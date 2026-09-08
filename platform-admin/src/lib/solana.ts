@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { decodeAccount as decodeRawAccount } from "@/lib/program-ix";
 
-export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com";
 export const PROGRAM_ID = new PublicKey(
   process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr"
 );

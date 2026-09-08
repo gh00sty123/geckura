@@ -57,7 +57,7 @@ async function getDecimalsForMint(mintAddress: string, walletAssets: any[] = [],
   if (asset) return asset.decimals;
 
   try {
-    const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+    const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com";
     const conn = new Connection(rpcUrl, "confirmed");
     const mintPk = new PublicKey(mintAddress);
     const accInfo = await conn.getAccountInfo(mintPk);
@@ -500,7 +500,7 @@ function Inner({ slug }: { slug: string }) {
     setLoadingAssets(true);
     setAssetsError("");
     try {
-      const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+      const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com";
       const conn = new Connection(rpcUrl, "confirmed");
       
       const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
@@ -538,7 +538,7 @@ function Inner({ slug }: { slug: string }) {
   const fetchBoxes = useCallback(async () => {
     if (!connected || !publicKey) { setSlugLoaded(false); setSlugBoxes([]); return; }
     try {
-      const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
+      const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed");
       const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
       const [pk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
 
@@ -665,7 +665,7 @@ function Inner({ slug }: { slug: string }) {
 
   const refresh = useCallback(async () => {
     setErr("");
-    const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
+    const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed");
 
     /* Run all fetches in parallel for speed */
     const [platformResult, projectsResult] = await Promise.all([
@@ -1742,7 +1742,7 @@ function CreateBoxModal({
     try {
       /* ---- derive next box ID ---- */
       setStep("Resolving box ID…");
-      const conn    = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
+      const conn    = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed");
       const pgId    = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
       const [projPk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
       const allBoxes = await retryWithBackoff(() => conn.getProgramAccounts(pgId), "getProgramAccounts");
@@ -2348,7 +2348,7 @@ function VaultManager({
 }) {
   const wallet = useWallet();
   const pgId   = useMemo(() => new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr"), []);
-  const conn   = useMemo(() => new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed"), []);
+  const conn   = useMemo(() => new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed"), []);
   const projPk = useMemo(() => PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId)[0], [slug, pgId]);
   const vaultPk = useMemo(
     () => PublicKey.findProgramAddressSync([Buffer.from("vault"), projPk.toBuffer()], pgId)[0],

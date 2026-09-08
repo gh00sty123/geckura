@@ -184,7 +184,7 @@ export interface AppUIState {
 
 const GECKURA_DEFAULT_SLUG = "geckurabox";
 const RPC =
-  process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+  process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com";
 
 /** Lazy RPC connection — avoids deps at module eval time */
 function makeConn(): Connection {

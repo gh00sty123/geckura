@@ -30,7 +30,7 @@ import { BorshAccountsCoder, BorshCoder, BorshEventCoder, EventParser } from "@c
 import IDL from "@/lib/idl.json";
 
 const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
-const RPC  = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+const RPC  = process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com";
 const EXPLORER_BASE = "https://explorer.solana.com/tx";
 const CLUSTER_PARAM = RPC.includes("devnet") ? "?cluster=devnet" : RPC.includes("mainnet") ? "" : "?cluster=devnet";
 

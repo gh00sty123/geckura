@@ -9,7 +9,7 @@ import IDL from "@/lib/idl.json";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
-const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com";
 const DEFAULT_DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1526660578867675156/QKVdqrV2dw-ZsCQhQX-mIL_7I-9lAMl4g5eh9THUkQJJZbSCuk-HjioishNkzJCewlpf";
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || DEFAULT_DISCORD_WEBHOOK_URL;
 

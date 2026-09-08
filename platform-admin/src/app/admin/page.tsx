@@ -111,7 +111,7 @@ function Overview() {
             [Buffer.from("project"), Buffer.from(p.slug)],
             programId
           );
-          const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
+          const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed");
           const accInfo = await conn.getAccountInfo(projectPda);
           if (accInfo) {
             const decoded = decodeAccount("Project", accInfo.data);

@@ -5,7 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import * as borsh from "borsh";
 import IDL from "@/lib/idl.json";
 
-const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.mainnet-beta.solana.com";
 export const PROGRAM_ID = new PublicKey(
   process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr"
 );
