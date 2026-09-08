@@ -539,17 +539,30 @@ export async function sendTx(
   tx.recentBlockhash = blockhash;
 
   try {
-    let sig: string;
+    let sig: string | undefined;
+
     if (typeof wallet.sendTransaction === "function") {
-      sig = await wallet.sendTransaction(tx, conn, { skipPreflight: false });
-    } else if (typeof wallet.signTransaction === "function") {
+      try {
+        sig = await wallet.sendTransaction(tx, conn, { skipPreflight: false });
+      } catch (sendErr: any) {
+        const msg = sendErr?.message || String(sendErr);
+        if (msg.includes("User rejected") || msg.includes("cancelled") || msg.includes("User cancelled")) {
+          throw sendErr;
+        }
+        console.warn("[sendTx] wallet.sendTransaction failed, trying signTransaction fallback:", sendErr);
+      }
+    }
+
+    if (!sig && typeof wallet.signTransaction === "function") {
       const signed = await wallet.signTransaction(tx as any);
       sig = await retryWithBackoff(() => conn.sendRawTransaction(
         signed.serialize(),
         { skipPreflight: false, preflightCommitment: "confirmed" },
       ), "sendRawTransaction(sendTx)");
-    } else {
-      throw new Error("Wallet does not support sending transactions");
+    }
+
+    if (!sig) {
+      throw new Error("Wallet failed to sign or send transaction.");
     }
 
     await retryWithBackoff(() => conn.confirmTransaction(sig, "confirmed"), "confirmTransaction(sendTx)");
