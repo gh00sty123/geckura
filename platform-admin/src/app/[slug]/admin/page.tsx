@@ -10,7 +10,7 @@ const WalletMultiButton = dynamic(
   async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
   { ssr: false }
 );
-import { decodeAccount, fetchProjects, retryWithBackoff, ixInitializePlatform, platformPDA, projectPDA, sendIx, buildIx, getSolanaErrorDetails, boxStatusToCode, toUnixSeconds, unixToDatetimeLocal, datetimeLocalToUnix } from "@/lib/program-ix";
+import { decodeAccount, fetchProjects, retryWithBackoff, ixInitializePlatform, platformPDA, projectPDA, projectPDASync, PROGRAM_ID, sendIx, buildIx, getSolanaErrorDetails, boxStatusToCode, toUnixSeconds, unixToDatetimeLocal, datetimeLocalToUnix } from "@/lib/program-ix";
 import { createBoxTx, createPrizeItemTx, createBoxWithPrizesTx, depositPrizeTx, withdrawPrizeTx, withdrawVaultSolTx, withdrawVaultTokenTx, closeVaultTokenAccountTx, updateProjectBrandingTx, migrateProjectToV2Tx } from "@/lib/actions";
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction, createTransferInstruction } from "@solana/spl-token";
 import { useSetProjectBranding } from "@/lib/ProjectBrandingProvider";
@@ -23,6 +23,7 @@ import IDL from "@/lib/idl.json";
 import { NETWORK } from "@/lib/env";
 
 const TREASURY_WALLET = new PublicKey("FBPFAtDxCwPEKb5kUp779TdFQU3hyPmfjT2LwtrkKscq");
+const pgId = PROGRAM_ID;
 
 interface AssetInfo {
   ata: string;
@@ -559,12 +560,15 @@ function Inner({ slug }: { slug: string }) {
         try {
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           const decoded = decodeAccount<any>("Project", acc.data);
+          const displaySlug = (slug || "").trim();
+          const formattedSlugName = displaySlug ? displaySlug.charAt(0).toUpperCase() + displaySlug.slice(1) : "";
+
           if (supabaseBranding) {
-            decoded.name = decoded.name || supabaseBranding.name || "";
-            decoded.description = decoded.description || supabaseBranding.description || "";
-            decoded.logoUri = decoded.logoUri || supabaseBranding.logo_uri || "";
-            decoded.bgUri = decoded.bgUri || supabaseBranding.bg_uri || "";
-            decoded.themeColor = decoded.themeColor || supabaseBranding.theme_color || "";
+            decoded.name = supabaseBranding.name || (decoded.name && !decoded.name.startsWith("Project #") ? decoded.name : formattedSlugName);
+            decoded.description = supabaseBranding.description || decoded.description || "";
+            decoded.logoUri = supabaseBranding.logo_uri || decoded.logoUri || "";
+            decoded.bgUri = supabaseBranding.bg_uri || decoded.bgUri || "";
+            decoded.themeColor = supabaseBranding.theme_color || decoded.themeColor || "";
             decoded.navbarColor = supabaseBranding.navbar_color || "";
             decoded.textColor = supabaseBranding.text_color || "";
             decoded.nothingRewardImage = supabaseBranding.nothing_reward_image || "";
@@ -574,12 +578,12 @@ function Inner({ slug }: { slug: string }) {
             decoded.twitterLink = supabaseBranding.twitter_link || "";
             decoded.discordWebhookUrl = supabaseBranding.discord_webhook_url || "";
             decoded.discordRoleId = supabaseBranding.discord_role_id || "";
-          } else if (typeof window !== "undefined" && decoded.slug) {
-            const localBranding = localStorage.getItem(`project_branding_${decoded.slug}`);
+          } else if (typeof window !== "undefined") {
+            const localBranding = localStorage.getItem(`project_branding_${slug}`) || localStorage.getItem(`project_branding_${decoded.slug}`);
             if (localBranding) {
               try {
                 const parsed = JSON.parse(localBranding);
-                decoded.name = parsed.name || decoded.name;
+                decoded.name = parsed.name || (decoded.name && !decoded.name.startsWith("Project #") ? decoded.name : formattedSlugName);
                 decoded.description = parsed.description || decoded.description;
                 decoded.logoUri = parsed.logoUri || decoded.logoUri;
                 decoded.bgUri = parsed.bgUri || decoded.bgUri;
@@ -588,6 +592,10 @@ function Inner({ slug }: { slug: string }) {
                 decoded.twitterLink = parsed.twitterLink || "";
               } catch {}
             }
+          }
+
+          if (!decoded.name || decoded.name.startsWith("Project #")) {
+            decoded.name = formattedSlugName || `Project #${decoded.projectId || slug}`;
           }
           console.debug("[ProjectAdmin] decoded Project:", { slug: decoded.slug, name: decoded.name, isActive: decoded.isActive });
           if (isMountedRef.current) {
@@ -895,8 +903,7 @@ function Inner({ slug }: { slug: string }) {
 
   /* ── Render ──────────────────────────────────────────────────────────────── */
   /* Derive project PDA once here so both header and modals share it */
-  const pgId  = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
-  const projPda = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId)[0].toBase58();
+  const projPda = projectPDASync(slug)[0].toBase58();
 
   return (
     <div className={`w-full min-h-screen p-6 flex flex-col ${bgUri ? "" : "gradient-bg"}`} style={adminBgStyle}>
@@ -1741,8 +1748,7 @@ function CreateBoxModal({
       /* ---- derive next box ID ---- */
       setStep("Resolving box ID…");
       const conn    = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
-      const pgId    = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
-      const [projPk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
+      const [projPk] = projectPDASync(slug);
       const allBoxes = await retryWithBackoff(() => conn.getProgramAccounts(pgId), "getProgramAccounts");
       const projectBoxes: number[] = [];
       for (const { account } of allBoxes) {
@@ -2345,9 +2351,8 @@ function VaultManager({
   rentClaimMode?: number;
 }) {
   const wallet = useWallet();
-  const pgId   = useMemo(() => new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"), []);
   const conn   = useMemo(() => new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed"), []);
-  const projPk = useMemo(() => PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId)[0], [slug, pgId]);
+  const projPk = useMemo(() => projectPDASync(slug)[0], [slug]);
   const vaultPk = useMemo(
     () => PublicKey.findProgramAddressSync([Buffer.from("vault"), projPk.toBuffer()], pgId)[0],
     [projPk, pgId],
@@ -2415,9 +2420,8 @@ function VaultManager({
     setActionErr("");
     setTxLoading(true);
     try {
-      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
       const [platform] = PublicKey.findProgramAddressSync([Buffer.from("platform")], pgId);
-      const [project]  = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
+      const [project]  = projectPDASync(slug);
       const [vault]    = PublicKey.findProgramAddressSync([Buffer.from("vault"), project.toBuffer()], pgId);
       const ix = buildIx("initialize_vault", {
         project:           { pubkey: project,              isSigner: false, isWritable: false },
@@ -2617,7 +2621,7 @@ function VaultManager({
       const ATA_PROG = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 
       const [platformPda] = PublicKey.findProgramAddressSync([Buffer.from("platform")], pgId);
-      const [projectPda] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
+      const [projectPda] = projectPDASync(slug);
       const [vaultPda] = PublicKey.findProgramAddressSync([Buffer.from("vault"), projectPda.toBuffer()], pgId);
 
       for (let i = 0; i < mints.length; i += batchSize) {

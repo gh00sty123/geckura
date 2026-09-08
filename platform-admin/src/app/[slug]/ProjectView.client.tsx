@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { PublicKey, Connection, SystemProgram, Transaction, SendTransactionError } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { retryWithBackoff, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, boxPDA, ixOpenBox, ixClaimPrizes, decodeAccount, vaultPDA } from "@/lib/program-ix";
+import { retryWithBackoff, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, projectPDASync, boxPDA, ixOpenBox, ixClaimPrizes, decodeAccount, vaultPDA } from "@/lib/program-ix";
 import dynamic from "next/dynamic";
 
 const WalletMultiButton = dynamic(
@@ -914,7 +914,7 @@ export default function ProjectView({ slug }: { slug: string }) {
       // Fetch Vault assets to show real names and images
       setProgressMsg("Verifying vault asset inventory...");
       const [vaultPk] = PublicKey.findProgramAddressSync(
-        [Buffer.from("vault"), projectPDA.toBuffer()], PGID
+        [Buffer.from("vault"), projPda.toBuffer()], PGID
       );
       try {
         const vAssets = await fetchAssetsForOwner(vaultPk, RPC);
@@ -985,10 +985,7 @@ export default function ProjectView({ slug }: { slug: string }) {
     }
     try {
       const conn = new Connection(RPC, "confirmed");
-      const [projectPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from("project"), Buffer.from(slug)],
-        PGID
-      );
+      const [projectPda] = projectPDASync(slug);
       const [receiptPda] = PublicKey.findProgramAddressSync(
         [Buffer.from("receipt"), wallet.publicKey!.toBuffer(), projectPda.toBuffer()],
         PGID

@@ -213,7 +213,7 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
 
     const projectIdStr = String(projectId.value);
     let slug = projectIdStr;
-    let name = `Project #${projectId.value}`;
+    let name = "";
     let description = "";
     let logoUri = "";
     let bgUri = "";
@@ -227,7 +227,7 @@ export function decodeAccount<T = any>(schema: string, raw: Buffer): T {
       if (localBranding) {
         try {
           const parsed = JSON.parse(localBranding);
-          name = parsed.name || name;
+          name = parsed.name || "";
           description = parsed.description || "";
           logoUri = parsed.logoUri || "";
           bgUri = parsed.bgUri || "";
@@ -608,10 +608,14 @@ export function u64ToBuffer(val: number | bigint | string): Buffer {
   return Buffer.from(u8);
 }
 
-export async function projectPDA(projectId: number | bigint | string) {
+export function projectPDASync(projectId: number | bigint | string): [PublicKey, number] {
   const pId = toProjectId(projectId);
   const buf = u64ToBuffer(pId);
   return PublicKey.findProgramAddressSync([Buffer.from("project"), buf], PROGRAM_ID);
+}
+
+export async function projectPDA(projectId: number | bigint | string) {
+  return projectPDASync(projectId);
 }
 
 export async function boxPDA(project: PublicKey, boxId: bigint | number) {
