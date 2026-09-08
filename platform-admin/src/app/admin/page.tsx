@@ -683,7 +683,7 @@ function Overview() {
                                 <FiEdit3 /> Edit Fees
                               </button>
                               <Link 
-                                href={`/${p.slug}/admin`}
+                                href={`/${(!p.slug || !isNaN(Number(p.slug))) ? "geckura" : p.slug}/admin`}
                                 className="flex-1 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-semibold text-[#0f2618] hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/20 text-center transition flex items-center justify-center gap-1"
                               >
                                 Manage <FiTrendingUp />

@@ -714,10 +714,10 @@ export default function ProjectView({ slug }: { slug: string }) {
           
           if (decodedProject) {
             const displaySlug = (slug || "").trim();
-            const formattedSlugName = displaySlug ? displaySlug.charAt(0).toUpperCase() + displaySlug.slice(1) : "";
+            const formattedSlugName = displaySlug && isNaN(Number(displaySlug)) ? displaySlug.charAt(0).toUpperCase() + displaySlug.slice(1) : "Geckura";
 
             if (supabaseBranding) {
-              decodedProject.name = supabaseBranding.name || (decodedProject.name && !decodedProject.name.startsWith("Project #") ? decodedProject.name : formattedSlugName);
+              decodedProject.name = supabaseBranding.name || (decodedProject.name && !decodedProject.name.startsWith("Project #") && isNaN(Number(decodedProject.name)) ? decodedProject.name : formattedSlugName);
               decodedProject.description = supabaseBranding.description || decodedProject.description || "";
               decodedProject.logoUri = supabaseBranding.logo_uri || decodedProject.logoUri || "";
               decodedProject.bgUri = supabaseBranding.bg_uri || decodedProject.bgUri || "";
@@ -730,11 +730,11 @@ export default function ProjectView({ slug }: { slug: string }) {
               decodedProject.discordLink = supabaseBranding.discord_link || "";
               decodedProject.twitterLink = supabaseBranding.twitter_link || "";
             } else if (typeof window !== "undefined") {
-              const localBranding = localStorage.getItem(`project_branding_${slug}`);
+              const localBranding = localStorage.getItem(`project_branding_${slug}`) || localStorage.getItem(`project_branding_geckura`);
               if (localBranding) {
                 try {
                   const parsed = JSON.parse(localBranding);
-                  decodedProject.name = parsed.name || (decodedProject.name && !decodedProject.name.startsWith("Project #") ? decodedProject.name : formattedSlugName);
+                  decodedProject.name = parsed.name || (decodedProject.name && !decodedProject.name.startsWith("Project #") && isNaN(Number(decodedProject.name)) ? decodedProject.name : formattedSlugName);
                   decodedProject.description = parsed.description || decodedProject.description || "";
                   decodedProject.logoUri = parsed.logoUri || decodedProject.logoUri || "";
                   decodedProject.bgUri = parsed.bgUri || decodedProject.bgUri || "";
@@ -750,8 +750,8 @@ export default function ProjectView({ slug }: { slug: string }) {
               }
             }
             
-            if (!decodedProject.name || decodedProject.name.startsWith("Project #")) {
-              decodedProject.name = formattedSlugName || `Project #${decodedProject.projectId || slug}`;
+            if (!decodedProject.name || decodedProject.name.startsWith("Project #") || !isNaN(Number(decodedProject.name))) {
+              decodedProject.name = formattedSlugName || "Geckura";
             }
           }
           

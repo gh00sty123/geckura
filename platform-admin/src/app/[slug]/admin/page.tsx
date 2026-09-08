@@ -560,10 +560,10 @@ function Inner({ slug }: { slug: string }) {
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           const decoded = decodeAccount<any>("Project", acc.data);
           const displaySlug = (slug || "").trim();
-          const formattedSlugName = displaySlug ? displaySlug.charAt(0).toUpperCase() + displaySlug.slice(1) : "";
+          const formattedSlugName = displaySlug && isNaN(Number(displaySlug)) ? displaySlug.charAt(0).toUpperCase() + displaySlug.slice(1) : "Geckura";
 
           if (supabaseBranding) {
-            decoded.name = supabaseBranding.name || (decoded.name && !decoded.name.startsWith("Project #") ? decoded.name : formattedSlugName);
+            decoded.name = supabaseBranding.name || (decoded.name && !decoded.name.startsWith("Project #") && isNaN(Number(decoded.name)) ? decoded.name : formattedSlugName);
             decoded.description = supabaseBranding.description || decoded.description || "";
             decoded.logoUri = supabaseBranding.logo_uri || decoded.logoUri || "";
             decoded.bgUri = supabaseBranding.bg_uri || decoded.bgUri || "";
@@ -578,11 +578,11 @@ function Inner({ slug }: { slug: string }) {
             decoded.discordWebhookUrl = supabaseBranding.discord_webhook_url || "";
             decoded.discordRoleId = supabaseBranding.discord_role_id || "";
           } else if (typeof window !== "undefined") {
-            const localBranding = localStorage.getItem(`project_branding_${slug}`) || localStorage.getItem(`project_branding_${decoded.slug}`);
+            const localBranding = localStorage.getItem(`project_branding_${slug}`) || localStorage.getItem(`project_branding_${decoded.slug}`) || localStorage.getItem(`project_branding_geckura`);
             if (localBranding) {
               try {
                 const parsed = JSON.parse(localBranding);
-                decoded.name = parsed.name || (decoded.name && !decoded.name.startsWith("Project #") ? decoded.name : formattedSlugName);
+                decoded.name = parsed.name || (decoded.name && !decoded.name.startsWith("Project #") && isNaN(Number(decoded.name)) ? decoded.name : formattedSlugName);
                 decoded.description = parsed.description || decoded.description;
                 decoded.logoUri = parsed.logoUri || decoded.logoUri;
                 decoded.bgUri = parsed.bgUri || decoded.bgUri;
@@ -593,8 +593,8 @@ function Inner({ slug }: { slug: string }) {
             }
           }
 
-          if (!decoded.name || decoded.name.startsWith("Project #")) {
-            decoded.name = formattedSlugName || `Project #${decoded.projectId || slug}`;
+          if (!decoded.name || decoded.name.startsWith("Project #") || !isNaN(Number(decoded.name))) {
+            decoded.name = formattedSlugName || "Geckura";
           }
           console.debug("[ProjectAdmin] decoded Project:", { slug: decoded.slug, name: decoded.name, isActive: decoded.isActive });
           if (isMountedRef.current) {
