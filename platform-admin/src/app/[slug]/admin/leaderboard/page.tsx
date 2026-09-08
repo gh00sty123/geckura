@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, use } from "react";
 import AdminLeaderboard from "../AdminLeaderboard";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { decodeAccount, retryWithBackoff, projectPDA } from "@/lib/program-ix";
+import { decodeAccount, retryWithBackoff } from "@/lib/program-ix";
 import { updateProjectBrandingTx } from "@/lib/actions";
 import { ImageUpload } from "@/components/ImageUpload";
 import toast from "react-hot-toast";
@@ -53,7 +53,8 @@ function AdminLeaderboardPageInner({ slug }: { slug: string }) {
   const fetchProject = async () => {
     try {
       const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
-      const [pk] = await projectPDA(slug);
+      const pgId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
+      const [pk] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(slug)], pgId);
 
       const acc = await retryWithBackoff(() => conn.getAccountInfo(pk), "getAccountInfo(project)");
       if (acc) {

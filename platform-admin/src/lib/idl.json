@@ -1,1 +1,2246 @@
-{"address":"5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD","metadata":{"name":"mystery_box","version":"0.1.0","spec":"0.1.0"},"instructions":[{"name":"initialize_platform","discriminator":[119,201,101,45,75,122,89,3],"accounts":[{"name":"platform","writable":true},{"name":"super_admin","writable":true,"signer":true},{"name":"system_program"}],"args":[{"name":"treasury","type":"pubkey"}]},{"name":"create_project","discriminator":[148,219,181,42,221,114,145,190],"accounts":[{"name":"platform"},{"name":"project","writable":true},{"name":"super_admin","writable":true,"signer":true},{"name":"system_program"}],"args":[{"name":"project_id","type":"u64"},{"name":"authority","type":"pubkey"},{"name":"fee_wallet","type":"pubkey"},{"name":"fee_wallet_2","type":"pubkey"},{"name":"fee_lamports","type":"u64"},{"name":"rent_claim_mode","type":"u8"}]},{"name":"update_project_fees","discriminator":[69,112,48,223,112,10,201,138],"accounts":[{"name":"platform"},{"name":"project","writable":true},{"name":"super_admin","signer":true}],"args":[{"name":"project_id","type":"u64"},{"name":"new_fee_lamports","type":"u64"},{"name":"new_fee_wallet","type":"pubkey"},{"name":"new_fee_wallet_2","type":"pubkey"}]},{"name":"close_project","discriminator":[117,209,53,106,93,55,112,49],"accounts":[{"name":"platform"},{"name":"project","writable":true},{"name":"super_admin","signer":true}],"args":[{"name":"project_id","type":"u64"}]},{"name":"create_box","discriminator":[108,200,91,3,44,99,31,27],"accounts":[{"name":"platform"},{"name":"project","writable":true},{"name":"box_config","writable":true},{"name":"tenant","writable":true,"signer":true},{"name":"system_program"}],"args":[{"name":"project_id","type":"u64"},{"name":"box_id","type":"u64"},{"name":"price_lamports","type":"u64"},{"name":"accepted_mints","type":{"array":["pubkey",3]}},{"name":"accepted_prices","type":{"array":["u64",3]}},{"name":"supply","type":"u32"},{"name":"start_time","type":"i64"},{"name":"end_time","type":"i64"}]},{"name":"update_box","discriminator":[62,12,1,241,122,67,204,99],"accounts":[{"name":"project"},{"name":"box_config","writable":true},{"name":"tenant","signer":true}],"args":[{"name":"project_id","type":"u64"},{"name":"box_id","type":"u64"},{"name":"price_lamports","type":"u64"},{"name":"accepted_mints","type":{"array":["pubkey",3]}},{"name":"accepted_prices","type":{"array":["u64",3]}},{"name":"start_time","type":"i64"},{"name":"end_time","type":"i64"}]},{"name":"close_box","discriminator":[255,201,78,228,223,71,133,90],"accounts":[{"name":"platform"},{"name":"project","writable":true},{"name":"box_config","writable":true},{"name":"signer","signer":true},{"name":"platform_treasury","writable":true},{"name":"system_program"}],"args":[{"name":"project_id","type":"u64"},{"name":"box_id","type":"u64"}]},{"name":"initialize_vault","discriminator":[48,191,163,44,71,129,63,164],"accounts":[{"name":"project"},{"name":"vault","writable":true},{"name":"tenant","writable":true,"signer":true},{"name":"system_program"}],"args":[{"name":"project_id","type":"u64"}]},{"name":"create_prize_item","discriminator":[170,186,187,121,99,208,41,158],"accounts":[{"name":"project"},{"name":"box_config","writable":true},{"name":"tenant","writable":true,"signer":true}],"args":[{"name":"project_id","type":"u64"},{"name":"box_id","type":"u64"},{"name":"prize_index","type":"u8"},{"name":"prize_type","type":{"defined":{"name":"mystery_box::state::PrizeType"}}},{"name":"token_mint","type":"pubkey"},{"name":"amount","type":"u64"},{"name":"win_percentage","type":"u8"},{"name":"total_count","type":"u32"}]},{"name":"manage_prize","discriminator":[235,36,26,108,224,210,238,199],"accounts":[{"name":"project"},{"name":"box_config","writable":true},{"name":"vault","writable":true},{"name":"token_mint"},{"name":"tenant_token_account","writable":true},{"name":"vault_token_account","writable":true},{"name":"tenant","writable":true,"signer":true},{"name":"token_program"},{"name":"associated_token_program"},{"name":"system_program"}],"args":[{"name":"project_id","type":"u64"},{"name":"prize_index","type":"u8"},{"name":"box_id","type":"u64"},{"name":"action","type":{"defined":{"name":"mystery_box::state::ManagePrizeAction"}}},{"name":"amount","type":"u64"}]},{"name":"withdraw_vault_sol","discriminator":[3,23,239,50,93,233,102,85],"accounts":[{"name":"project"},{"name":"vault","writable":true},{"name":"authority","writable":true,"signer":true},{"name":"system_program"}],"args":[{"name":"project_id","type":"u64"},{"name":"amount","type":"u64"}]},{"name":"withdraw_vault_token","discriminator":[27,191,15,150,68,201,127,133],"accounts":[{"name":"project"},{"name":"vault","writable":true},{"name":"token_mint"},{"name":"vault_token_account","writable":true},{"name":"authority_token_account","writable":true},{"name":"authority","writable":true,"signer":true},{"name":"token_program"}],"args":[{"name":"project_id","type":"u64"},{"name":"amount","type":"u64"}]},{"name":"close_vault_token_account","discriminator":[124,142,69,139,94,176,190,56],"accounts":[{"name":"platform"},{"name":"project"},{"name":"vault"},{"name":"vault_token_account","writable":true},{"name":"platform_treasury","writable":true},{"name":"signer","writable":true,"signer":true},{"name":"token_program"}],"args":[{"name":"project_id","type":"u64"}]},{"name":"open_box","discriminator":[225,220,10,104,173,151,214,199],"accounts":[{"name":"platform"},{"name":"project"},{"name":"box_config","writable":true},{"name":"receipt","writable":true},{"name":"vault","writable":true},{"name":"user","writable":true,"signer":true},{"name":"fee_wallet","writable":true},{"name":"tenant_wallet","writable":true},{"name":"system_program"},{"name":"slot_hashes"},{"name":"instructions"}],"args":[{"name":"project_id","type":"u64"},{"name":"box_id","type":"u64"},{"name":"quantity","type":"u8"}]},{"name":"claim_prizes","discriminator":[76,144,95,183,178,231,121,76],"accounts":[{"name":"platform"},{"name":"project"},{"name":"receipt","writable":true},{"name":"vault","writable":true},{"name":"user","writable":true,"signer":true},{"name":"system_program"},{"name":"token_program"}],"args":[{"name":"project_id","type":"u64"}]},{"name":"close_receipt","discriminator":[126,254,244,203,124,164,134,89],"accounts":[{"name":"platform"},{"name":"project"},{"name":"receipt","writable":true},{"name":"user","writable":true,"signer":true},{"name":"platform_treasury","writable":true},{"name":"system_program"}],"args":[{"name":"project_id","type":"u64"}]}],"accounts":[{"name":"mystery_box::state::BoxConfig","discriminator":[160,138,167,132,11,96,194,19]},{"name":"mystery_box::state::BoxReceipt","discriminator":[168,89,130,204,214,169,143,255]},{"name":"mystery_box::state::PlatformConfig","discriminator":[160,78,128,0,248,83,230,160]},{"name":"mystery_box::state::PrizeVault","discriminator":[34,226,195,160,248,75,50,7]},{"name":"mystery_box::state::Project","discriminator":[205,168,189,202,181,247,142,19]}],"types":[{"name":"mystery_box::state::BoxConfig","type":{"kind":"struct","fields":[{"name":"project","type":"pubkey"},{"name":"box_id","type":"u64"},{"name":"price_lamports","type":"u64"},{"name":"accepted_mints","type":{"array":["pubkey",3]}},{"name":"accepted_prices","type":{"array":["u64",3]}},{"name":"supply","type":"u32"},{"name":"sold","type":"u32"},{"name":"total_opened","type":"u32"},{"name":"total_claimed","type":"u32"},{"name":"claimed_prizes","type":{"array":["u32",20]}},{"name":"start_time","type":"i64"},{"name":"end_time","type":"i64"},{"name":"status","type":{"defined":{"name":"mystery_box::state::BoxStatus"}}},{"name":"bump","type":"u8"},{"name":"prizes_count","type":"u8"},{"name":"prizes","type":{"array":[{"defined":{"name":"mystery_box::state::PrizeItem"}},20]}}]}},{"name":"mystery_box::state::BoxReceipt","type":{"kind":"struct","fields":[{"name":"user","type":"pubkey"},{"name":"project","type":"pubkey"},{"name":"purchased","type":"u32"},{"name":"total_opened","type":"u32"},{"name":"nonce","type":"u64"},{"name":"claimable_count","type":"u8"},{"name":"claimable_prizes","type":{"array":[{"defined":{"name":"mystery_box::state::ClaimablePrize"}},20]}},{"name":"bump","type":"u8"}]}},{"name":"mystery_box::state::BoxStatus","type":{"kind":"enum","variants":[{"name":"Active"},{"name":"Paused"},{"name":"Ended"}]}},{"name":"mystery_box::state::ClaimablePrize","type":{"kind":"struct","fields":[{"name":"box_id","type":"u64"},{"name":"prize_index","type":"u8"},{"name":"prize_type","type":{"defined":{"name":"mystery_box::state::PrizeType"}}},{"name":"amount","type":"u64"}]}},{"name":"mystery_box::state::ManagePrizeAction","type":{"kind":"enum","variants":[{"name":"Deposit"},{"name":"Withdraw"}]}},{"name":"mystery_box::state::PlatformConfig","type":{"kind":"struct","fields":[{"name":"authority","type":"pubkey"},{"name":"treasury","type":"pubkey"},{"name":"is_paused","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"mystery_box::state::PrizeItem","type":{"kind":"struct","fields":[{"name":"index","type":"u8"},{"name":"prize_type","type":{"defined":{"name":"mystery_box::state::PrizeType"}}},{"name":"token_mint","type":"pubkey"},{"name":"amount","type":"u64"},{"name":"win_percentage","type":"u8"},{"name":"total_count","type":"u32"},{"name":"claimed_count","type":"u32"}]}},{"name":"mystery_box::state::PrizeType","type":{"kind":"enum","variants":[{"name":"Sol"},{"name":"SplToken"},{"name":"Nft"}]}},{"name":"mystery_box::state::PrizeVault","type":{"kind":"struct","fields":[{"name":"project","type":"pubkey"},{"name":"bump","type":"u8"}]}},{"name":"mystery_box::state::Project","type":{"kind":"struct","fields":[{"name":"project_id","type":"u64"},{"name":"authority","type":"pubkey"},{"name":"fee_wallet","type":"pubkey"},{"name":"fee_lamports","type":"u64"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"},{"name":"rent_claim_mode","type":"u8"},{"name":"fee_wallet_2","type":"pubkey"},{"name":"active_boxes_count","type":"u32"},{"name":"reserved","type":{"array":["u8",27]}}]}}]}
+{
+  "address": "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr",
+  "metadata": {
+    "name": "mystery_box",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "claim_prizes",
+      "discriminator": [
+        76,
+        144,
+        95,
+        183,
+        178,
+        231,
+        121,
+        76
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "receipt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  101,
+                  105,
+                  112,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "close_box",
+      "discriminator": [
+        255,
+        201,
+        78,
+        228,
+        223,
+        71,
+        133,
+        90
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "box_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  120
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              },
+              {
+                "kind": "arg",
+                "path": "box_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "rent_destination",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "box_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "close_project",
+      "discriminator": [
+        117,
+        209,
+        53,
+        106,
+        93,
+        55,
+        112,
+        49
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "super_admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "close_receipt",
+      "discriminator": [
+        126,
+        254,
+        244,
+        203,
+        124,
+        164,
+        134,
+        89
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "receipt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  101,
+                  105,
+                  112,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "close_vault_token_account",
+      "discriminator": [
+        124,
+        142,
+        69,
+        139,
+        94,
+        176,
+        190,
+        56
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true
+        },
+        {
+          "name": "platform_treasury",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "create_box",
+      "discriminator": [
+        108,
+        200,
+        91,
+        3,
+        44,
+        99,
+        31,
+        27
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "box_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  120
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              },
+              {
+                "kind": "arg",
+                "path": "box_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tenant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "box_id",
+          "type": "u64"
+        },
+        {
+          "name": "price_lamports",
+          "type": "u64"
+        },
+        {
+          "name": "accepted_mints",
+          "type": {
+            "array": [
+              "pubkey",
+              3
+            ]
+          }
+        },
+        {
+          "name": "accepted_prices",
+          "type": {
+            "array": [
+              "u64",
+              3
+            ]
+          }
+        },
+        {
+          "name": "supply",
+          "type": "u32"
+        },
+        {
+          "name": "start_time",
+          "type": "i64"
+        },
+        {
+          "name": "end_time",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "create_prize_item",
+      "discriminator": [
+        170,
+        186,
+        187,
+        121,
+        99,
+        208,
+        41,
+        158
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "box_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  120
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              },
+              {
+                "kind": "arg",
+                "path": "box_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tenant",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "box_id",
+          "type": "u64"
+        },
+        {
+          "name": "prize_index",
+          "type": "u8"
+        },
+        {
+          "name": "prize_type",
+          "type": {
+            "defined": {
+              "name": "PrizeType"
+            }
+          }
+        },
+        {
+          "name": "token_mint",
+          "type": "pubkey"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "win_percentage",
+          "type": "u8"
+        },
+        {
+          "name": "total_count",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "create_project",
+      "discriminator": [
+        148,
+        219,
+        181,
+        42,
+        221,
+        114,
+        145,
+        190
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "super_admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "authority",
+          "type": "pubkey"
+        },
+        {
+          "name": "fee_wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "fee_wallet_2",
+          "type": "pubkey"
+        },
+        {
+          "name": "fee_lamports",
+          "type": "u64"
+        },
+        {
+          "name": "rent_claim_mode",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "initialize_platform",
+      "discriminator": [
+        119,
+        201,
+        101,
+        45,
+        75,
+        122,
+        89,
+        3
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "super_admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "treasury",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "initialize_vault",
+      "discriminator": [
+        48,
+        191,
+        163,
+        44,
+        71,
+        129,
+        63,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tenant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "manage_prize",
+      "discriminator": [
+        235,
+        36,
+        26,
+        108,
+        224,
+        210,
+        238,
+        199
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "box_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  120
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              },
+              {
+                "kind": "arg",
+                "path": "box_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_mint"
+        },
+        {
+          "name": "tenant_token_account",
+          "writable": true
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true
+        },
+        {
+          "name": "tenant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "prize_index",
+          "type": "u8"
+        },
+        {
+          "name": "box_id",
+          "type": "u64"
+        },
+        {
+          "name": "action",
+          "type": {
+            "defined": {
+              "name": "ManagePrizeAction"
+            }
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "open_box",
+      "discriminator": [
+        225,
+        220,
+        10,
+        104,
+        173,
+        151,
+        214,
+        199
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "box_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  120
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              },
+              {
+                "kind": "arg",
+                "path": "box_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "receipt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  101,
+                  105,
+                  112,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "fee_wallet",
+          "writable": true
+        },
+        {
+          "name": "fee_wallet_2",
+          "writable": true
+        },
+        {
+          "name": "tenant_wallet",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "slot_hashes",
+          "address": "SysvarS1otHashes111111111111111111111111111"
+        },
+        {
+          "name": "instructions",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "box_id",
+          "type": "u64"
+        },
+        {
+          "name": "quantity",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "update_box",
+      "discriminator": [
+        62,
+        12,
+        1,
+        241,
+        122,
+        67,
+        204,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "box_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  120
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              },
+              {
+                "kind": "arg",
+                "path": "box_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tenant",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "box_id",
+          "type": "u64"
+        },
+        {
+          "name": "price_lamports",
+          "type": "u64"
+        },
+        {
+          "name": "accepted_mints",
+          "type": {
+            "array": [
+              "pubkey",
+              3
+            ]
+          }
+        },
+        {
+          "name": "accepted_prices",
+          "type": {
+            "array": [
+              "u64",
+              3
+            ]
+          }
+        },
+        {
+          "name": "start_time",
+          "type": "i64"
+        },
+        {
+          "name": "end_time",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "update_project_fees",
+      "discriminator": [
+        69,
+        112,
+        48,
+        223,
+        112,
+        10,
+        201,
+        138
+      ],
+      "accounts": [
+        {
+          "name": "platform",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  116,
+                  102,
+                  111,
+                  114,
+                  109
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "project",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "super_admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "new_fee_lamports",
+          "type": "u64"
+        },
+        {
+          "name": "new_fee_wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "new_fee_wallet_2",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "withdraw_vault_sol",
+      "discriminator": [
+        3,
+        23,
+        239,
+        50,
+        93,
+        233,
+        102,
+        85
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdraw_vault_token",
+      "discriminator": [
+        27,
+        191,
+        15,
+        150,
+        68,
+        201,
+        127,
+        133
+      ],
+      "accounts": [
+        {
+          "name": "project",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  106,
+                  101,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "slug"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "project"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_mint"
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true
+        },
+        {
+          "name": "authority_token_account",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "slug",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "BoxConfig",
+      "discriminator": [
+        160,
+        138,
+        167,
+        132,
+        11,
+        96,
+        194,
+        19
+      ]
+    },
+    {
+      "name": "BoxReceipt",
+      "discriminator": [
+        168,
+        89,
+        130,
+        204,
+        214,
+        169,
+        143,
+        255
+      ]
+    },
+    {
+      "name": "PlatformConfig",
+      "discriminator": [
+        160,
+        78,
+        128,
+        0,
+        248,
+        83,
+        230,
+        160
+      ]
+    },
+    {
+      "name": "PrizeVault",
+      "discriminator": [
+        34,
+        226,
+        195,
+        160,
+        248,
+        75,
+        50,
+        7
+      ]
+    },
+    {
+      "name": "Project",
+      "discriminator": [
+        205,
+        168,
+        189,
+        202,
+        181,
+        247,
+        142,
+        19
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "BoxOpenEvent",
+      "discriminator": [
+        210,
+        232,
+        62,
+        122,
+        215,
+        38,
+        6,
+        254
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized"
+    },
+    {
+      "code": 6001,
+      "name": "PlatformPaused"
+    },
+    {
+      "code": 6002,
+      "name": "ProjectInactive"
+    },
+    {
+      "code": 6003,
+      "name": "BoxNotActive"
+    },
+    {
+      "code": 6004,
+      "name": "BoxSoldOut"
+    },
+    {
+      "code": 6005,
+      "name": "BoxAlreadyEnded"
+    },
+    {
+      "code": 6006,
+      "name": "InsufficientPayment"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidPrizeType"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidMint"
+    },
+    {
+      "code": 6009,
+      "name": "DepositMismatch"
+    },
+    {
+      "code": 6010,
+      "name": "BoxNotEnded"
+    },
+    {
+      "code": 6011,
+      "name": "NoPrizeClaimsRemaining"
+    },
+    {
+      "code": 6012,
+      "name": "BoxHasPendingReceipts"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidSlug"
+    },
+    {
+      "code": 6014,
+      "name": "InsufficientFunds"
+    },
+    {
+      "code": 6015,
+      "name": "MathOverflow"
+    },
+    {
+      "code": 6016,
+      "name": "TokenAccountNotEmpty"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidWinPercentage"
+    },
+    {
+      "code": 6018,
+      "name": "AlreadyPendingReveal"
+    },
+    {
+      "code": 6019,
+      "name": "NoPendingReveal"
+    },
+    {
+      "code": 6020,
+      "name": "SameSlotReveal"
+    },
+    {
+      "code": 6021,
+      "name": "SlotHashNotFound"
+    },
+    {
+      "code": 6022,
+      "name": "RequestExpired"
+    },
+    {
+      "code": 6023,
+      "name": "NoPurchasedBoxes"
+    },
+    {
+      "code": 6024,
+      "name": "ProjectHasActiveBoxes"
+    },
+    {
+      "code": 6025,
+      "name": "InvalidPrizeIndex"
+    },
+    {
+      "code": 6026,
+      "name": "PendingPrizesExist"
+    }
+  ],
+  "types": [
+    {
+      "name": "BoxConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          },
+          {
+            "name": "box_id",
+            "type": "u64"
+          },
+          {
+            "name": "price_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "accepted_mints",
+            "type": {
+              "array": [
+                "pubkey",
+                3
+              ]
+            }
+          },
+          {
+            "name": "accepted_prices",
+            "type": {
+              "array": [
+                "u64",
+                3
+              ]
+            }
+          },
+          {
+            "name": "supply",
+            "type": "u32"
+          },
+          {
+            "name": "sold",
+            "type": "u32"
+          },
+          {
+            "name": "total_opened",
+            "type": "u32"
+          },
+          {
+            "name": "total_claimed",
+            "type": "u32"
+          },
+          {
+            "name": "claimed_prizes",
+            "type": {
+              "array": [
+                "u32",
+                20
+              ]
+            }
+          },
+          {
+            "name": "start_time",
+            "type": "i64"
+          },
+          {
+            "name": "end_time",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "BoxStatus"
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "prizes_count",
+            "type": "u8"
+          },
+          {
+            "name": "prizes",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "PrizeItem"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BoxOpenEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "box_config",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "prize_index",
+            "type": "u8"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "roll",
+            "type": "u64"
+          },
+          {
+            "name": "won",
+            "type": "bool"
+          },
+          {
+            "name": "prize_type",
+            "type": {
+              "defined": {
+                "name": "PrizeType"
+              }
+            }
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount_won",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BoxReceipt",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "project",
+            "type": "pubkey"
+          },
+          {
+            "name": "purchased",
+            "type": "u32"
+          },
+          {
+            "name": "total_opened",
+            "type": "u32"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "claimable_prizes",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "ClaimablePrize"
+                }
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BoxStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Paused"
+          },
+          {
+            "name": "Ended"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClaimablePrize",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "box_config",
+            "type": "pubkey"
+          },
+          {
+            "name": "prize_index",
+            "type": "u8"
+          },
+          {
+            "name": "prize_type",
+            "type": {
+              "defined": {
+                "name": "PrizeType"
+              }
+            }
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ManagePrizeAction",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Deposit"
+          },
+          {
+            "name": "Withdraw"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlatformConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_paused",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PrizeItem",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "index",
+            "type": "u8"
+          },
+          {
+            "name": "prize_type",
+            "type": {
+              "defined": {
+                "name": "PrizeType"
+              }
+            }
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "win_percentage",
+            "type": "u8"
+          },
+          {
+            "name": "total_count",
+            "type": "u32"
+          },
+          {
+            "name": "claimed_count",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PrizeType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Sol"
+          },
+          {
+            "name": "SplToken"
+          },
+          {
+            "name": "Nft"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PrizeVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Project",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "slug",
+            "type": "string"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "is_active",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "rent_claim_mode",
+            "type": "u8"
+          },
+          {
+            "name": "fee_wallet_2",
+            "type": "pubkey"
+          },
+          {
+            "name": "active_boxes_count",
+            "type": "u32"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                27
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

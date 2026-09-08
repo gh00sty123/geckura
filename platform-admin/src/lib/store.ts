@@ -8,7 +8,6 @@ import toast from "react-hot-toast";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction } from "@solana/spl-token";
-import { RPC_URL } from "@/lib/env";
 
 function parseSolanaError(err: any): string {
   if (err instanceof SendTransactionError) {
@@ -182,8 +181,10 @@ export interface AppUIState {
   markNotificationRead: (id: string) => void;
   clearAllNotifications: () => void;
 }
-const GECKURA_DEFAULT_SLUG = "geckura";
-const RPC = RPC_URL;
+
+const GECKURA_DEFAULT_SLUG = "geckurabox";
+const RPC =
+  process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 /** Lazy RPC connection — avoids deps at module eval time */
 function makeConn(): Connection {
@@ -197,23 +198,15 @@ async function latestBlockhash(conn: Connection): Promise<{ blockhash: string }>
   )) as unknown as { blockhash: string };
 }
 
+/** Derive the Geckura default project PDA from chain data or known slug */
 function getGeckuraProjectPk(projects: AppUIState["allProjects"]): string {
-  if (projects && projects.length > 0) {
-    const found = projects.find(p => p.slug === GECKURA_DEFAULT_SLUG);
-    if (found) return found.pubkey;
-  }
-  let hash = 0;
-  for (let i = 0; i < GECKURA_DEFAULT_SLUG.length; i++) {
-    hash = (hash << 5) - hash + GECKURA_DEFAULT_SLUG.charCodeAt(i);
-    hash |= 0;
-  }
-  const pId = Math.abs(hash) || 1;
-  const buf = new Uint8Array(8);
-  new DataView(buf.buffer).setBigUint64(0, BigInt(pId), true);
-  return PublicKey.findProgramAddressSync(
-    [Buffer.from("project"), Buffer.from(buf)],
-    new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"),
-  )[0].toBase58();
+  return (
+    projects.find(p => p.slug === GECKURA_DEFAULT_SLUG)?.pubkey
+    || PublicKey.findProgramAddressSync(
+      [Buffer.from("project"), Buffer.from(GECKURA_DEFAULT_SLUG)],
+      new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr"),
+    )[0].toBase58()
+  );
 }
 
 export const useAppStore = create<AppUIState>((set, get) => ({
@@ -238,7 +231,7 @@ export const useAppStore = create<AppUIState>((set, get) => ({
     const conn = makeConn();
     try {
       const allPkgs = await retryWithBackoff(
-        () => conn.getProgramAccounts(new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD")),
+        () => conn.getProgramAccounts(new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr")),
         "getProgramAccounts(frontend)",
       );
       const projects = await fetchProjects();
@@ -307,7 +300,7 @@ export const useAppStore = create<AppUIState>((set, get) => ({
     toast.loading("Purchasing box…", { id: "buy-box" });
     const conn = makeConn();
     try {
-      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
+      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
       const projectPk = new PublicKey(box.project);
       const receiptPk = PublicKey.findProgramAddressSync(
         [Buffer.from("receipt"), wallet.publicKey.toBuffer(), projectPk.toBuffer()],
@@ -382,7 +375,7 @@ export const useAppStore = create<AppUIState>((set, get) => ({
     toast.loading("Opening box…", { id: "open-box" });
     const conn = makeConn();
     try {
-      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
+      const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
       const projectPk = new PublicKey(box.project);
       const receiptPk  = PublicKey.findProgramAddressSync(
         [Buffer.from("receipt"), wallet.publicKey.toBuffer(), projectPk.toBuffer()],

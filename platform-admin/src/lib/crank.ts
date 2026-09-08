@@ -24,7 +24,7 @@ function loadEnv() {
 }
 loadEnv();
 
-const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
+const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
 
 // Load keeper keypair
 function getKeeperKeypair(): Keypair {
@@ -183,13 +183,13 @@ async function runCrank() {
         requestHash.copy(hashInput, 32);
         receipt.boxConfig.toBuffer().copy(hashInput, 64);
         
-        const nonceBuf = new Uint8Array(8);
-        new DataView(nonceBuf.buffer).setBigUint64(0, BigInt(receipt.nonce), true);
-        Buffer.from(nonceBuf).copy(hashInput, 96);
+        const nonceBuf = Buffer.alloc(8);
+        nonceBuf.writeBigUInt64LE(BigInt(receipt.nonce));
+        nonceBuf.copy(hashInput, 96);
 
-        const slotBuf = new Uint8Array(8);
-        new DataView(slotBuf.buffer).setBigUint64(0, BigInt(requestSlot), true);
-        Buffer.from(slotBuf).copy(hashInput, 104);
+        const slotBuf = Buffer.alloc(8);
+        slotBuf.writeBigUInt64LE(BigInt(requestSlot));
+        slotBuf.copy(hashInput, 104);
 
         const randomVal = fnv1a(hashInput);
 
@@ -263,11 +263,7 @@ async function runCrank() {
           console.error("Failed to decode Project!");
           continue;
         }
-        const pId = project.projectId ?? project.project_id ?? project.id ?? 1;
-        const pIdNum = typeof pId === "number" ? pId : Number(pId) || 1;
-        const buf = new Uint8Array(8);
-        new DataView(buf.buffer).setBigUint64(0, BigInt(pIdNum), true);
-        const [projectPubkey] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(buf)], PROGRAM_ID);
+        const [projectPubkey] = PublicKey.findProgramAddressSync([Buffer.from("project"), Buffer.from(project.slug)], PROGRAM_ID);
         const [vaultPk] = PublicKey.findProgramAddressSync([Buffer.from("vault"), projectPk.toBuffer()], PROGRAM_ID);
 
         let vaultTokenAccount: PublicKey | undefined;
@@ -305,7 +301,7 @@ async function runCrank() {
           ...(vaultTokenAccount ? { vault_token_account: vaultTokenAccount } : {}),
           ...(userTokenAccount ? { user_token_account: userTokenAccount } : {}),
           ...(tokenProgram ? { token_program: tokenProgram } : {}),
-        }, [pIdNum, Number(boxConfig.boxId)], remainingAccounts);
+        }, [project.slug, Number(boxConfig.boxId)], remainingAccounts);
 
         const tx = new Transaction().add(new TransactionInstruction({
           programId: ixRaw.programId,

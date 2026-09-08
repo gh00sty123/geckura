@@ -3,7 +3,6 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { Buffer } from "buffer";
 import { useMemo } from "react";
 import IDL from "@/lib/idl.json";
-import { PROGRAM_ID as ENV_PROGRAM_ID } from "@/lib/env";
 
 export function getProgram(connection: Connection, wallet: any): Program | null {
   try {
@@ -24,30 +23,16 @@ export function useProgram(connection: Connection | null, wallet: any): Program 
 /* PDAs */
 
 export const PLATFORM_SEED = Buffer.from("platform");
-export const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);
+export const PROGRAM_ID = new PublicKey(
+  process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr"
+);
 
 export async function platformPDA(): Promise<[PublicKey, number]> {
   return PublicKey.findProgramAddress([PLATFORM_SEED], PROGRAM_ID);
 }
 
-export function toProjectId(slug: string | number | bigint): number {
-  if (typeof slug === "number") return slug;
-  if (typeof slug === "bigint") return Number(slug);
-  const n = Number(slug);
-  if (!isNaN(n) && n > 0) return n;
-  let hash = 0;
-  for (let i = 0; i < slug.length; i++) {
-    hash = (hash << 5) - hash + slug.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash) || 1;
-}
-
-export async function projectPDA(slug: string | number | bigint): Promise<[PublicKey, number]> {
-  const pId = toProjectId(slug);
-  const u8 = new Uint8Array(8);
-  new DataView(u8.buffer).setBigUint64(0, BigInt(pId), true);
-  return PublicKey.findProgramAddress([Buffer.from("project"), Buffer.from(u8)], PROGRAM_ID);
+export async function projectPDA(slug: string): Promise<[PublicKey, number]> {
+  return PublicKey.findProgramAddress([Buffer.from("project"), Buffer.from(slug)], PROGRAM_ID);
 }
 
 export async function boxPDA(project: PublicKey, boxId: number | bigint): Promise<[PublicKey, number]> {

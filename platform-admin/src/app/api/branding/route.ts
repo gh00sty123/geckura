@@ -5,17 +5,17 @@ import crypto from "crypto";
 import IDL from "@/lib/idl.json";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
-import { RPC_URL } from "@/lib/env";
-import { projectPDASync } from "@/lib/program-ix";
-
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
-const RPC = RPC_URL;
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
+const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 // Fetch project authority from Solana blockchain
 const getProjectAuthority = async (slug: string): Promise<string | null> => {
   try {
     const conn = new Connection(RPC, "confirmed");
-    const [projectPDA] = projectPDASync(slug);
+    const [projectPDA] = PublicKey.findProgramAddressSync(
+      [Buffer.from("project"), Buffer.from(slug)],
+      PGID
+    );
     const accountInfo = await conn.getAccountInfo(projectPDA);
     if (!accountInfo) return null;
     
@@ -41,43 +41,25 @@ export async function GET(req: NextRequest) {
     }
 
     // 1. Fetch project branding
-    let { data: project, error: projErr } = await supabase
+    const { data: project, error: projErr } = await supabase
       .from("projects")
       .select("*")
       .eq("slug", slug)
       .single();
 
-    if (!project) {
-      // Fallback 1: try 'geckura' if slug was numeric or default
-      const { data: fallbackProj } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("slug", "geckura")
-        .single();
-      if (fallbackProj) {
-        project = fallbackProj;
-      } else {
-        // Fallback 2: fetch any available project row in Supabase
-        const { data: anyProj } = await supabase
-          .from("projects")
-          .select("*")
-          .limit(1)
-          .single();
-        if (anyProj) project = anyProj;
-      }
+    if (projErr && projErr.code !== "PGRST116") { // PGRST116 is standard code for row not found
+      return NextResponse.json({ error: projErr.message }, { status: 500 });
     }
 
     if (!project) {
       return NextResponse.json({ success: true, project: null });
     }
 
-    const actualSlug = project.slug || slug;
-
     // 2. Fetch related boxes
     const { data: boxes, error: boxErr } = await supabase
       .from("boxes")
       .select("*")
-      .eq("project_slug", actualSlug);
+      .eq("project_slug", slug);
 
     if (boxErr) {
       return NextResponse.json({ error: boxErr.message }, { status: 500 });

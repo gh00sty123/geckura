@@ -3,7 +3,7 @@ import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import * as fs from "fs";
 import * as path from "path";
 
-const PROGRAM_ID = new PublicKey("CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+const PROGRAM_ID = new PublicKey("HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
 const RPC = "https://devnet.helius-rpc.com/?api-key=884d745d-5bb6-416d-97b5-61faeaa4ed5f";
 
 async function main() {

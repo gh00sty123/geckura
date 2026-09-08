@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { decodeAccount as decodeRawAccount } from "@/lib/program-ix";
-import { projectPDA } from "@/lib/program-ix";
 
-import { RPC_URL as ENV_RPC_URL, PROGRAM_ID as ENV_PROGRAM_ID } from "@/lib/env";
-
-export const RPC_URL = ENV_RPC_URL;
-export const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);
+export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+export const PROGRAM_ID = new PublicKey(
+  process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr"
+);
 export const SYS = PublicKey.default;
 
 function getConn() { return new Connection(RPC_URL, "confirmed"); }
@@ -52,8 +51,9 @@ export const IXD = {
   openBox:            Buffer.from([225, 220, 10, 104, 173, 151, 214, 199]),
 } as const;
 
+/** PDA lookups */
 export async function pdaPlatform() { return PublicKey.findProgramAddress([Buffer.from("platform")], PROGRAM_ID); }
-export async function pdaProject(slug: string | number | bigint) { return projectPDA(slug); }
+export async function pdaProject(slug: string) { return PublicKey.findProgramAddress([Buffer.from("project"), Buffer.from(slug)], PROGRAM_ID); }
 export async function pdaBox(project: PublicKey, boxId: number | bigint) {
   const id = typeof boxId === "number" ? Buffer.from(new Uint8Array(new BigUint64Array([BigInt(boxId)]).buffer)) : Buffer.from(new Uint8Array(new BigUint64Array([boxId]).buffer));
   return PublicKey.findProgramAddress([Buffer.from("box"), project.toBuffer(), id], PROGRAM_ID);

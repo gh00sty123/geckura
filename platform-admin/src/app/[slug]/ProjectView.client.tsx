@@ -13,9 +13,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { PublicKey, Connection, SystemProgram, Transaction, SendTransactionError } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { retryWithBackoff, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, projectPDASync, boxPDA, ixOpenBox, ixClaimPrizes, decodeAccount, vaultPDA } from "@/lib/program-ix";
+import { retryWithBackoff, buildIx, boxStatusToCode, toUnixSeconds, platformPDA, projectPDA, boxPDA, ixOpenBox, ixClaimPrizes, decodeAccount, vaultPDA } from "@/lib/program-ix";
 import dynamic from "next/dynamic";
 
+const WalletMultiButton = dynamic(
+  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  { ssr: false }
+);
 import { type LiveBox, useAppStore } from "@/lib/store";
 import { useSetProjectBranding, useProjectBranding } from "@/lib/ProjectBrandingProvider";
 import { TwitterXIcon } from "@/components/SocialIcons";
@@ -24,15 +28,9 @@ import toast from "react-hot-toast";
 import { resolveIpfsUrl, updateFavicon } from "@/lib/helpers";
 import { BorshAccountsCoder, BorshCoder, BorshEventCoder, EventParser } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
-import { RPC_URL } from "@/lib/env";
 
-const WalletMultiButton = dynamic(
-  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
-  { ssr: false }
-);
-
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
-const RPC  = RPC_URL;
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
+const RPC  = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 const EXPLORER_BASE = "https://explorer.solana.com/tx";
 const CLUSTER_PARAM = RPC.includes("devnet") ? "?cluster=devnet" : RPC.includes("mainnet") ? "" : "?cluster=devnet";
 
@@ -700,9 +698,11 @@ export default function ProjectView({ slug }: { slug: string }) {
       }
 
       const conn = new Connection(RPC, "confirmed");
-      const [projPda] = await projectPDA(slug);
+      const [projectPDA] = PublicKey.findProgramAddressSync(
+        [Buffer.from("project"), Buffer.from(slug)], PGID,
+      );
 
-      const acc = await retryWithBackoff(() => conn.getAccountInfo(projPda), "getAccountInfo(publicPage)");
+      const acc = await retryWithBackoff(() => conn.getAccountInfo(projectPDA), "getAccountInfo(publicPage)");
       setProgressMsg("Scanning storefront packages...");
       const pgAccs = await retryWithBackoff(() => conn.getProgramAccounts(PGID), "getProgramAccounts(publicPage)");
 
@@ -713,15 +713,18 @@ export default function ProjectView({ slug }: { slug: string }) {
           const decodedProject = new (BorshAccountsCoder as any)(IDL, PGID).decode("Project", acc.data);
           
           if (decodedProject) {
-            const displaySlug = (slug || "").trim();
-            const formattedSlugName = displaySlug && isNaN(Number(displaySlug)) ? displaySlug.charAt(0).toUpperCase() + displaySlug.slice(1) : "Geckura";
+            decodedProject.name = decodedProject.name || "";
+            decodedProject.description = decodedProject.description || "";
+            decodedProject.logoUri = decodedProject.logoUri || "";
+            decodedProject.bgUri = decodedProject.bgUri || "";
+            decodedProject.themeColor = decodedProject.themeColor || "";
 
             if (supabaseBranding) {
-              decodedProject.name = supabaseBranding.name || (decodedProject.name && !decodedProject.name.startsWith("Project #") && isNaN(Number(decodedProject.name)) ? decodedProject.name : formattedSlugName);
-              decodedProject.description = supabaseBranding.description || decodedProject.description || "";
-              decodedProject.logoUri = supabaseBranding.logo_uri || decodedProject.logoUri || "";
-              decodedProject.bgUri = supabaseBranding.bg_uri || decodedProject.bgUri || "";
-              decodedProject.themeColor = supabaseBranding.theme_color || decodedProject.themeColor || "";
+              decodedProject.name = decodedProject.name || supabaseBranding.name || "";
+              decodedProject.description = decodedProject.description || supabaseBranding.description || "";
+              decodedProject.logoUri = decodedProject.logoUri || supabaseBranding.logo_uri || "";
+              decodedProject.bgUri = decodedProject.bgUri || supabaseBranding.bg_uri || "";
+              decodedProject.themeColor = decodedProject.themeColor || supabaseBranding.theme_color || "";
               decodedProject.navbarColor = supabaseBranding.navbar_color || "";
               decodedProject.textColor = supabaseBranding.text_color || "";
               decodedProject.nothingRewardImage = supabaseBranding.nothing_reward_image || "";
@@ -730,15 +733,15 @@ export default function ProjectView({ slug }: { slug: string }) {
               decodedProject.discordLink = supabaseBranding.discord_link || "";
               decodedProject.twitterLink = supabaseBranding.twitter_link || "";
             } else if (typeof window !== "undefined") {
-              const localBranding = localStorage.getItem(`project_branding_${slug}`) || localStorage.getItem(`project_branding_geckura`);
+              const localBranding = localStorage.getItem(`project_branding_${slug}`);
               if (localBranding) {
                 try {
                   const parsed = JSON.parse(localBranding);
-                  decodedProject.name = parsed.name || (decodedProject.name && !decodedProject.name.startsWith("Project #") && isNaN(Number(decodedProject.name)) ? decodedProject.name : formattedSlugName);
-                  decodedProject.description = parsed.description || decodedProject.description || "";
-                  decodedProject.logoUri = parsed.logoUri || decodedProject.logoUri || "";
-                  decodedProject.bgUri = parsed.bgUri || decodedProject.bgUri || "";
-                  decodedProject.themeColor = parsed.themeColor || decodedProject.themeColor || "";
+                  decodedProject.name = decodedProject.name || parsed.name || "";
+                  decodedProject.description = decodedProject.description || parsed.description || "";
+                  decodedProject.logoUri = decodedProject.logoUri || parsed.logoUri || "";
+                  decodedProject.bgUri = decodedProject.bgUri || parsed.bgUri || "";
+                  decodedProject.themeColor = decodedProject.themeColor || parsed.themeColor || "";
                   decodedProject.navbarColor = parsed.navbarColor || "";
                   decodedProject.textColor = parsed.textColor || "";
                   decodedProject.nothingRewardImage = parsed.nothingRewardImage || "";
@@ -748,10 +751,6 @@ export default function ProjectView({ slug }: { slug: string }) {
                   decodedProject.twitterLink = parsed.twitterLink || "";
                 } catch {}
               }
-            }
-            
-            if (!decodedProject.name || decodedProject.name.startsWith("Project #") || !isNaN(Number(decodedProject.name))) {
-              decodedProject.name = formattedSlugName || "Geckura";
             }
           }
           
@@ -917,7 +916,7 @@ export default function ProjectView({ slug }: { slug: string }) {
       // Fetch Vault assets to show real names and images
       setProgressMsg("Verifying vault asset inventory...");
       const [vaultPk] = PublicKey.findProgramAddressSync(
-        [Buffer.from("vault"), projPda.toBuffer()], PGID
+        [Buffer.from("vault"), projectPDA.toBuffer()], PGID
       );
       try {
         const vAssets = await fetchAssetsForOwner(vaultPk, RPC);
@@ -988,7 +987,10 @@ export default function ProjectView({ slug }: { slug: string }) {
     }
     try {
       const conn = new Connection(RPC, "confirmed");
-      const [projectPda] = projectPDASync(slug);
+      const [projectPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("project"), Buffer.from(slug)],
+        PGID
+      );
       const [receiptPda] = PublicKey.findProgramAddressSync(
         [Buffer.from("receipt"), wallet.publicKey!.toBuffer(), projectPda.toBuffer()],
         PGID

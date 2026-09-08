@@ -1,5 +1,5 @@
 {
-  "address": "AEQrvbZvGwGcat5FXDXXZD71NiQsWNfdxvDFvdigxL5t",
+  "address": "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr",
   "metadata": {
     "name": "mystery_box",
     "version": "0.1.0",
@@ -219,7 +219,7 @@
           "signer": true
         },
         {
-          "name": "platform_treasury",
+          "name": "rent_destination",
           "writable": true
         },
         {
@@ -395,10 +395,6 @@
           "name": "user",
           "writable": true,
           "signer": true
-        },
-        {
-          "name": "platform_treasury",
-          "writable": true
         },
         {
           "name": "system_program",
@@ -1250,6 +1246,10 @@
         },
         {
           "name": "fee_wallet",
+          "writable": true
+        },
+        {
+          "name": "fee_wallet_2",
           "writable": true
         },
         {

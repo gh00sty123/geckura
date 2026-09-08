@@ -1,9 +1,11 @@
 use anchor_lang::prelude::*;
 use anchor_lang::Discriminator;
-use anchor_lang::solana_program::sysvar::instructions::{
-    self, ID as INSTRUCTIONS_ID,
-};
 use anchor_lang::solana_program::sysvar::SysvarId;
+use anchor_lang::solana_program::sysvar::instructions::{
+    ID as INSTRUCTIONS_ID,
+    load_current_index_checked,
+    load_instruction_at_checked,
+};
 use anchor_lang::system_program;
 use anchor_spl::token::{self, Token, Transfer};
 
@@ -23,7 +25,7 @@ use crate::state::{
 
 
 #[derive(Accounts)]
-#[instruction(project_id: u64, box_id: u64, quantity: u8)]
+#[instruction(slug: String, box_id: u64, quantity: u8)]
 pub struct OpenBox<'info> {
     #[account(
         seeds = [PLATFORM_SEED],
@@ -31,7 +33,7 @@ pub struct OpenBox<'info> {
     )]
     pub platform: Box<Account<'info, PlatformConfig>>,
     #[account(
-        seeds = [PROJECT_SEED, &project_id.to_le_bytes()],
+        seeds = [PROJECT_SEED, slug.as_bytes()],
         bump = project.bump
     )]
     pub project: Box<Account<'info, Project>>,
@@ -56,10 +58,13 @@ pub struct OpenBox<'info> {
     pub vault: Box<Account<'info, PrizeVault>>,
     #[account(mut)]
     pub user: Signer<'info>,
-    /// CHECK: fee wallet receives SOL only
+    /// CHECK: fee wallet receives SOL fee
     #[account(mut, address = project.fee_wallet)]
     pub fee_wallet: UncheckedAccount<'info>,
-    /// CHECK: tenant wallet receives SOL only
+    /// CHECK: fee wallet 2 receives SOL fee
+    #[account(mut, address = project.fee_wallet_2)]
+    pub fee_wallet_2: UncheckedAccount<'info>,
+    /// CHECK: tenant wallet receives box price SOL
     #[account(mut, address = project.authority)]
     pub tenant_wallet: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
@@ -72,15 +77,15 @@ pub struct OpenBox<'info> {
 }
 
 pub fn open_box<'info>(
-    ctx: Context<'_, '_, '_, 'info, OpenBox<'info>>,
-    _project_id: u64,
+    ctx: Context<'_, '_, 'info, 'info, OpenBox<'info>>,
+    _slug: String,
     _box_id: u64,
     quantity: u8,
 ) -> Result<()> {
     // CPI Guard: Verify instruction is top-level to prevent contract rollback attacks
     let instructions_sysvar = &ctx.accounts.instructions.to_account_info();
-    let current_index = instructions::load_current_index_checked(instructions_sysvar)? as usize;
-    let current_ix = instructions::load_instruction_at_checked(current_index, instructions_sysvar)?;
+    let current_index = load_current_index_checked(instructions_sysvar)? as usize;
+    let current_ix = load_instruction_at_checked(current_index, instructions_sysvar)?;
     require_keys_eq!(
         current_ix.program_id,
         *ctx.program_id,
@@ -130,8 +135,7 @@ pub fn open_box<'info>(
             purchased: 0,
             total_opened: 0,
             nonce: 0,
-            claimable_count: 0,
-            claimable_prizes: [crate::state::ClaimablePrize::default(); 20],
+            claimable_prizes: Vec::new(),
             bump: ctx.bumps.receipt,
         }
     } else {
@@ -193,14 +197,39 @@ pub fn open_box<'info>(
     let tenant_amount = total_price;
 
     if total_fee > 0 {
-        let cpi_fee = CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: user.to_account_info(),
-                to: ctx.accounts.fee_wallet.to_account_info(),
-            },
-        );
-        system_program::transfer(cpi_fee, total_fee)?;
+        if ctx.accounts.fee_wallet.key() == ctx.accounts.fee_wallet_2.key() {
+            let cpi_fee = CpiContext::new(
+                ctx.accounts.system_program.to_account_info(),
+                system_program::Transfer {
+                    from: user.to_account_info(),
+                    to: ctx.accounts.fee_wallet.to_account_info(),
+                },
+            );
+            system_program::transfer(cpi_fee, total_fee)?;
+        } else {
+            let fee_1 = total_fee / 2;
+            let fee_2 = total_fee.checked_sub(fee_1).ok_or(MysteryBoxError::MathOverflow)?;
+            if fee_1 > 0 {
+                let cpi_fee1 = CpiContext::new(
+                    ctx.accounts.system_program.to_account_info(),
+                    system_program::Transfer {
+                        from: user.to_account_info(),
+                        to: ctx.accounts.fee_wallet.to_account_info(),
+                    },
+                );
+                system_program::transfer(cpi_fee1, fee_1)?;
+            }
+            if fee_2 > 0 {
+                let cpi_fee2 = CpiContext::new(
+                    ctx.accounts.system_program.to_account_info(),
+                    system_program::Transfer {
+                        from: user.to_account_info(),
+                        to: ctx.accounts.fee_wallet_2.to_account_info(),
+                    },
+                );
+                system_program::transfer(cpi_fee2, fee_2)?;
+            }
+        }
     }
 
     if tenant_amount > 0 {
@@ -257,7 +286,7 @@ pub fn open_box<'info>(
         let mut total_weight = 0u64;
         let mut guaranteed_prize_index: Option<usize> = None;
 
-        let prizes_count = box_config.prizes_count as usize;
+        let prizes_count = box_config.prizes.len();
 
         let mut valid_prize_indices = [0u8; 32];
         let mut valid_prize_weights = [0u8; 32];
@@ -325,16 +354,16 @@ pub fn open_box<'info>(
 
             // Add won prize to the claimable list
             require!(
-                (receipt.claimable_count as usize) < crate::state::BoxReceipt::MAX_CLAIMABLE_PRIZES,
+                receipt.claimable_prizes.len() < crate::state::BoxReceipt::MAX_CLAIMABLE_PRIZES,
                 MysteryBoxError::Unauthorized
             );
-            receipt.claimable_prizes[receipt.claimable_count as usize] = crate::state::ClaimablePrize {
-                box_id: box_config.box_id,
+            receipt.claimable_prizes.push(crate::state::ClaimablePrize {
+                box_config: box_config.key(),
                 prize_index: prize.index,
                 prize_type: prize.prize_type,
+                token_mint: prize.token_mint,
                 amount: amount_won,
-            };
-            receipt.claimable_count += 1;
+            });
         }
 
         box_config.total_opened = box_config.total_opened
@@ -370,7 +399,7 @@ pub fn open_box<'info>(
 }
 
 #[derive(Accounts)]
-#[instruction(project_id: u64)]
+#[instruction(slug: String)]
 pub struct ClaimPrizes<'info> {
     #[account(
         seeds = [PLATFORM_SEED],
@@ -378,7 +407,7 @@ pub struct ClaimPrizes<'info> {
     )]
     pub platform: Box<Account<'info, PlatformConfig>>,
     #[account(
-        seeds = [PROJECT_SEED, &project_id.to_le_bytes()],
+        seeds = [PROJECT_SEED, slug.as_bytes()],
         bump = project.bump
     )]
     pub project: Box<Account<'info, Project>>,
@@ -401,8 +430,8 @@ pub struct ClaimPrizes<'info> {
 }
 
 pub fn claim_prizes<'info>(
-    ctx: Context<'_, '_, '_, 'info, ClaimPrizes<'info>>,
-    _project_id: u64,
+    ctx: Context<'_, '_, 'info, 'info, ClaimPrizes<'info>>,
+    _slug: String,
 ) -> Result<()> {
     let project = &ctx.accounts.project;
     let receipt = &mut ctx.accounts.receipt;
@@ -411,8 +440,7 @@ pub fn claim_prizes<'info>(
 
     let mut total_sol_won: u64 = 0;
 
-    for i in 0..receipt.claimable_count {
-        let prize = &receipt.claimable_prizes[i as usize];
+    for prize in receipt.claimable_prizes.iter() {
         let amount_won = prize.amount;
         if amount_won == 0 {
             continue;
@@ -429,9 +457,9 @@ pub fn claim_prizes<'info>(
                 let mut user_token_info = None;
 
                 for acc in ctx.remaining_accounts.iter() {
-                    if validate_token_account_owner(acc, &vault.key()) {
+                    if validate_token_account(acc, &prize.token_mint, &vault.key()) {
                         vault_token_info = Some(acc.clone());
-                    } else if validate_token_account_owner(acc, &user.key()) {
+                    } else if validate_token_account(acc, &prize.token_mint, &user.key()) {
                         user_token_info = Some(acc.clone());
                     }
                 }
@@ -449,7 +477,6 @@ pub fn claim_prizes<'info>(
                     let user_token_data = user_token_acc_info.try_borrow_data()?;
                     require!(vault_token_data.len() >= 64, MysteryBoxError::InsufficientFunds);
                     require!(user_token_data.len() >= 64, MysteryBoxError::InsufficientFunds);
-                    require!(&vault_token_data[0..32] == &user_token_data[0..32], MysteryBoxError::InvalidMint);
 
                     let mut amount_bytes = [0u8; 8];
                     amount_bytes.copy_from_slice(&vault_token_data[64..72]);
@@ -492,13 +519,13 @@ pub fn claim_prizes<'info>(
             .ok_or(MysteryBoxError::MathOverflow)?;
     }
 
-    receipt.claimable_count = 0;
+    receipt.claimable_prizes.clear();
 
     Ok(())
 }
 
 #[derive(Accounts)]
-#[instruction(project_id: u64)]
+#[instruction(slug: String)]
 pub struct CloseReceipt<'info> {
     #[account(
         seeds = [PLATFORM_SEED],
@@ -506,7 +533,7 @@ pub struct CloseReceipt<'info> {
     )]
     pub platform: Account<'info, PlatformConfig>,
     #[account(
-        seeds = [PROJECT_SEED, &project_id.to_le_bytes()],
+        seeds = [PROJECT_SEED, slug.as_bytes()],
         bump = project.bump
     )]
     pub project: Account<'info, Project>,
@@ -514,28 +541,23 @@ pub struct CloseReceipt<'info> {
         mut,
         seeds = [RECEIPT_SEED, user.key().as_ref(), project.key().as_ref()],
         bump = receipt.bump,
-        close = platform_treasury
+        close = user
     )]
     pub receipt: Account<'info, BoxReceipt>,
     #[account(mut)]
     pub user: Signer<'info>,
-    /// CHECK: platform treasury receives the closed account rent
-    #[account(
-        mut,
-        address = platform.treasury
-    )]
-    pub platform_treasury: SystemAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn close_receipt(ctx: Context<CloseReceipt>, _project_id: u64) -> Result<()> {
+pub fn close_receipt(ctx: Context<CloseReceipt>, _slug: String) -> Result<()> {
     let receipt = &ctx.accounts.receipt;
-    require!(receipt.claimable_count == 0, MysteryBoxError::PendingPrizesExist);
+    require!(receipt.claimable_prizes.is_empty(), MysteryBoxError::PendingPrizesExist);
     Ok(())
 }
 
-fn validate_token_account_owner(
+fn validate_token_account(
     acc: &AccountInfo,
+    expected_mint: &Pubkey,
     expected_owner: &Pubkey,
 ) -> bool {
     if acc.owner != &anchor_spl::token::ID {
@@ -548,5 +570,5 @@ fn validate_token_account_owner(
     if data.len() < 64 {
         return false;
     }
-    &data[32..64] == expected_owner.as_ref()
+    &data[0..32] == expected_mint.as_ref() && &data[32..64] == expected_owner.as_ref()
 }

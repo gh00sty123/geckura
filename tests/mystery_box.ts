@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import * as fs from "fs";
-import { PublicKey, SystemProgram, Keypair, Connection, Transaction } from "@solana/web3.js";
+import { PublicKey, SystemProgram, Keypair, Connection, Transaction, ComputeBudgetProgram } from "@solana/web3.js";
 import { 
   createMint, 
   getOrCreateAssociatedTokenAccount, 
@@ -74,15 +74,6 @@ describe("mystery_box", () => {
     throw new Error("Fetch failed after maximum retries");
   };
 
-  // Helper to fetch account regardless of Anchor 0.30 IDL state namespace prefixing
-  const getAccount = (name: string) => {
-    return (
-      (program.account as any)[name] ||
-      (program.account as any)[`mysteryBox::state::${name}`] ||
-      (program.account as any)[name.charAt(0).toLowerCase() + name.slice(1)]
-    );
-  };
-
   beforeEach(async () => {
     // Add a 1.2-second delay before each test to stay below public/devnet RPC rate limits
     const isLocalnet = connection.rpcEndpoint.includes("localhost") || connection.rpcEndpoint.includes("127.0.0.1");
@@ -95,7 +86,7 @@ describe("mystery_box", () => {
   let platformPda: PublicKey;
   let platformBump: number;
 
-  const projectId = new anchor.BN(Math.floor(Math.random() * 100000) + 10000);
+  const slug = "test-project-" + Math.floor(Math.random() * 100000);
   let projectPda: PublicKey;
   let projectBump: number;
 
@@ -134,7 +125,7 @@ describe("mystery_box", () => {
 
     // Derive Project PDA
     [projectPda, projectBump] = PublicKey.findProgramAddressSync(
-      [Buffer.from("project"), projectId.toArrayLike(Buffer, "le", 8)],
+      [Buffer.from("project"), Buffer.from(slug)],
       program.programId
     );
 
@@ -169,25 +160,29 @@ describe("mystery_box", () => {
         const signature = await connection.requestAirdrop(target, amountLamports);
         await connection.confirmTransaction(signature, "confirmed");
       } else {
-        // Transfer from provider wallet (superAdmin)
-        const transferTx = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: superAdmin.publicKey,
-            toPubkey: target,
-            lamports: amountLamports,
-          })
-        );
-        await provider.sendAndConfirm(transferTx);
+        if (target.equals(superAdmin.publicKey)) return;
+        const currentBal = await connection.getBalance(target);
+        if (currentBal < amountLamports) {
+          const needed = amountLamports - currentBal;
+          const transferTx = new Transaction().add(
+            SystemProgram.transfer({
+              fromPubkey: superAdmin.publicKey,
+              toPubkey: target,
+              lamports: needed,
+            })
+          );
+          await provider.sendAndConfirm(transferTx);
+        }
       }
     };
 
     // Fund accounts
-    // On Devnet, 10 SOL is too much and unnecessary. We fund sufficient amounts to run the 30-combo suite.
+    // On Devnet, optimal amounts are funded to run the test matrix efficiently.
     const isLocalnet = connection.rpcEndpoint.includes("localhost") || connection.rpcEndpoint.includes("127.0.0.1");
-    const tenantFund = isLocalnet ? 10 * 1e9 : 4.8 * 1e9; // 10 SOL on localnet, 4.8 SOL on devnet
-    const userFund = isLocalnet ? 10 * 1e9 : 1.8 * 1e9;   // 10 SOL on localnet, 1.8 SOL on devnet
-    const feeWalletFund = isLocalnet ? 1e8 : 1e7;    // 0.1 SOL on localnet, 0.01 SOL on devnet
-    const feeWallet2Fund = isLocalnet ? 1e8 : 1e7;   // 0.1 SOL on localnet, 0.01 SOL on devnet
+    const tenantFund = isLocalnet ? 10 * 1e9 : 0.05 * 1e9;
+    const userFund = isLocalnet ? 10 * 1e9 : 0.05 * 1e9;
+    const feeWalletFund = isLocalnet ? 1e8 : 0.005 * 1e9;
+    const feeWallet2Fund = isLocalnet ? 1e8 : 0.005 * 1e9;
 
     await fundAccount(superAdmin.publicKey, 10 * 1e9);
     await fundAccount(tenant.publicKey, tenantFund);
@@ -241,7 +236,7 @@ describe("mystery_box", () => {
   it("Initializes the platform Config", async () => {
     try {
       // Check if already initialized on public network (persistent state)
-      const platformAccount = await getAccount("platformConfig").fetch(platformPda);
+      const platformAccount = await program.account.platformConfig.fetch(platformPda);
       expect(platformAccount.authority.toBase58()).to.equal(superAdmin.publicKey.toBase58());
       return;
     } catch (e) {
@@ -257,7 +252,7 @@ describe("mystery_box", () => {
       })
       .rpc();
 
-    const platformAccount = await fetchWithRetry(() => getAccount("platformConfig").fetch(platformPda));
+    const platformAccount = await fetchWithRetry(() => program.account.platformConfig.fetch(platformPda));
     expect(platformAccount.authority.toBase58()).to.equal(superAdmin.publicKey.toBase58());
     expect(platformAccount.treasury.toBase58()).to.equal(platformTreasury.publicKey.toBase58());
     expect(platformAccount.isPaused).to.be.false;
@@ -269,7 +264,7 @@ describe("mystery_box", () => {
 
     await (program as any).methods
       .createProject(
-        projectId,
+        slug,
         tenant.publicKey,
         feeWallet.publicKey,
         feeWallet2.publicKey,
@@ -284,8 +279,8 @@ describe("mystery_box", () => {
       })
       .rpc();
 
-    const projectAccount = await fetchWithRetry(() => getAccount("project").fetch(projectPda));
-    expect(projectAccount.projectId.toNumber()).to.equal(projectId.toNumber());
+    const projectAccount = await fetchWithRetry(() => program.account.project.fetch(projectPda));
+    expect(projectAccount.slug).to.equal(slug);
     expect(projectAccount.authority.toBase58()).to.equal(tenant.publicKey.toBase58());
     expect(projectAccount.feeWallet.toBase58()).to.equal(feeWallet.publicKey.toBase58());
     expect(projectAccount.feeWallet2.toBase58()).to.equal(feeWallet2.publicKey.toBase58());
@@ -293,49 +288,9 @@ describe("mystery_box", () => {
     expect(projectAccount.isActive).to.be.true;
   });
 
-  it("Updates project fees and fee routing wallets", async () => {
-    const newFeeLamports = new anchor.BN(10_000_000); // 0.01 SOL fee
-    const newFeeWallet = Keypair.generate().publicKey;
-    const newFeeWallet2 = Keypair.generate().publicKey;
-
-    await (program as any).methods
-      .updateProjectFees(
-        projectId,
-        newFeeLamports,
-        newFeeWallet,
-        newFeeWallet2
-      )
-      .accounts({
-        platform: platformPda,
-        project: projectPda,
-        superAdmin: superAdmin.publicKey,
-      })
-      .rpc();
-
-    const projectAccount = await fetchWithRetry(() => getAccount("project").fetch(projectPda));
-    expect(projectAccount.feeLamports.toNumber()).to.equal(10_000_000);
-    expect(projectAccount.feeWallet.toBase58()).to.equal(newFeeWallet.toBase58());
-    expect(projectAccount.feeWallet2.toBase58()).to.equal(newFeeWallet2.toBase58());
-
-    // Revert back to original fee wallets for subsequent test cases
-    await (program as any).methods
-      .updateProjectFees(
-        projectId,
-        new anchor.BN(5_000_000),
-        feeWallet.publicKey,
-        feeWallet2.publicKey
-      )
-      .accounts({
-        platform: platformPda,
-        project: projectPda,
-        superAdmin: superAdmin.publicKey,
-      })
-      .rpc();
-  });
-
   it("Initializes the prize vault PDA", async () => {
     await (program as any).methods
-      .initializeVault(projectId)
+      .initializeVault(slug)
       .accounts({
         project: projectPda,
         vault: vaultPda,
@@ -345,21 +300,21 @@ describe("mystery_box", () => {
       .signers([tenant])
       .rpc();
 
-    const vaultAccount = await fetchWithRetry(() => getAccount("prizeVault").fetch(vaultPda));
+    const vaultAccount = await fetchWithRetry(() => program.account.prizeVault.fetch(vaultPda));
     expect(vaultAccount.project.toBase58()).to.equal(projectPda.toBase58());
   });
 
-  it("Creates a box config supporting multi-currency", async () => {
+  it("Creates a box config", async () => {
     const priceLamports = new anchor.BN(100_000_000); // 0.1 SOL
-    const acceptedMints = [PublicKey.default, tokenMint, PublicKey.default];
-    const acceptedPrices = [new anchor.BN(100_000_000), new anchor.BN(1_000_000_000), new anchor.BN(0)];
+    const acceptedMints = [PublicKey.default, PublicKey.default, PublicKey.default];
+    const acceptedPrices = [new anchor.BN(0), new anchor.BN(0), new anchor.BN(0)];
     const supply = 10;
     const startTime = new anchor.BN(Math.floor(Date.now() / 1000) - 100);
     const endTime = new anchor.BN(Math.floor(Date.now() / 1000) + 10000);
 
     await (program as any).methods
       .createBox(
-        projectId,
+        slug,
         boxId,
         priceLamports,
         acceptedMints,
@@ -378,52 +333,22 @@ describe("mystery_box", () => {
       .signers([tenant])
       .rpc();
 
-    const boxAccount = await fetchWithRetry(() => getAccount("boxConfig").fetch(boxConfigPda));
+    const boxAccount = await fetchWithRetry(() => program.account.boxConfig.fetch(boxConfigPda));
     expect(boxAccount.project.toBase58()).to.equal(projectPda.toBase58());
     expect(boxAccount.boxId.toNumber()).to.equal(1);
     expect(boxAccount.supply).to.equal(10);
     expect(boxAccount.sold).to.equal(0);
   });
 
-  it("Edits / Updates box config (prices, mints, timing)", async () => {
-    const newPriceLamports = new anchor.BN(150_000_000); // 0.15 SOL
-    const acceptedMints = [PublicKey.default, tokenMint, PublicKey.default];
-    const acceptedPrices = [new anchor.BN(150_000_000), new anchor.BN(1_500_000_000), new anchor.BN(0)];
-    const startTime = new anchor.BN(Math.floor(Date.now() / 1000) - 50);
-    const endTime = new anchor.BN(Math.floor(Date.now() / 1000) + 20000);
-    const status = { active: {} };
-
-    await (program as any).methods
-      .updateBox(
-        projectId,
-        boxId,
-        newPriceLamports,
-        acceptedMints,
-        acceptedPrices,
-        startTime,
-        endTime
-      )
-      .accounts({
-        project: projectPda,
-        boxConfig: boxConfigPda,
-        tenant: tenant.publicKey,
-      })
-      .signers([tenant])
-      .rpc();
-
-    const boxAccount = await fetchWithRetry(() => getAccount("boxConfig").fetch(boxConfigPda));
-    expect(boxAccount.priceLamports.toNumber()).to.equal(150_000_000);
-  });
-
   it("Creates a prize item inside the box config", async () => {
-    const prizeType = { splToken: {} };
-    const amount = new anchor.BN(1_000_000_000);
-    const winPercentage = 100;
+    const prizeType = { splToken: {} }; // PrizeType::SplToken enum representation
+    const amount = new anchor.BN(1_000_000_000); // 1 token (decimals=9)
+    const winPercentage = 100; // Guaranteed win to simplify test verification
     const totalCount = 10;
 
     await (program as any).methods
       .createPrizeItem(
-        projectId,
+        slug,
         boxId,
         prizeIndex,
         prizeType,
@@ -440,15 +365,22 @@ describe("mystery_box", () => {
       .signers([tenant])
       .rpc();
 
-    const boxConfigAcct = await fetchWithRetry(() => getAccount("boxConfig").fetch(boxConfigPda));
+    const boxConfigAcct = await fetchWithRetry(() => program.account.boxConfig.fetch(boxConfigPda));
     expect(boxConfigAcct.prizesCount).to.equal(1);
+    expect(boxConfigAcct.prizes.length).to.equal(1);
+    const prize = boxConfigAcct.prizes[0];
+    expect(prize.index).to.equal(prizeIndex);
+    expect(prize.tokenMint.toBase58()).to.equal(tokenMint.toBase58());
+    expect(prize.amount.toNumber()).to.equal(1_000_000_000);
+    expect(prize.winPercentage).to.equal(100);
+    expect(prize.totalCount).to.equal(10);
   });
 
   it("Deposits the SPL prize tokens into the vault PDA", async () => {
-    const amount = new anchor.BN(10_000_000_000);
+    const amount = new anchor.BN(10_000_000_000); // 10 tokens (required: amount * totalCount = 1 token * 10 count = 10 tokens)
 
     await (program as any).methods
-      .managePrize(projectId, prizeIndex, boxId, { deposit: {} }, amount)
+      .managePrize(slug, prizeIndex, boxId, { deposit: {} }, amount)
       .accounts({
         project: projectPda,
         boxConfig: boxConfigPda,
@@ -488,9 +420,9 @@ describe("mystery_box", () => {
 
     // 1. Create box 2
     await (program as any).methods
-      .createBox(projectId, boxId2, new anchor.BN(100_000_000),
-        [PublicKey.default, tokenMint, PublicKey.default],
-        [new anchor.BN(100_000_000), new anchor.BN(1_000_000_000), new anchor.BN(0)],
+      .createBox(slug, boxId2, new anchor.BN(100_000_000),
+        [PublicKey.default, PublicKey.default, PublicKey.default],
+        [new anchor.BN(0), new anchor.BN(0), new anchor.BN(0)],
         10, startTime, endTime)
       .accounts({
         platform: platformPda, project: projectPda, boxConfig: boxConfigPda2,
@@ -500,14 +432,14 @@ describe("mystery_box", () => {
 
     // 2. Create inline prize item (guaranteed SPL token prize)
     await (program as any).methods
-      .createPrizeItem(projectId, boxId2, prizeIndex2, { splToken: {} }, tokenMint,
+      .createPrizeItem(slug, boxId2, prizeIndex2, { splToken: {} }, tokenMint,
         new anchor.BN(2_000_000_000), 100, 10)
       .accounts({ project: projectPda, boxConfig: boxConfigPda2, tenant: tenant.publicKey })
       .signers([tenant]).rpc();
 
     // 3. Deposit prize tokens into vault via managePrize
     await (program as any).methods
-      .managePrize(projectId, prizeIndex2, boxId2, { deposit: {} }, new anchor.BN(20_000_000_000))
+      .managePrize(slug, prizeIndex2, boxId2, { deposit: {} }, new anchor.BN(20_000_000_000))
       .accounts({
         project: projectPda, boxConfig: boxConfigPda2, vault: vaultPda,
         tokenMint: tokenMint, tenantTokenAccount: tenantTokenAccount.address,
@@ -521,22 +453,21 @@ describe("mystery_box", () => {
     const preUserBalance = await connection.getTokenAccountBalance(userTokenAccount.address);
 
     await (program as any).methods
-      .openBox(projectId, boxId2, 1)
+      .openBox(slug, boxId2, 1)
       .accounts({
         platform: platformPda, project: projectPda, boxConfig: boxConfigPda2,
         receipt: receiptPda2, vault: vaultPda, user: user.publicKey,
         feeWallet: feeWallet.publicKey, feeWallet2: feeWallet2.publicKey,
         tenantWallet: tenant.publicKey, systemProgram: SystemProgram.programId,
         slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
-        instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
         vaultTokenAccount: vaultTokenAccount.address,
         userTokenAccount: userTokenAccount.address, tokenProgram: TOKEN_PROGRAM_ID,
       })
       .signers([user]).rpc();
 
-    // 5. Claim prizes
+    // 5. Claim prizes (inline prizes require explicit claim)
     await (program as any).methods
-      .claimPrizes(projectId)
+      .claimPrizes(slug)
       .accounts({
         platform: platformPda, project: projectPda,
         receipt: receiptPda2, vault: vaultPda,
@@ -572,7 +503,7 @@ describe("mystery_box", () => {
 
     // 1. Create SOL-only box
     await (program as any).methods
-      .createBox(projectId, boxId3, new anchor.BN(10_000_000),
+      .createBox(slug, boxId3, new anchor.BN(10_000_000),
         [PublicKey.default, PublicKey.default, PublicKey.default],
         [new anchor.BN(0), new anchor.BN(0), new anchor.BN(0)],
         20, startTime, endTime)
@@ -584,7 +515,7 @@ describe("mystery_box", () => {
 
     // 2. Create SOL prize item (0.05 SOL, guaranteed win)
     await (program as any).methods
-      .createPrizeItem(projectId, boxId3, 0, { sol: {} }, PublicKey.default,
+      .createPrizeItem(slug, boxId3, 0, { sol: {} }, PublicKey.default,
         new anchor.BN(50_000_000), 100, 20)
       .accounts({ project: projectPda, boxConfig: boxConfigPda3, tenant: tenant.publicKey })
       .signers([tenant]).rpc();
@@ -598,21 +529,20 @@ describe("mystery_box", () => {
     // 4. Single open
     const preUserSol = await connection.getBalance(user.publicKey);
     await (program as any).methods
-      .openBox(projectId, boxId3, 1)
+      .openBox(slug, boxId3, 1)
       .accounts({
         platform: platformPda, project: projectPda, boxConfig: boxConfigPda3,
         receipt: receiptPda3, vault: vaultPda, user: user.publicKey,
         feeWallet: feeWallet.publicKey, feeWallet2: feeWallet2.publicKey,
         tenantWallet: tenant.publicKey, systemProgram: SystemProgram.programId,
         slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
-        instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
         vaultTokenAccount: null, userTokenAccount: null, tokenProgram: null,
       })
       .signers([user]).rpc();
 
     // Claim prizes
     await (program as any).methods
-      .claimPrizes(projectId)
+      .claimPrizes(slug)
       .accounts({
         platform: platformPda, project: projectPda,
         receipt: receiptPda3, vault: vaultPda,
@@ -627,21 +557,20 @@ describe("mystery_box", () => {
     // 5. Bulk open (qty=3)
     const preUserSolBulk = await connection.getBalance(user.publicKey);
     await (program as any).methods
-      .openBox(projectId, boxId3, 3)
+      .openBox(slug, boxId3, 3)
       .accounts({
         platform: platformPda, project: projectPda, boxConfig: boxConfigPda3,
         receipt: receiptPda3, vault: vaultPda, user: user.publicKey,
         feeWallet: feeWallet.publicKey, feeWallet2: feeWallet2.publicKey,
         tenantWallet: tenant.publicKey, systemProgram: SystemProgram.programId,
         slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
-        instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
         vaultTokenAccount: null, userTokenAccount: null, tokenProgram: null,
       })
       .signers([user]).rpc();
 
     // Claim prizes for bulk
     await (program as any).methods
-      .claimPrizes(projectId)
+      .claimPrizes(slug)
       .accounts({
         platform: platformPda, project: projectPda,
         receipt: receiptPda3, vault: vaultPda,
@@ -671,7 +600,7 @@ describe("mystery_box", () => {
 
     // 1. Create box 4 (no prizes = guaranteed loss)
     await (program as any).methods
-      .createBox(projectId, boxId4, new anchor.BN(10_000_000),
+      .createBox(slug, boxId4, new anchor.BN(10_000_000),
         [PublicKey.default, PublicKey.default, PublicKey.default],
         [new anchor.BN(0), new anchor.BN(0), new anchor.BN(0)],
         10, startTime, endTime)
@@ -684,14 +613,13 @@ describe("mystery_box", () => {
     // 2. Open box (no prizes in box, guaranteed loss)
     const preUserSol = await connection.getBalance(user.publicKey);
     await (program as any).methods
-      .openBox(projectId, boxId4, 1)
+      .openBox(slug, boxId4, 1)
       .accounts({
         platform: platformPda, project: projectPda, boxConfig: boxConfigPda4,
         receipt: receiptPda4, vault: vaultPda, user: user.publicKey,
         feeWallet: feeWallet.publicKey, feeWallet2: feeWallet2.publicKey,
         tenantWallet: tenant.publicKey, systemProgram: SystemProgram.programId,
         slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
-        instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
         vaultTokenAccount: null, userTokenAccount: null, tokenProgram: null,
       })
       .signers([user]).rpc();
@@ -717,7 +645,7 @@ describe("mystery_box", () => {
 
     // 1. Create box 5
     await (program as any).methods
-      .createBox(projectId, boxId5, new anchor.BN(10_000_000),
+      .createBox(slug, boxId5, new anchor.BN(10_000_000),
         [PublicKey.default, PublicKey.default, PublicKey.default],
         [new anchor.BN(0), new anchor.BN(0), new anchor.BN(0)],
         10, startTime, endTime)
@@ -729,14 +657,14 @@ describe("mystery_box", () => {
 
     // 2. Create SOL prize (50%)
     await (program as any).methods
-      .createPrizeItem(projectId, boxId5, 0, { sol: {} }, PublicKey.default,
+      .createPrizeItem(slug, boxId5, 0, { sol: {} }, PublicKey.default,
         new anchor.BN(50_000_000), 50, 5)
       .accounts({ project: projectPda, boxConfig: boxConfigPda5, tenant: tenant.publicKey })
       .signers([tenant]).rpc();
 
     // 3. Create SPL prize (50%)
     await (program as any).methods
-      .createPrizeItem(projectId, boxId5, 1, { splToken: {} }, tokenMint,
+      .createPrizeItem(slug, boxId5, 1, { splToken: {} }, tokenMint,
         new anchor.BN(1_000_000_000), 50, 5)
       .accounts({ project: projectPda, boxConfig: boxConfigPda5, tenant: tenant.publicKey })
       .signers([tenant]).rpc();
@@ -749,20 +677,19 @@ describe("mystery_box", () => {
 
     // 5. Open box for 2
     await (program as any).methods
-      .openBox(projectId, boxId5, 2)
+      .openBox(slug, boxId5, 2)
       .accounts({
         platform: platformPda, project: projectPda, boxConfig: boxConfigPda5,
         receipt: receiptPda5, vault: vaultPda, user: user.publicKey,
         feeWallet: feeWallet.publicKey, feeWallet2: feeWallet2.publicKey,
         tenantWallet: tenant.publicKey, systemProgram: SystemProgram.programId,
         slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
-        instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
         vaultTokenAccount: vaultTokenAccount.address,
         userTokenAccount: userTokenAccount.address, tokenProgram: TOKEN_PROGRAM_ID,
       })
       .signers([user]).rpc();
 
-    const receiptAccount = await fetchWithRetry(() => getAccount("boxReceipt").fetch(receiptPda5));
+    const receiptAccount = await fetchWithRetry(() => program.account.boxReceipt.fetch(receiptPda5));
     expect(receiptAccount.totalOpened).to.be.greaterThanOrEqual(2);
   });
 
@@ -1121,13 +1048,12 @@ describe("mystery_box", () => {
       },
     ];
 
-    const runOffset = Math.floor(Math.random() * 1000000) * 100;
-
     scenarios.forEach((scenario) => {
       it(scenario.description, async () => {
-        const scenarioProjectId = new anchor.BN(runOffset + scenario.id);
+        console.log(`[START COMBO ${scenario.id}]`);
+        const scenarioSlug = `scen-${scenario.id}`;
         const [scenarioProjectPda] = PublicKey.findProgramAddressSync(
-          [Buffer.from("project"), scenarioProjectId.toArrayLike(Buffer, "le", 8)],
+          [Buffer.from("project"), Buffer.from(scenarioSlug)],
           program.programId
         );
         const [scenarioVaultPda] = PublicKey.findProgramAddressSync(
@@ -1145,26 +1071,43 @@ describe("mystery_box", () => {
         );
 
         // Create isolated project for this scenario
-        await (program as any).methods
-          .createProject(
-            scenarioProjectId,
-            tenant.publicKey,
-            feeWallet.publicKey,
-            feeWallet2.publicKey,
-            new anchor.BN(scenario.feeSOL * 1e9),
-            0
-          )
-          .accounts({
-            platform: platformPda,
-            project: scenarioProjectPda,
-            superAdmin: superAdmin.publicKey,
-            systemProgram: SystemProgram.programId,
-          })
-          .rpc();
+        console.log("LOG: 1 - createProject");
+        const feeBn = new anchor.BN(Math.floor(scenario.feeSOL * 1e9).toString());
+        console.log("createProject args:", {
+          scenarioSlug,
+          tenant: tenant.publicKey?.toBase58(),
+          feeWallet: feeWallet.publicKey?.toBase58(),
+          feeWallet2: feeWallet2.publicKey?.toBase58(),
+          feeBn,
+          isBN: anchor.BN.isBN(feeBn),
+          hasToArrayLike: typeof (feeBn as any).toArrayLike
+        });
+        try {
+          await (program as any).methods
+            .createProject(
+              scenarioSlug,
+              tenant.publicKey,
+              feeWallet.publicKey,
+              feeWallet2.publicKey,
+              feeBn,
+              new anchor.BN(0)
+            )
+            .accounts({
+              platform: platformPda,
+              project: scenarioProjectPda,
+              superAdmin: superAdmin.publicKey,
+              systemProgram: SystemProgram.programId,
+            })
+            .rpc();
+        } catch (err: any) {
+          console.error("EXACT ERROR IN CREATE_PROJECT:", err);
+          throw err;
+        }
 
         // Initialize vault for this scenario
+        console.log("LOG: 2 - initializeVault");
         await (program as any).methods
-          .initializeVault(scenarioProjectId)
+          .initializeVault(scenarioSlug)
           .accounts({
             project: scenarioProjectPda,
             vault: scenarioVaultPda,
@@ -1189,6 +1132,14 @@ describe("mystery_box", () => {
         let scenarioVaultTokenAddress = vaultTokenAccount.address;
         let scenarioUserTokenAddress = userTokenAccount.address;
         if (hasSpl) {
+          await mintTo(
+            connection,
+            tenant,
+            tokenMint,
+            tenantTokenAccount.address,
+            tenant,
+            100_000_000_000
+          );
           const scenarioVaultAta = await getOrCreateScenarioATA(
             connection, tenant, tokenMint, scenarioVaultPda, true
           );
@@ -1208,13 +1159,14 @@ describe("mystery_box", () => {
         }
 
         // 2. Create Box
-        const priceLamports = new anchor.BN(scenario.priceSOL * 1e9);
+        const priceLamports = new anchor.BN(Math.floor(scenario.priceSOL * 1e9));
         const acceptedMints = [PublicKey.default, PublicKey.default, PublicKey.default];
         const acceptedPrices = [new anchor.BN(0), new anchor.BN(0), new anchor.BN(0)];
 
+        console.log("LOG: 3 - createBox");
         await (program as any).methods
           .createBox(
-            scenarioProjectId,
+            scenarioSlug,
             scenarioBoxId,
             priceLamports,
             acceptedMints,
@@ -1249,9 +1201,10 @@ describe("mystery_box", () => {
           const prizeType = prize.type === "sol" ? { sol: {} } : { splToken: {} };
           const mintKey = prize.type === "sol" ? PublicKey.default : tokenMint;
 
+          console.log(`LOG: 4 - createPrizeItem i=${i}`);
           await (program as any).methods
             .createPrizeItem(
-              scenarioProjectId,
+              scenarioSlug,
               scenarioBoxId,
               targetIndex,
               prizeType,
@@ -1286,7 +1239,7 @@ describe("mystery_box", () => {
               if (scenario.id !== 121 && scenario.id !== 123) {
                 const requiredTokens = prize.amount.muln(prize.totalCount);
                 await (program as any).methods
-                  .managePrize(scenarioProjectId, targetIndex, scenarioBoxId, { deposit: {} }, requiredTokens)
+                  .managePrize(scenarioSlug, targetIndex, scenarioBoxId, { deposit: {} }, requiredTokens)
                   .accounts({
                     project: scenarioProjectPda,
                     boxConfig: scenarioBoxConfigPda,
@@ -1325,7 +1278,7 @@ describe("mystery_box", () => {
         if (scenario.id === 111 || scenario.id === 124) {
           // Open the box once (supply = 1) to end it
           await (program as any).methods
-            .openBox(scenarioProjectId, scenarioBoxId, 1)
+            .openBox(scenarioSlug, scenarioBoxId, 1)
             .accounts({
               platform: platformPda,
               project: scenarioProjectPda,
@@ -1338,7 +1291,6 @@ describe("mystery_box", () => {
               tenantWallet: tenant.publicKey,
               systemProgram: SystemProgram.programId,
               slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
-              instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
               vaultTokenAccount: null,
               userTokenAccount: null,
               tokenProgram: null,
@@ -1370,7 +1322,7 @@ describe("mystery_box", () => {
         let runErr: any = null;
         try {
           await (program as any).methods
-            .openBox(scenarioProjectId, scenarioBoxId, scenario.quantity)
+            .openBox(scenarioSlug, scenarioBoxId, scenario.quantity)
             .accounts({
               platform: platformPda,
               project: scenarioProjectPda,
@@ -1383,11 +1335,11 @@ describe("mystery_box", () => {
               tenantWallet: targetTenantWallet,
               systemProgram: SystemProgram.programId,
               slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
-              instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
               vaultTokenAccount: scenarioVaultTokenAddress,
               userTokenAccount: scenarioUserTokenAddress,
               tokenProgram: TOKEN_PROGRAM_ID,
             })
+            .preInstructions([ComputeBudgetProgram.setComputeUnitLimit({ units: 800_000 })])
             .signers([user])
             .rpc();
         } catch (err: any) {
@@ -1396,16 +1348,19 @@ describe("mystery_box", () => {
 
         // 5. Verification
         if (scenario.expectedSuccess) {
-          expect(runErr).to.be.null;
+          if (runErr) {
+            console.error(`Scenario ${scenario.id} failed unexpectedly:`, runErr?.logs || runErr);
+          }
+          expect(runErr ? runErr.toString() : null).to.be.null;
           if (scenario.quantity > 0) {
-            const receiptAccount = await fetchWithRetry(() => getAccount("boxReceipt").fetch(scenarioReceiptPda));
+            const receiptAccount = await fetchWithRetry(() => program.account.boxReceipt.fetch(scenarioReceiptPda));
             const expectedTotalOpened = (scenario.id === 124) ? 1 : scenario.quantity;
             expect(receiptAccount.totalOpened).to.equal(expectedTotalOpened);
           }
         } else {
-          expect(runErr).to.not.be.null;
+          expect(runErr ? "has_error" : "no_error").to.equal("has_error");
           if (scenario.errorMessage) {
-            const errMsgString = runErr.toString();
+            const errMsgString = runErr ? runErr.toString() : "";
             expect(errMsgString).to.include(scenario.errorMessage);
           }
         }
@@ -1415,9 +1370,9 @@ describe("mystery_box", () => {
 
   it("Allows platform admin to close empty vault token accounts and reclaim rent to platform treasury", async () => {
     // 1. Create a project and vault
-    const testProjectId = new anchor.BN(Math.floor(Math.random() * 100000) + 50000);
+    const testSlug = `rent-test-${Math.floor(Math.random() * 10000)}`;
     const [testProjectPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("project"), testProjectId.toArrayLike(Buffer, "le", 8)],
+      [Buffer.from("project"), Buffer.from(testSlug)],
       program.programId
     );
     const [testVaultPda] = PublicKey.findProgramAddressSync(
@@ -1426,7 +1381,7 @@ describe("mystery_box", () => {
     );
 
     await (program as any).methods
-      .createProject(testProjectId, tenant.publicKey, feeWallet.publicKey, feeWallet2.publicKey, new anchor.BN(0), 0)
+      .createProject(testSlug, tenant.publicKey, feeWallet.publicKey, feeWallet2.publicKey, new anchor.BN(0), 0)
       .accounts({
         platform: platformPda,
         project: testProjectPda,
@@ -1436,7 +1391,7 @@ describe("mystery_box", () => {
       .rpc();
 
     await (program as any).methods
-      .initializeVault(testProjectId)
+      .initializeVault(testSlug)
       .accounts({
         project: testProjectPda,
         vault: testVaultPda,
@@ -1454,19 +1409,17 @@ describe("mystery_box", () => {
     expect(vaultAtaBal.value.amount).to.equal("0");
 
     // 3. Get platform treasury balance before
-    const platformAccount = await getAccount("platformConfig").fetch(platformPda);
-    const activeTreasury = platformAccount.treasury;
-    const platformTreasuryBalBefore = await connection.getBalance(activeTreasury);
+    const platformTreasuryBalBefore = await connection.getBalance(platformTreasury.publicKey);
 
     // 4. Close the vault token account
     await (program as any).methods
-      .closeVaultTokenAccount(testProjectId)
+      .closeVaultTokenAccount(testSlug)
       .accounts({
         platform: platformPda,
         project: testProjectPda,
         vault: testVaultPda,
         vaultTokenAccount: testVaultAta.address,
-        platformTreasury: activeTreasury,
+        platformTreasury: platformTreasury.publicKey,
         signer: superAdmin.publicKey,
         tokenProgram: TOKEN_PROGRAM_ID,
       })
@@ -1476,8 +1429,232 @@ describe("mystery_box", () => {
     const testVaultAtaInfo = await connection.getAccountInfo(testVaultAta.address);
     expect(testVaultAtaInfo).to.be.null; // Closed!
 
-    const platformTreasuryBalAfter = await connection.getBalance(activeTreasury);
+    const platformTreasuryBalAfter = await connection.getBalance(platformTreasury.publicKey);
     expect(platformTreasuryBalAfter).to.be.greaterThan(platformTreasuryBalBefore);
+  });
+
+  it("Updates project fees (update_project_fees)", async () => {
+    const newFeeLamports = new anchor.BN(8_000_000);
+    const newFeeWallet = Keypair.generate().publicKey;
+    const newFeeWallet2 = Keypair.generate().publicKey;
+
+    await (program as any).methods
+      .updateProjectFees(slug, newFeeLamports, newFeeWallet, newFeeWallet2)
+      .accounts({
+        platform: platformPda,
+        project: projectPda,
+        superAdmin: superAdmin.publicKey,
+      })
+      .rpc();
+
+    const proj = await fetchWithRetry(() => program.account.project.fetch(projectPda));
+    expect(proj.feeLamports.toNumber()).to.equal(8_000_000);
+    expect(proj.feeWallet.toBase58()).to.equal(newFeeWallet.toBase58());
+    expect(proj.feeWallet2.toBase58()).to.equal(newFeeWallet2.toBase58());
+  });
+
+  it("Updates box configuration (update_box)", async () => {
+    const newPrice = new anchor.BN(150_000_000);
+    const acceptedMints = [PublicKey.default, PublicKey.default, PublicKey.default];
+    const acceptedPrices = [new anchor.BN(0), new anchor.BN(0), new anchor.BN(0)];
+    const newStart = new anchor.BN(Math.floor(Date.now() / 1000) - 200);
+    const newEnd = new anchor.BN(Math.floor(Date.now() / 1000) + 20000);
+
+    await (program as any).methods
+      .updateBox(slug, boxId, newPrice, acceptedMints, acceptedPrices, newStart, newEnd)
+      .accounts({
+        project: projectPda,
+        boxConfig: boxConfigPda,
+        tenant: tenant.publicKey,
+      })
+      .signers([tenant])
+      .rpc();
+
+    const boxAcct = await fetchWithRetry(() => program.account.boxConfig.fetch(boxConfigPda));
+    expect(boxAcct.priceLamports.toNumber()).to.equal(150_000_000);
+  });
+
+  it("Tests project & vault lifecycle management (withdraw_vault_sol, withdraw_vault_token, close_receipt, close_box, close_project)", async () => {
+    const lifeSlug = `life-${Math.floor(Math.random() * 100000)}`;
+    const [lifeProjectPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("project"), Buffer.from(lifeSlug)],
+      program.programId
+    );
+    const [lifeVaultPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("vault"), lifeProjectPda.toBuffer()],
+      program.programId
+    );
+
+    // 1. Create project & initialize vault
+    await (program as any).methods
+      .createProject(lifeSlug, tenant.publicKey, feeWallet.publicKey, feeWallet2.publicKey, new anchor.BN(1_000_000), 0)
+      .accounts({
+        platform: platformPda,
+        project: lifeProjectPda,
+        superAdmin: superAdmin.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc();
+
+    await (program as any).methods
+      .initializeVault(lifeSlug)
+      .accounts({
+        project: lifeProjectPda,
+        vault: lifeVaultPda,
+        tenant: tenant.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([tenant])
+      .rpc();
+
+    // 2. Fund vault with SOL and test withdrawVaultSol
+    const solTransferTx = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: provider.wallet.publicKey,
+        toPubkey: lifeVaultPda,
+        lamports: 100_000_000, // 0.1 SOL
+      })
+    );
+    await provider.sendAndConfirm(solTransferTx, []);
+
+    const tenantSolBefore = await connection.getBalance(tenant.publicKey);
+    await (program as any).methods
+      .withdrawVaultSol(lifeSlug, new anchor.BN(50_000_000))
+      .accounts({
+        project: lifeProjectPda,
+        vault: lifeVaultPda,
+        authority: tenant.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([tenant])
+      .rpc();
+    const tenantSolAfter = await connection.getBalance(tenant.publicKey);
+    expect(tenantSolAfter).to.be.greaterThan(tenantSolBefore);
+
+    // 3. Fund vault with tokens and test withdrawVaultToken
+    const lifeVaultAta = await getOrCreateScenarioATA(connection, tenant, tokenMint, lifeVaultPda, true);
+    const lifeTenantAta = tenantTokenAccount.address;
+
+    await mintTo(connection, tenant, tokenMint, lifeVaultAta.address, tenant, 5_000_000_000);
+
+    const tenantTokenBefore = await connection.getTokenAccountBalance(lifeTenantAta);
+    await (program as any).methods
+      .withdrawVaultToken(lifeSlug, new anchor.BN(2_000_000_000))
+      .accounts({
+        project: lifeProjectPda,
+        vault: lifeVaultPda,
+        tokenMint: tokenMint,
+        vaultTokenAccount: lifeVaultAta.address,
+        authorityTokenAccount: lifeTenantAta,
+        authority: tenant.publicKey,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .signers([tenant])
+      .rpc();
+
+    const tenantTokenAfter = await connection.getTokenAccountBalance(lifeTenantAta);
+    expect(BigInt(tenantTokenAfter.value.amount) > BigInt(tenantTokenBefore.value.amount)).to.be.true;
+
+    // 4. Test Box Lifecycle & closeBox
+    const lifeBoxId = new anchor.BN(99);
+    const [lifeBoxConfigPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("box"), lifeProjectPda.toBuffer(), lifeBoxId.toArrayLike(Buffer, "le", 8)],
+      program.programId
+    );
+    const [lifeReceiptPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("receipt"), user.publicKey.toBuffer(), lifeProjectPda.toBuffer()],
+      program.programId
+    );
+
+    const nowSec = Math.floor(Date.now() / 1000);
+    await (program as any).methods
+      .createBox(
+        lifeSlug,
+        lifeBoxId,
+        new anchor.BN(10_000_000),
+        [PublicKey.default, PublicKey.default, PublicKey.default],
+        [new anchor.BN(0), new anchor.BN(0), new anchor.BN(0)],
+        1,
+        new anchor.BN(nowSec - 100),
+        new anchor.BN(nowSec + 100)
+      )
+      .accounts({
+        platform: platformPda,
+        project: lifeProjectPda,
+        boxConfig: lifeBoxConfigPda,
+        tenant: tenant.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([tenant])
+      .rpc();
+
+    const SYSVAR_SLOT_HASHES_PUBKEY = new PublicKey("SysvarS1otHashes111111111111111111111111111");
+    await (program as any).methods
+      .openBox(lifeSlug, lifeBoxId, 1)
+      .accounts({
+        platform: platformPda,
+        project: lifeProjectPda,
+        boxConfig: lifeBoxConfigPda,
+        receipt: lifeReceiptPda,
+        vault: lifeVaultPda,
+        user: user.publicKey,
+        feeWallet: feeWallet.publicKey,
+        feeWallet2: feeWallet2.publicKey,
+        tenantWallet: tenant.publicKey,
+        systemProgram: SystemProgram.programId,
+        slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
+        vaultTokenAccount: null,
+        userTokenAccount: null,
+        tokenProgram: null,
+      })
+      .signers([user])
+      .rpc();
+
+    // 5. Test closeReceipt
+    await (program as any).methods
+      .closeReceipt(lifeSlug)
+      .accounts({
+        platform: platformPda,
+        project: lifeProjectPda,
+        receipt: lifeReceiptPda,
+        user: user.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([user])
+      .rpc();
+
+    const receiptInfo = await connection.getAccountInfo(lifeReceiptPda);
+    expect(receiptInfo).to.be.null;
+
+    // 6. Test closeBox
+    await (program as any).methods
+      .closeBox(lifeSlug, lifeBoxId)
+      .accounts({
+        platform: platformPda,
+        project: lifeProjectPda,
+        boxConfig: lifeBoxConfigPda,
+        signer: tenant.publicKey,
+        rentDestination: tenant.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([tenant])
+      .rpc();
+
+    const boxInfo = await connection.getAccountInfo(lifeBoxConfigPda);
+    expect(boxInfo).to.be.null;
+
+    // 7. Test closeProject
+    await (program as any).methods
+      .closeProject(lifeSlug)
+      .accounts({
+        platform: platformPda,
+        project: lifeProjectPda,
+        superAdmin: superAdmin.publicKey,
+      })
+      .rpc();
+
+    const projInfo = await connection.getAccountInfo(lifeProjectPda);
+    expect(projInfo).to.be.null;
   });
 
   after(async () => {

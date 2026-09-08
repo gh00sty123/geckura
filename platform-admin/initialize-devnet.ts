@@ -18,7 +18,7 @@ async function main() {
   });
 
   const idl = JSON.parse(fs.readFileSync("./src/lib/idl.json", "utf-8"));
-  const programId = new PublicKey("CXX3hFgqL5bozH8pYbTtetMHVYWkHwcx46MwHeF7VVcv");
+  const programId = new PublicKey("HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
   const program = new Program(idl, devnetProvider);
 
   console.log("Super Admin Pubkey:", adminKeypair.publicKey.toBase58());

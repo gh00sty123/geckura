@@ -1,23 +1,21 @@
 [package]
 name = "mystery_box"
 version = "0.1.0"
-anchor_version = "0.30.1"
+anchor_version = "1.0.1"
 
 [programs.localnet]
 mystery_box = "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"
 
 [programs.devnet]
-mystery_box = "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"
-
 [programs.mainnet]
-mystery_box = "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD"
+mystery_box = "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr"
 
 [provider]
-cluster = "localnet"
+cluster = "mainnet"
 wallet = "../authority.json"
 
 [scripts]
 test = "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 
 [hooks]
-pre-build = "cargo build --lib --profile release --target sbf-solana-solana"
+pre-build = "cargo build-sbf"

@@ -3,9 +3,8 @@
 import { Suspense, useCallback, useEffect, useState, useMemo } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { buildConn, decodeAccount, fetchProjects, fetchAllBoxes, fetchAllPrizeItems, retryWithBackoff, ixInitializePlatform, platformPDA, projectPDA, vaultPDA, sendIx, getSolanaErrorDetails } from "@/lib/program-ix";
+import { buildConn, decodeAccount, fetchProjects, fetchAllBoxes, fetchAllPrizeItems, retryWithBackoff, ixInitializePlatform, platformPDA, vaultPDA, sendIx, getSolanaErrorDetails } from "@/lib/program-ix";
 import { updateProjectFeesTx, fetchRentInfoForProject, adminSweepBoxRentTx, closeProjectTx, type ProjectRentInfo, type SweepableBox, sweepVaultAtaRentTx, type SweepableVaultAta } from "@/lib/actions";
-import { RPC_URL } from "@/lib/env";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiLayers, FiBox, FiDollarSign, FiTrendingUp, FiSettings, FiEdit3, FiCheck, FiX, FiShield, FiDatabase, FiDownload } from "react-icons/fi";
@@ -107,8 +106,12 @@ function Overview() {
     const detailedProjects = await Promise.all(
       projectsData.map(async (p) => {
         try {
-          const [projectPda] = await projectPDA(p.slug);
-          const conn = new Connection(RPC_URL, "confirmed");
+          const programId = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
+          const [projectPda] = await PublicKey.findProgramAddressSync(
+            [Buffer.from("project"), Buffer.from(p.slug)],
+            programId
+          );
+          const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
           const accInfo = await conn.getAccountInfo(projectPda);
           if (accInfo) {
             const decoded = decodeAccount("Project", accInfo.data);
@@ -683,7 +686,7 @@ function Overview() {
                                 <FiEdit3 /> Edit Fees
                               </button>
                               <Link 
-                                href={`/${(!p.slug || !isNaN(Number(p.slug))) ? "geckura" : p.slug}/admin`}
+                                href={`/${p.slug}/admin`}
                                 className="flex-1 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-semibold text-[#0f2618] hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/20 text-center transition flex items-center justify-center gap-1"
                               >
                                 Manage <FiTrendingUp />

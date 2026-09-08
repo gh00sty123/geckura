@@ -9,10 +9,8 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import IDL from "@/lib/idl.json";
 import { buildIx, platformPDA, projectPDA, boxPDA, vaultPDA } from "@/lib/program-ix";
 
-import { RPC_URL } from "@/lib/env";
-
-const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
-const RPC = RPC_URL;
+const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
+const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 // Load keeper keypair from environment variables
 function getKeeperKeypair(): Keypair | null {
@@ -46,12 +44,11 @@ async function getSlotHash(connection: Connection, targetSlot: number): Promise<
   if (!accountInfo) return null;
   const data = accountInfo.data;
   if (data.length < 8) return null;
-  const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
-  const len = Number(dataView.getBigUint64(0, true));
+  const len = Number(data.readBigUInt64LE(0));
   for (let i = 0; i < len; i++) {
     const start = 8 + i * 40;
     if (start + 40 > data.length) break;
-    const entrySlot = Number(dataView.getBigUint64(start, true));
+    const entrySlot = Number(data.readBigUInt64LE(start));
     if (entrySlot === targetSlot) {
       return data.subarray(start + 8, start + 40);
     }
@@ -167,13 +164,13 @@ export async function POST(req: NextRequest) {
     requestHash.copy(hashInput, 32);
     boxConfigPk.toBuffer().copy(hashInput, 64);
 
-    const nonceBuf = new Uint8Array(8);
-    new DataView(nonceBuf.buffer).setBigUint64(0, BigInt(decodedReceipt.nonce), true);
-    Buffer.from(nonceBuf).copy(hashInput, 96);
+    const nonceBuf = Buffer.alloc(8);
+    nonceBuf.writeBigUInt64LE(BigInt(decodedReceipt.nonce));
+    nonceBuf.copy(hashInput, 96);
 
-    const slotBuf = new Uint8Array(8);
-    new DataView(slotBuf.buffer).setBigUint64(0, BigInt(requestSlot), true);
-    Buffer.from(slotBuf).copy(hashInput, 104);
+    const slotBuf = Buffer.alloc(8);
+    slotBuf.writeBigUInt64LE(BigInt(requestSlot));
+    slotBuf.copy(hashInput, 104);
 
     const randomVal = fnv1a(hashInput);
 

@@ -5,17 +5,17 @@ import crypto from "crypto";
 import IDL from "@/lib/idl.json";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
-import { RPC_URL } from "@/lib/env";
-import { projectPDASync } from "@/lib/program-ix";
-
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
-const RPC = RPC_URL;
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
+const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 // Fetch project authority from Solana blockchain
 const getProjectAuthority = async (slug: string): Promise<string | null> => {
   try {
     const conn = new Connection(RPC, "confirmed");
-    const [projectPDA] = projectPDASync(slug);
+    const [projectPDA] = PublicKey.findProgramAddressSync(
+      [Buffer.from("project"), Buffer.from(slug)],
+      PGID
+    );
     const accountInfo = await conn.getAccountInfo(projectPDA);
     if (!accountInfo) return null;
     

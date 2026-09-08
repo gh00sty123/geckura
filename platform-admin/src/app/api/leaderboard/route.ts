@@ -8,16 +8,13 @@ import * as path from "path";
 import IDL from "@/lib/idl.json";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
-import { RPC_URL } from "@/lib/env";
-import { projectPDASync } from "@/lib/program-ix";
-
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
-const RPC = RPC_URL;
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
+const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 const DEFAULT_DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1526660578867675156/QKVdqrV2dw-ZsCQhQX-mIL_7I-9lAMl4g5eh9THUkQJJZbSCuk-HjioishNkzJCewlpf";
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || DEFAULT_DISCORD_WEBHOOK_URL;
 
 const KNOWN_PROGRAM_IDS = [
-  "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD",
+  "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr",
   "AEQrvbZvGwGcat5FXDXXZD71NiQsWNfdxvDFvdigxL5t",
   "DVCAjYv1EH5T2RcVN1t3BYVahfW1h4UJXhgDdY8oQes4"
 ];
@@ -45,7 +42,10 @@ interface DecodedBoxOpenEvent {
 const getProjectAuthority = async (slug: string): Promise<string | null> => {
   try {
     const conn = new Connection(RPC, "confirmed");
-    const [projectPDA] = projectPDASync(slug);
+    const [projectPDA] = PublicKey.findProgramAddressSync(
+      [Buffer.from("project"), Buffer.from(slug)],
+      PGID
+    );
     const accountInfo = await conn.getAccountInfo(projectPDA);
     if (!accountInfo) return null;
     

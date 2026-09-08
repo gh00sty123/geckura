@@ -3,14 +3,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { retryWithBackoff, projectPDA } from "@/lib/program-ix";
+import { retryWithBackoff } from "@/lib/program-ix";
 import IDL from "@/lib/idl.json";
 import { FiDownload, FiUsers, FiActivity, FiAward } from "react-icons/fi";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { BorshAccountsCoder, BorshCoder, EventParser } from "@coral-xyz/anchor";
 
-const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
+const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "HnysT79HmiJWWtE8W2LWbhBeXk27RxoohbJ4cQyw8AKr");
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
 
 interface ParsedEvent {
@@ -88,8 +88,10 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
       // 2. Fetch project details in the background
       try {
         const conn = new Connection(RPC, "confirmed");
-        const [projectPda] = await projectPDA(slug);
-        const projectAcc = await conn.getAccountInfo(projectPda);
+        const [projectPDA] = PublicKey.findProgramAddressSync(
+          [Buffer.from("project"), Buffer.from(slug)], PGID
+        );
+        const projectAcc = await conn.getAccountInfo(projectPDA);
 
         if (projectAcc) {
           const coder = new BorshAccountsCoder(IDL as any);
@@ -117,7 +119,9 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
     
     try {
       const conn = new Connection(RPC, "confirmed");
-      const [projectPda] = await projectPDA(slug);
+      const [projectPDA] = PublicKey.findProgramAddressSync(
+        [Buffer.from("project"), Buffer.from(slug)], PGID
+      );
 
       setProgressMsg("Reading box configurations...");
       const allPkgs = await retryWithBackoff(
@@ -131,7 +135,7 @@ export default function AdminLeaderboard({ slug, refreshKey }: { slug: string; r
       for (const { pubkey, account } of allPkgs) {
         try {
           const b: any = coder.decode("BoxConfig", account.data);
-          if (b.project.equals(projectPda)) {
+          if (b.project.equals(projectPDA)) {
             const price = b.priceLamports?.toNumber?.() ?? b.price_lamports?.toNumber?.() ?? b.priceLamports ?? b.price_lamports ?? 0;
             solBoxesMap.set(pubkey.toBase58(), price > 0);
           }

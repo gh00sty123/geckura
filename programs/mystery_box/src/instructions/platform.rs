@@ -20,7 +20,7 @@ pub struct InitializePlatform<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(project_id: u64)]
+#[instruction(slug: String)]
 pub struct CreateProject<'info> {
     #[account(
         seeds = [PLATFORM_SEED],
@@ -31,7 +31,7 @@ pub struct CreateProject<'info> {
         init,
         payer = super_admin,
         space = Project::SPACE,
-        seeds = [PROJECT_SEED, &project_id.to_le_bytes()],
+        seeds = [PROJECT_SEED, slug.as_bytes()],
         bump
     )]
     pub project: Account<'info, Project>,
@@ -41,7 +41,7 @@ pub struct CreateProject<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(project_id: u64)]
+#[instruction(slug: String)]
 pub struct UpdateProjectFees<'info> {
     #[account(
         seeds = [PLATFORM_SEED],
@@ -50,7 +50,7 @@ pub struct UpdateProjectFees<'info> {
     pub platform: Account<'info, PlatformConfig>,
     #[account(
         mut,
-        seeds = [PROJECT_SEED, &project_id.to_le_bytes()],
+        seeds = [PROJECT_SEED, slug.as_bytes()],
         bump = project.bump
     )]
     pub project: Account<'info, Project>,
@@ -58,7 +58,7 @@ pub struct UpdateProjectFees<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(project_id: u64)]
+#[instruction(slug: String)]
 pub struct CloseProject<'info> {
     #[account(
         seeds = [PLATFORM_SEED],
@@ -67,7 +67,7 @@ pub struct CloseProject<'info> {
     pub platform: Account<'info, PlatformConfig>,
     #[account(
         mut,
-        seeds = [PROJECT_SEED, &project_id.to_le_bytes()],
+        seeds = [PROJECT_SEED, slug.as_bytes()],
         bump = project.bump,
         close = super_admin
     )]
@@ -94,7 +94,7 @@ pub fn initialize_platform(ctx: Context<InitializePlatform>, treasury: Pubkey) -
 
 pub fn create_project(
     ctx: Context<CreateProject>,
-    project_id: u64,
+    slug: String,
     authority: Pubkey,
     fee_wallet: Pubkey,
     fee_wallet_2: Pubkey,
@@ -111,8 +111,10 @@ pub fn create_project(
         MysteryBoxError::PlatformPaused
     );
 
+    validate_slug(&slug)?;
+
     let project = &mut ctx.accounts.project;
-    project.project_id = project_id;
+    project.slug = slug.clone();
     project.authority = authority;
     project.fee_wallet = fee_wallet;
     project.fee_wallet_2 = fee_wallet_2;
@@ -128,7 +130,7 @@ pub fn create_project(
 
 pub fn update_project_fees(
     ctx: Context<UpdateProjectFees>,
-    _project_id: u64,
+    _slug: String,
     new_fee_lamports: u64,
     new_fee_wallet: Pubkey,
     new_fee_wallet_2: Pubkey,
@@ -147,7 +149,7 @@ pub fn update_project_fees(
     Ok(())
 }
 
-pub fn close_project(ctx: Context<CloseProject>, _project_id: u64) -> Result<()> {
+pub fn close_project(ctx: Context<CloseProject>, _slug: String) -> Result<()> {
      require_keys_eq!(
          ctx.accounts.super_admin.key(),
          ctx.accounts.platform.authority,
@@ -157,5 +159,19 @@ pub fn close_project(ctx: Context<CloseProject>, _project_id: u64) -> Result<()>
          ctx.accounts.project.active_boxes_count == 0,
          MysteryBoxError::ProjectHasActiveBoxes
      );
+     // Account closure is handled by the `close = super_admin` constraint
+
      Ok(())
  }
+
+fn validate_slug(slug: &str) -> Result<()> {
+    require!(
+        !slug.is_empty()
+            && slug.len() <= 30
+            && !slug.starts_with('-')
+            && !slug.ends_with('-')
+            && slug.as_bytes().iter().all(|&b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-'),
+        MysteryBoxError::InvalidSlug
+    );
+    Ok(())
+}
