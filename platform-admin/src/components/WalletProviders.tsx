@@ -6,7 +6,7 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { WalletError } from "@solana/wallet-adapter-base";
 import toast from "react-hot-toast";
 
-const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+import { RPC_URL } from "@/lib/env";
 
 export default function WalletProviders({ children }: { children: ReactNode }) {
   const handleWalletError = useCallback((error: WalletError) => {

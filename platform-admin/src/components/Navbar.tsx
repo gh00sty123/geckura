@@ -23,7 +23,9 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useAppStore, type Notification } from "@/lib/store";
 
-const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+import { RPC_URL } from "@/lib/env";
+
+const RPC = RPC_URL;
 const EXPLORER_BASE = "https://explorer.solana.com/address";
 const CLUSTER_PARAM = RPC.includes("devnet") ? "?cluster=devnet" : RPC.includes("mainnet") ? "" : "?cluster=devnet";
 

@@ -29,8 +29,10 @@ import { resolveIpfsUrl, updateFavicon } from "@/lib/helpers";
 import { BorshAccountsCoder, BorshCoder, BorshEventCoder, EventParser } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
 
+import { RPC_URL } from "@/lib/env";
+
 const PGID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "5GA4F3dUw4uZc63UFRQxcyqZBA1TMvDG9p9XzAVCojwD");
-const RPC  = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+const RPC  = RPC_URL;
 const EXPLORER_BASE = "https://explorer.solana.com/tx";
 const CLUSTER_PARAM = RPC.includes("devnet") ? "?cluster=devnet" : RPC.includes("mainnet") ? "" : "?cluster=devnet";
 

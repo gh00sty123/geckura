@@ -20,7 +20,7 @@ import { ProjectBrandingModal } from "@/components/ProjectBrandingModal";
 import { resolveIpfsUrl, updateFavicon } from "@/lib/helpers";
 import { BorshAccountsCoder } from "@coral-xyz/anchor";
 import IDL from "@/lib/idl.json";
-import { NETWORK } from "@/lib/env";
+import { NETWORK, RPC_URL } from "@/lib/env";
 
 const TREASURY_WALLET = new PublicKey("FBPFAtDxCwPEKb5kUp779TdFQU3hyPmfjT2LwtrkKscq");
 const pgId = PROGRAM_ID;
@@ -58,7 +58,7 @@ async function getDecimalsForMint(mintAddress: string, walletAssets: any[] = [],
   if (asset) return asset.decimals;
 
   try {
-    const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+    const rpcUrl = RPC_URL;
     const conn = new Connection(rpcUrl, "confirmed");
     const mintPk = new PublicKey(mintAddress);
     const accInfo = await conn.getAccountInfo(mintPk);
@@ -501,7 +501,7 @@ function Inner({ slug }: { slug: string }) {
     setLoadingAssets(true);
     setAssetsError("");
     try {
-      const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com";
+      const rpcUrl = RPC_URL;
       const conn = new Connection(rpcUrl, "confirmed");
       
       const [projPk] = await projectPDA(slug);
@@ -538,7 +538,7 @@ function Inner({ slug }: { slug: string }) {
   const fetchBoxes = useCallback(async () => {
     if (!connected || !publicKey) { setSlugLoaded(false); setSlugBoxes([]); return; }
     try {
-      const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
+      const conn = new Connection(RPC_URL, "confirmed");
       const [pk] = await projectPDA(slug);
 
       // Fetch branding from Supabase via API route
@@ -671,7 +671,7 @@ function Inner({ slug }: { slug: string }) {
 
   const refresh = useCallback(async () => {
     setErr("");
-    const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
+    const conn = new Connection(RPC_URL, "confirmed");
 
     /* Run all fetches in parallel for speed */
     const [platformResult, projectsResult] = await Promise.all([
@@ -1747,7 +1747,7 @@ function CreateBoxModal({
     try {
       /* ---- derive next box ID ---- */
       setStep("Resolving box ID…");
-      const conn    = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
+      const conn    = new Connection(RPC_URL, "confirmed");
       const [projPk] = projectPDASync(slug);
       const allBoxes = await retryWithBackoff(() => conn.getProgramAccounts(pgId), "getProgramAccounts");
       const projectBoxes: number[] = [];
@@ -2351,7 +2351,7 @@ function VaultManager({
   rentClaimMode?: number;
 }) {
   const wallet = useWallet();
-  const conn   = useMemo(() => new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed"), []);
+  const conn   = useMemo(() => new Connection(RPC_URL, "confirmed"), []);
   const projPk = useMemo(() => projectPDASync(slug)[0], [slug]);
   const vaultPk = useMemo(
     () => PublicKey.findProgramAddressSync([Buffer.from("vault"), projPk.toBuffer()], pgId)[0],

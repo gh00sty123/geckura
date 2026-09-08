@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { WalletContextState } from "@solana/wallet-adapter-react";
 import { Connection, Transaction, TransactionInstruction, PublicKey } from "@solana/web3.js";
 import { PROGRAM_ID } from "./solana";
+import { RPC_URL } from "./env";
 import IDL from "@/lib/idl.json";
 import { BorshInstructionCoder, BorshAccountsCoder } from "@coral-xyz/anchor";
 
@@ -119,7 +120,7 @@ export async function send(ix: TransactionInstruction, wallet: WalletContextStat
   if (!wallet.publicKey) throw new Error("Connect wallet first");
   if (!wallet.signTransaction) throw new Error("Wallet does not support transaction signing");
   const conn = new Connection(
-    process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com",
+    RPC_URL,
     "confirmed"
   );
   const tx = new Transaction().add(ix);

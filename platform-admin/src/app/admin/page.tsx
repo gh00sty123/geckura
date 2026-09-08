@@ -5,6 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { buildConn, decodeAccount, fetchProjects, fetchAllBoxes, fetchAllPrizeItems, retryWithBackoff, ixInitializePlatform, platformPDA, projectPDA, vaultPDA, sendIx, getSolanaErrorDetails } from "@/lib/program-ix";
 import { updateProjectFeesTx, fetchRentInfoForProject, adminSweepBoxRentTx, closeProjectTx, type ProjectRentInfo, type SweepableBox, sweepVaultAtaRentTx, type SweepableVaultAta } from "@/lib/actions";
+import { RPC_URL } from "@/lib/env";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiLayers, FiBox, FiDollarSign, FiTrendingUp, FiSettings, FiEdit3, FiCheck, FiX, FiShield, FiDatabase, FiDownload } from "react-icons/fi";
@@ -107,7 +108,7 @@ function Overview() {
       projectsData.map(async (p) => {
         try {
           const [projectPda] = await projectPDA(p.slug);
-          const conn = new Connection(process.env.NEXT_PUBLIC_RPC_URL || "https://api.devnet.solana.com", "confirmed");
+          const conn = new Connection(RPC_URL, "confirmed");
           const accInfo = await conn.getAccountInfo(projectPda);
           if (accInfo) {
             const decoded = decodeAccount("Project", accInfo.data);
