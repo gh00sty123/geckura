@@ -6,7 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { decodeAccount, fetchProjects, retryWithBackoff, ixInitializePlatform, platformPDA, projectPDA, projectPDASync, PROGRAM_ID, sendIx, buildIx, getSolanaErrorDetails, boxStatusToCode, toUnixSeconds, unixToDatetimeLocal, datetimeLocalToUnix } from "@/lib/program-ix";
-import { createBoxTx, createPrizeItemTx, createBoxWithPrizesTx, depositPrizeTx, withdrawPrizeTx, withdrawVaultSolTx, withdrawVaultTokenTx, closeVaultTokenAccountTx, updateProjectBrandingTx, migrateProjectToV2Tx, updateBoxTx, updateBoxBrandingTx, closeBoxTx } from "@/lib/actions";
+import { createBoxTx, createPrizeItemTx, createBoxWithPrizesTx, depositPrizeTx, withdrawPrizeTx, withdrawVaultSolTx, withdrawVaultTokenTx, closeVaultTokenAccountTx, updateProjectBrandingTx, migrateProjectToV2Tx, updateBoxTx, updateBoxBrandingTx, closeBoxTx, closeProjectTx } from "@/lib/actions";
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction, createTransferInstruction } from "@solana/spl-token";
 import { useSetProjectBranding } from "@/lib/ProjectBrandingProvider";
 import toast from "react-hot-toast";
@@ -762,6 +762,30 @@ function Inner({ slug }: { slug: string }) {
     }
   }, [connected, publicKey, slug, slugProj, wallet, refresh]);
 
+  const [closingProject, setClosingProject] = useState(false);
+
+  const handleCloseProject = useCallback(async () => {
+    if (!wallet.publicKey) {
+      toast.error("Connect wallet first!");
+      return;
+    }
+    if (!confirm(`Are you sure you want to CLOSE project "${slugProj?.name || slug}" and reclaim its SOL rent back to your wallet? This will close the project account on-chain.`)) {
+      return;
+    }
+    setClosingProject(true);
+    toast.loading("Closing project and reclaiming rent on-chain...", { id: "close-proj" });
+    try {
+      await closeProjectTx(wallet, slug);
+      toast.success("Project account closed and rent returned to your wallet!", { id: "close-proj" });
+      window.location.href = "/admin";
+    } catch (e: any) {
+      console.error("Failed to close project:", e);
+      toast.error(getSolanaErrorDetails(e), { id: "close-proj" });
+    } finally {
+      setClosingProject(false);
+    }
+  }, [wallet, slug, slugProj]);
+
   /* ── Load specific project + boxes when slug changes ───────────────────────  */
   useEffect(() => {
     fetchBoxes();
@@ -946,6 +970,13 @@ function Inner({ slug }: { slug: string }) {
             <span className="text-[#3d6b4e] uppercase tracking-widest font-bold">ATA Rent Recipient:</span>
             <span className="font-bold text-amber-400">{slugProj.rentClaimMode === 1 ? "Platform Treasury" : "Project Authority"}</span>
           </span>
+          <button
+            onClick={handleCloseProject}
+            disabled={closingProject}
+            className="text-[10px] md:text-xs bg-red-950/50 hover:bg-red-900/80 border border-red-500/40 text-red-300 font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+          >
+            {closingProject ? "Closing..." : "🔥 Close Project & Claim Rent"}
+          </button>
         </div>
         
       </div>
