@@ -50,7 +50,7 @@ function Overview() {
 
   const platformStats = useMemo(() => {
     const onChainSum = allBoxes.reduce((sum, box) => sum + (box.sold ?? 0), 0);
-    const totalBoxesOpened = Math.max(dbEventsCount, onChainSum);
+    const totalBoxesOpened = onChainSum;
     let totalPlatformRevenueSol = 0;
 
     projects.forEach((project) => {
