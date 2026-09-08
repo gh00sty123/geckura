@@ -181,7 +181,7 @@ function Overview() {
     setSaving(true);
     try {
       const feeWallet = new PublicKey(editFeeWallet);
-      const feeWallet2 = feeWallet;
+      const feeWallet2 = new PublicKey(editFeeWallet2 || editFeeWallet);
       const feeSol = parseFloat(editFeeLamports);
       if (isNaN(feeSol) || feeSol < 0) {
         throw new Error("Fee must be a non-negative number");
@@ -500,10 +500,18 @@ function Overview() {
                             className="space-y-3"
                           >
                             <div>
-                              <label className="text-[10px] text-[#3d6b4e] uppercase font-bold mb-1 block">Fee Wallet</label>
+                              <label className="text-[10px] text-[#3d6b4e] uppercase font-bold mb-1 block">Fee Wallet 1 (Primary 50%)</label>
                               <input
                                 value={editFeeWallet}
                                 onChange={(e) => setEditFeeWallet(e.target.value)}
+                                className="w-full bg-[#1cac64]/8 border border-[#1cac64]/15 rounded-lg px-3 py-1.5 text-xs font-mono text-[#0f2618] focus:outline-none focus:border-indigo-500 transition-colors"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-[#3d6b4e] uppercase font-bold mb-1 block">Fee Wallet 2 (Secondary 50%)</label>
+                              <input
+                                value={editFeeWallet2}
+                                onChange={(e) => setEditFeeWallet2(e.target.value)}
                                 className="w-full bg-[#1cac64]/8 border border-[#1cac64]/15 rounded-lg px-3 py-1.5 text-xs font-mono text-[#0f2618] focus:outline-none focus:border-indigo-500 transition-colors"
                               />
                             </div>

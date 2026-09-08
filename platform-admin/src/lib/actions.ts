@@ -1,8 +1,7 @@
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import { buildIx, sendIx, sendTx, platformPDA, projectPDA, boxPDA, vaultPDA, ixCloseBox, ixCloseProject, PROGRAM_ID, buildConn, retryWithBackoff, decodeAccount, ixClaimPrizes, boxStatusToCode, ixCloseReceipt, ixCloseVaultTokenAccount, ixInitializeVault, ixInitializePlatform } from "@/lib/program-ix";
+import { buildIx, sendIx, sendTx, platformPDA, projectPDA, boxPDA, vaultPDA, ixCloseBox, ixCloseProject, PROGRAM_ID, buildConn, retryWithBackoff, decodeAccount, ixClaimPrizes, boxStatusToCode, ixCloseReceipt, ixCloseVaultTokenAccount, ixInitializePlatform, toProjectId } from "@/lib/program-ix";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { WalletContextState } from "@solana/wallet-adapter-react";
-import { toProjectId } from "@/lib/program-ix";
 
 // Constants for token and associated token programs
 const TOKEN_PROG = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");

@@ -423,6 +423,20 @@ export function ixInitializePlatform(
   }, [treasury]);
 }
 
+export function ixInitializeVault(
+  project: PublicKey,
+  vault: PublicKey,
+  payer: PublicKey,
+  slug: string,
+): TransactionInstruction {
+  return buildIx("initialize_vault", {
+    project: { pubkey: project, isSigner: false, isWritable: false },
+    vault: { pubkey: vault, isSigner: false, isWritable: true },
+    payer: { pubkey: payer, isSigner: true, isWritable: true },
+    system_program: { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  }, [slug]);
+}
+
 export function ixCreateProject(
   platform: PublicKey, project: PublicKey, superAdmin: PublicKey,
   slug: string, authority: PublicKey, feeWallet: PublicKey,
@@ -544,6 +558,10 @@ export async function sendTx(
 
 export async function platformPDA() {
   return PublicKey.findProgramAddressSync([Buffer.from("platform")], PROGRAM_ID);
+}
+
+export function toProjectId(slug: string): string {
+  return slug;
 }
 
 export async function projectPDA(slug: string) {
