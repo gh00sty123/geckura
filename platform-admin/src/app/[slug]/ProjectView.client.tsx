@@ -713,18 +713,15 @@ export default function ProjectView({ slug }: { slug: string }) {
           const decodedProject = new (BorshAccountsCoder as any)(IDL, PGID).decode("Project", acc.data);
           
           if (decodedProject) {
-            decodedProject.name = decodedProject.name || "";
-            decodedProject.description = decodedProject.description || "";
-            decodedProject.logoUri = decodedProject.logoUri || "";
-            decodedProject.bgUri = decodedProject.bgUri || "";
-            decodedProject.themeColor = decodedProject.themeColor || "";
+            const displaySlug = (slug || "").trim();
+            const formattedSlugName = displaySlug ? displaySlug.charAt(0).toUpperCase() + displaySlug.slice(1) : "";
 
             if (supabaseBranding) {
-              decodedProject.name = decodedProject.name || supabaseBranding.name || "";
-              decodedProject.description = decodedProject.description || supabaseBranding.description || "";
-              decodedProject.logoUri = decodedProject.logoUri || supabaseBranding.logo_uri || "";
-              decodedProject.bgUri = decodedProject.bgUri || supabaseBranding.bg_uri || "";
-              decodedProject.themeColor = decodedProject.themeColor || supabaseBranding.theme_color || "";
+              decodedProject.name = supabaseBranding.name || (decodedProject.name && !decodedProject.name.startsWith("Project #") ? decodedProject.name : formattedSlugName);
+              decodedProject.description = supabaseBranding.description || decodedProject.description || "";
+              decodedProject.logoUri = supabaseBranding.logo_uri || decodedProject.logoUri || "";
+              decodedProject.bgUri = supabaseBranding.bg_uri || decodedProject.bgUri || "";
+              decodedProject.themeColor = supabaseBranding.theme_color || decodedProject.themeColor || "";
               decodedProject.navbarColor = supabaseBranding.navbar_color || "";
               decodedProject.textColor = supabaseBranding.text_color || "";
               decodedProject.nothingRewardImage = supabaseBranding.nothing_reward_image || "";
@@ -737,11 +734,11 @@ export default function ProjectView({ slug }: { slug: string }) {
               if (localBranding) {
                 try {
                   const parsed = JSON.parse(localBranding);
-                  decodedProject.name = decodedProject.name || parsed.name || "";
-                  decodedProject.description = decodedProject.description || parsed.description || "";
-                  decodedProject.logoUri = decodedProject.logoUri || parsed.logoUri || "";
-                  decodedProject.bgUri = decodedProject.bgUri || parsed.bgUri || "";
-                  decodedProject.themeColor = decodedProject.themeColor || parsed.themeColor || "";
+                  decodedProject.name = parsed.name || (decodedProject.name && !decodedProject.name.startsWith("Project #") ? decodedProject.name : formattedSlugName);
+                  decodedProject.description = parsed.description || decodedProject.description || "";
+                  decodedProject.logoUri = parsed.logoUri || decodedProject.logoUri || "";
+                  decodedProject.bgUri = parsed.bgUri || decodedProject.bgUri || "";
+                  decodedProject.themeColor = parsed.themeColor || decodedProject.themeColor || "";
                   decodedProject.navbarColor = parsed.navbarColor || "";
                   decodedProject.textColor = parsed.textColor || "";
                   decodedProject.nothingRewardImage = parsed.nothingRewardImage || "";
@@ -751,6 +748,10 @@ export default function ProjectView({ slug }: { slug: string }) {
                   decodedProject.twitterLink = parsed.twitterLink || "";
                 } catch {}
               }
+            }
+            
+            if (!decodedProject.name || decodedProject.name.startsWith("Project #")) {
+              decodedProject.name = formattedSlugName || `Project #${decodedProject.projectId || slug}`;
             }
           }
           

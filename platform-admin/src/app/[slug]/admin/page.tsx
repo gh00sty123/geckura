@@ -536,7 +536,6 @@ function Inner({ slug }: { slug: string }) {
 
   /* ── Helpers ──────────────────────────────────────────────────────────────── */
   const fetchBoxes = useCallback(async () => {
-    if (!connected || !publicKey) { setSlugLoaded(false); setSlugBoxes([]); return; }
     try {
       const conn = new Connection(RPC_URL, "confirmed");
       const [pk] = await projectPDA(slug);
@@ -667,7 +666,7 @@ function Inner({ slug }: { slug: string }) {
         setSlugLoaded(true);
       }
     }
-  }, [slug, connected, publicKey]);
+  }, [slug]);
 
   const refresh = useCallback(async () => {
     setErr("");
